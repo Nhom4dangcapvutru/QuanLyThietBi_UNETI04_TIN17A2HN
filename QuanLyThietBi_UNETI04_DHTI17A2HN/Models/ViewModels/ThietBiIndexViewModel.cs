@@ -3,11 +3,11 @@
 // Nội dung thực hiện: Module 2 - ViewModel truyền dữ liệu Tìm kiếm, Lọc, Sắp xếp và Phân trang
 
 using Microsoft.AspNetCore.Mvc.Rendering;
-using QuanLyThietBi.Models.Common;
-using QuanLyThietBi.Models.Entities;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Common;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 
-namespace QuanLyThietBi.Models.ViewModels
+namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModels
 {
     public class ThietBiIndexViewModel
     {

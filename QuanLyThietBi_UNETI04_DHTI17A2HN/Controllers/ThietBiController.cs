@@ -5,16 +5,16 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using QuanLyThietBi.Data;
-using QuanLyThietBi.Models.Common;
-using QuanLyThietBi.Models.Constants;
-using QuanLyThietBi.Models.Entities;
-using QuanLyThietBi.Models.ViewModels;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Common;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModels;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 
-namespace QuanLyThietBi.Controllers
+namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 {
     public class ThietBiController : Controller
     {

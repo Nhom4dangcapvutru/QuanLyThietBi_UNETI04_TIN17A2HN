@@ -4,7 +4,7 @@
 
 using Microsoft.EntityFrameworkCore;
 
-namespace QuanLyThietBi.Models.Common
+namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Common
 {
     public class PaginatedList<T> : List<T>
     {
