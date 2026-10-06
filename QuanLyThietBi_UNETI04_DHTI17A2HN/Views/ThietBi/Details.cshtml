@@ -1,0 +1,99 @@
+﻿@* 
+// Họ và tên: Nguyễn Văn Tú
+// Mã sinh viên: 23103100077
+Nội dung thực hiện: Module 2 - Giao diện Xem chi tiết thiết bị & Lịch sử sửa chữa
+*@
+
+@model QuanLyThietBi.Models.Entities.ThietBi
+
+@{
+    ViewData["Title"] = "Chi tiết thiết bị";
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-info text-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">Thông tin chi tiết thiết bị #@Model.MaThietBi</h5>
+            <div>
+                <a asp-action="Edit" asp-route-id="@Model.MaThietBi" class="btn btn-sm btn-light">Sửa thông tin</a>
+                <a asp-action="Index" class="btn btn-sm btn-outline-light">Quay lại danh sách</a>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <p><strong>Tên thiết bị:</strong> @Model.TenThietBi</p>
+                    <p><strong>Số Serial:</strong> <span class="badge bg-secondary font-monospace">@Model.SerialNumber</span></p>
+                    <p><strong>Loại thiết bị:</strong> @Model.LoaiThietBi?.TenLoai (@Model.LoaiThietBi?.HangSanXuat)</p>
+                    <p><strong>Chủ sở hữu:</strong> @Model.KhachHang?.HoTen (SĐT: @Model.KhachHang?.SoDienThoai)</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Ngày mua:</strong> @Model.NgayMua.ToString("dd/MM/yyyy")</p>
+                    <p><strong>Hạn bảo hành:</strong> @Model.HanBaoHanh.ToString("dd/MM/yyyy")</p>
+                    <p>
+                        <strong>Tình trạng bảo hành:</strong> 
+                        @if (Model.ConBaoHanh)
+                        {
+                            <span class="badge bg-success">Còn hạn bảo hành</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Đã hết hạn bảo hành</span>
+                        }
+                    </p>
+                    <p><strong>Giá trị thiết bị:</strong> @Model.GiaTri.ToString("N0") VNĐ</p>
+                    <p><strong>Trạng thái máy:</strong> <span class="badge bg-primary">@Model.TrangThai</span></p>
+                </div>
+                <div class="col-12">
+                    <p><strong>Mô tả:</strong> @(string.IsNullOrEmpty(Model.MoTa) ? "Không có" : Model.MoTa)</p>
+                    <p><strong>Ghi chú:</strong> @(string.IsNullOrEmpty(Model.GhiChu) ? "Không có" : Model.GhiChu)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LỊCH SỬ PHIẾU SỬA CHỮA / BẢO HÀNH CỦA THIẾT BỊ NÀY -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-light py-2">
+            <h6 class="mb-0 fw-bold text-secondary">Lịch sử tiếp nhận & sửa chữa của thiết bị này</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã phiếu</th>
+                            <th>Ngày tiếp nhận</th>
+                            <th>Nội dung lỗi báo hỏng</th>
+                            <th>Mức độ</th>
+                            <th>Trạng thái phiếu</th>
+                            <th>Ngày hoàn thành</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.PhieuSuaChuas.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-3 text-muted">Thiết bị này chưa từng phát sinh sự cố bảo hành/sửa chữa nào.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var p in Model.PhieuSuaChuas)
+                            {
+                                <tr>
+                                    <td>#@p.MaPhieu</td>
+                                    <td>@p.NgayTiepNhan.ToString("dd/MM/yyyy")</td>
+                                    <td>@p.NoiDungLoi</td>
+                                    <td><span class="badge bg-warning text-dark">@p.MucDo</span></td>
+                                    <td><span class="badge bg-info text-dark">@p.TrangThai</span></td>
+                                    <td>@(p.NgayHoanThanh?.ToString("dd/MM/yyyy") ?? "Chưa xong")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,73 @@
+﻿@* 
+// Họ và tên: Nguyễn Văn Tú
+// Mã sinh viên: 23103100077
+Nội dung thực hiện: Module 2 - Giao diện Xác nhận xóa thiết bị (Kiểm tra lịch sử dữ liệu)
+*@
+
+@model QuanLyThietBi.Models.Entities.ThietBi
+
+@{
+    ViewData["Title"] = "Xác nhận xóa thiết bị";
+    bool hasHistory = ViewBag.HasHistory ?? false;
+    int historyCount = ViewBag.HistoryCount ?? 0;
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white py-3">
+                    <h5 class="mb-0 fw-bold">Xác nhận xóa thiết bị</h5>
+                </div>
+                <div class="card-body p-4">
+                    @if (hasHistory)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <h6 class="fw-bold">⚠️ CẢNH BÁO RÀNG BUỘC DỮ LIỆU:</h6>
+                            <p class="mb-0">
+                                Thiết bị này đã có <strong>@historyCount phiếu sửa chữa</strong> trong quá khứ. 
+                                Theo quy định nghiệp vụ (mục 6.2), bạn <strong>KHÔNG ĐƯỢC XÓA</strong> thiết bị này để đảm bảo tính toàn vẹn dữ liệu.
+                            </p>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-danger fw-bold">Bạn có chắc chắn muốn xóa thiết bị sau khỏi hệ thống không?</p>
+                    }
+
+                    <table class="table table-bordered">
+                        <tr>
+                            <th class="bg-light" style="width: 35%;">Tên thiết bị:</th>
+                            <td>@Model.TenThietBi</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Số Serial:</th>
+                            <td><span class="badge bg-secondary">@Model.SerialNumber</span></td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Loại thiết bị:</th>
+                            <td>@Model.LoaiThietBi?.TenLoai</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Chủ sở hữu:</th>
+                            <td>@Model.KhachHang?.HoTen</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Giá trị:</th>
+                            <td>@Model.GiaTri.ToString("N0") VNĐ</td>
+                        </tr>
+                    </table>
+
+                    <form asp-action="Delete" method="post" class="mt-4 d-flex justify-content-end gap-2">
+                        <input type="hidden" asp-for="MaThietBi" />
+                        <a asp-action="Index" class="btn btn-secondary">Hủy bỏ</a>
+                        @if (!hasHistory)
+                        {
+                            <button type="submit" class="btn btn-danger px-4">Xác nhận Xóa</button>
+                        }
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,100 @@
+﻿@* 
+// Họ và tên: Nguyễn Văn Tú
+// Mã sinh viên: 23103100077
+Nội dung thực hiện: Module 2 - Giao diện Chỉnh sửa thiết bị
+*@
+
+@model QuanLyThietBi.Models.Entities.ThietBi
+
+@{
+    ViewData["Title"] = "Chỉnh sửa thiết bị";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h5 class="mb-0 fw-bold">Chỉnh sửa thông tin thiết bị: @Model.TenThietBi</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="MaThietBi" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="TenThietBi" class="form-label fw-bold"></label> <span class="text-danger">*</span>
+                                <input asp-for="TenThietBi" class="form-control" />
+                                <span asp-validation-for="TenThietBi" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="SerialNumber" class="form-label fw-bold"></label> <span class="text-danger">*</span>
+                                <input asp-for="SerialNumber" class="form-control" />
+                                <span asp-validation-for="SerialNumber" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="MaLoai" class="form-label fw-bold"></label>
+                                <select asp-for="MaLoai" class="form-select" asp-items="ViewBag.MaLoai"></select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="MaKhachHang" class="form-label fw-bold"></label>
+                                <select asp-for="MaKhachHang" class="form-select" asp-items="ViewBag.MaKhachHang"></select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="NgayMua" class="form-label fw-bold"></label>
+                                <input asp-for="NgayMua" type="date" class="form-control" />
+                                <span asp-validation-for="NgayMua" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="HanBaoHanh" class="form-label fw-bold"></label>
+                                <input asp-for="HanBaoHanh" type="date" class="form-control" />
+                                <span asp-validation-for="HanBaoHanh" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="GiaTri" class="form-label fw-bold"></label>
+                                <input asp-for="GiaTri" type="number" step="1000" class="form-control" />
+                                <span asp-validation-for="GiaTri" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="TrangThai" class="form-label fw-bold"></label>
+                                <select asp-for="TrangThai" class="form-select">
+                                    <option value="Hoạt động bình thường">Hoạt động bình thường</option>
+                                    <option value="Đang bảo hành">Đang bảo hành</option>
+                                    <option value="Đang sửa chữa">Đang sửa chữa</option>
+                                    <option value="Hỏng / Không hoạt động">Hỏng / Không hoạt động</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="MoTa" class="form-label fw-bold"></label>
+                                <textarea asp-for="MoTa" class="form-control" rows="2"></textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="GhiChu" class="form-label fw-bold"></label>
+                                <textarea asp-for="GhiChu" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-secondary">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary px-4">Lưu thay đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
