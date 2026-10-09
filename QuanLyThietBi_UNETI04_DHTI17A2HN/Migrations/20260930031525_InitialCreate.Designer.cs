@@ -9,7 +9,7 @@ using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
 
 #nullable disable
 
-namespace QuanLyThietBi_UNETI04_DHTI17A2HN_UNETI04_DHTI17A2HN.Migrations
+namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20260930031525_InitialCreate")]

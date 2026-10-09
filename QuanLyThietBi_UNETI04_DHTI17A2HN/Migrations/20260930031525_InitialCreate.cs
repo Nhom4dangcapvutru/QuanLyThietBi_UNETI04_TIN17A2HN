@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace QuanLyThietBi_UNETI04_DHTI17A2HN_UNETI04_DHTI17A2HN.Migrations
+namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
