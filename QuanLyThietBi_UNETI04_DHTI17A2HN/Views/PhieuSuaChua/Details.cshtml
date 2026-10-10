@@ -1,0 +1,201 @@
+﻿@* 
+    Họ và tên: Nguyễn Thị Thảo
+    Mã sinh viên: 23103100092
+    Nội dung thực hiện: View chi tiết phiếu sửa chữa
+    (Thông tin phiếu + thiết bị + kết quả chẩn đoán + chi tiết sửa chữa + tổng tiền)
+*@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels.PhieuSuaChuaDetailsViewModel
+
+@{
+    ViewData["Title"] = "Chi tiết phiếu #" + Model.PhieuSuaChua.MaPhieu;
+    var p = Model.PhieuSuaChua;
+}
+
+<h2 class="mb-4">📄 Chi tiết phiếu sửa chữa #@p.MaPhieu</h2>
+
+@* ==================== THÔNG BÁO ==================== *@
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@* ==================== TRẠNG THÁI PHIẾU (NỔI BẬT) ==================== *@
+<div class="alert @(p.TrangThai == "Hoàn thành" ? "alert-success" :
+                     p.TrangThai == "Đang xử lý" ? "alert-warning" :
+                     p.TrangThai == "Chờ tiếp nhận" ? "alert-info" :
+                     p.TrangThai == "Đã hủy" ? "alert-dark" : "alert-secondary")">
+    <h4 class="alert-heading mb-1">
+        Trạng thái: <strong>@p.TrangThai</strong>
+    </h4>
+    <p class="mb-0">
+        <small>Ngày tiếp nhận: @p.NgayTiepNhan.ToString("dd/MM/yyyy HH:mm")</small>
+        @if (p.NgayHoanThanh.HasValue)
+        {
+            <small> | Ngày hoàn thành: @p.NgayHoanThanh.Value.ToString("dd/MM/yyyy HH:mm")</small>
+        }
+        @if (p.HanDuKien.HasValue)
+        {
+            <small> | Hạn dự kiến: @p.HanDuKien.Value.ToString("dd/MM/yyyy")</small>
+        }
+    </p>
+</div>
+
+@* ==================== THÔNG TIN THIẾT BỊ ==================== *@
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <strong>🔧 Thông tin thiết bị</strong>
+    </div>
+    <div class="card-body">
+        @if (Model.ThietBi != null)
+        {
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Tên thiết bị</dt>
+                <dd class="col-sm-9"><strong>@Model.ThietBi.TenThietBi</strong></dd>
+
+                <dt class="col-sm-3">Serial Number</dt>
+                <dd class="col-sm-9">@Model.ThietBi.SerialNumber</dd>
+
+                <dt class="col-sm-3">Loại thiết bị</dt>
+                <dd class="col-sm-9">
+                    @if (Model.ThietBi.LoaiThietBi != null)
+                    {
+                        @($"{Model.ThietBi.LoaiThietBi.TenLoai} - {Model.ThietBi.LoaiThietBi.HangSanXuat}")
+                    }
+                </dd>
+
+                <dt class="col-sm-3">Ngày mua</dt>
+                <dd class="col-sm-9">@Model.ThietBi.NgayMua.ToString("dd/MM/yyyy")</dd>
+
+                <dt class="col-sm-3">Hạn bảo hành</dt>
+                <dd class="col-sm-9">
+                    @Model.ThietBi.HanBaoHanh.ToString("dd/MM/yyyy")
+                    @if (Model.ConBaoHanh)
+                    {
+                        <span class="badge bg-success">Còn bảo hành</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">Hết bảo hành - Sửa tính phí</span>
+                    }
+                </dd>
+            </dl>
+        }
+        else
+        {
+            <p class="text-muted mb-0">Không có thông tin thiết bị.</p>
+        }
+    </div>
+</div>
+
+@* ==================== NỘI DUNG LỖI KHÁCH HÀNG BÁO ==================== *@
+<div class="card mb-4">
+    <div class="card-header bg-warning text-dark">
+        <strong>📝 Nội dung lỗi (do khách hàng báo)</strong>
+    </div>
+    <div class="card-body">
+        <p class="mb-2">
+            <strong>Mức độ:</strong>
+            @if (p.MucDo == "Khẩn cấp")
+            {
+                <span class="badge bg-danger">@p.MucDo</span>
+            }
+            else if (p.MucDo == "Cao")
+            {
+                <span class="badge bg-warning text-dark">@p.MucDo</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">@p.MucDo</span>
+            }
+        </p>
+        <p class="mb-0" style="white-space: pre-line;">@p.NoiDungLoi</p>
+    </div>
+</div>
+
+@* ==================== KẾT QUẢ CHẨN ĐOÁN & CHI TIẾT SỬA CHỮA ==================== *@
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <strong>✅ Kết quả chẩn đoán & chi tiết sửa chữa (@Model.ChiTietSuaChuas.Count)</strong>
+    </div>
+    <div class="card-body">
+        @if (Model.ChiTietSuaChuas.Any())
+        {
+            <table class="table table-striped table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Kỹ thuật viên</th>
+                        <th>Linh kiện thay thế</th>
+                        <th class="text-end">Số lượng</th>
+                        <th class="text-end">Đơn giá</th>
+                        <th class="text-end">Thành tiền</th>
+                        <th>Kết quả chẩn đoán</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int stt = 1;
+                    }
+                    @foreach (var ct in Model.ChiTietSuaChuas)
+                    {
+                        <tr>
+                            <td>@stt</td>
+                            <td>@(ct.KyThuatVien?.HoTen ?? "Chưa phân công")</td>
+                            <td>@(ct.LinhKien?.TenLinhKien ?? "Không dùng linh kiện")</td>
+                            <td class="text-end">@ct.SoLuong</td>
+                            <td class="text-end">@ct.DonGia.ToString("N0") đ</td>
+                            <td class="text-end"><strong>@ct.ThanhTien.ToString("N0") đ</strong></td>
+                            <td>
+                                <small>@ct.KetQuaChanDoan</small>
+                                @if (!string.IsNullOrWhiteSpace(ct.GhiChu))
+                                {
+                                    <br />
+                                    <small class="text-muted"><em>Ghi chú: @ct.GhiChu</em></small>
+                                }
+                            </td>
+                        </tr>
+                        stt++;
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="table-warning">
+                        <th colspan="5" class="text-end">TỔNG CỘNG:</th>
+                        <th class="text-end">
+                            <span class="text-danger">@Model.TongTien.ToString("N0") đ</span>
+                        </th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        }
+        else
+        {
+            <p class="text-muted mb-0">
+                Chưa có kết quả chẩn đoán. Vui lòng chờ kỹ thuật viên xử lý.
+            </p>
+        }
+    </div>
+</div>
+
+@* ==================== NÚT THAO TÁC ==================== *@
+<div class="mt-4">
+    <a asp-action="Index" class="btn btn-secondary">↩ Quay lại danh sách</a>
+
+    @if (Model.CoTheHuy)
+    {
+        <a asp-action="Huy" asp-route-id="@p.MaPhieu" class="btn btn-danger">
+            🗑️ Hủy phiếu này
+        </a>
+    }
+</div>

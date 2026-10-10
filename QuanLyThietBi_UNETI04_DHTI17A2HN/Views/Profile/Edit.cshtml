@@ -1,0 +1,115 @@
+﻿@* 
+    Họ và tên: Nguyễn Thị Thảo
+    Mã sinh viên: 23103100092
+    Nội dung thực hiện: View sửa hồ sơ cá nhân
+    (Chỉ cho khách hàng sửa SĐT, Email, Địa chỉ, CCCD)
+*@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Sửa hồ sơ cá nhân";
+}
+
+<h2 class="mb-4">✏️ Sửa hồ sơ cá nhân</h2>
+
+<div class="alert alert-info">
+    <strong>ℹ️ Lưu ý:</strong> Bạn chỉ có thể sửa <strong>Số điện thoại, Email, Địa chỉ và CCCD</strong>.
+    Các thông tin khác như Họ tên, Loại khách hàng do nhân viên quản lý.
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Edit" method="post">
+            @* Hiển thị lỗi tổng quát *@
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            @* ==================== ẨN MÃ KHÁCH HÀNG ==================== *@
+            <input type="hidden" asp-for="MaKhachHang" />
+            <input type="hidden" asp-for="HoTen" />
+            <input type="hidden" asp-for="LoaiKhachHang" />
+
+            @* ==================== THÔNG TIN KHÔNG SỬA ĐƯỢC ==================== *@
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <strong>Thông tin không thể sửa</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Mã khách hàng</label>
+                            <input type="text" class="form-control" value="@Model.MaKhachHang" readonly />
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Họ và tên</label>
+                            <input type="text" class="form-control" value="@Model.HoTen" readonly />
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Loại khách hàng</label>
+                            <input type="text" class="form-control" value="@Model.LoaiKhachHang" readonly />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ==================== THÔNG TIN ĐƯỢC SỬA ==================== *@
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <strong>Thông tin có thể sửa</strong>
+                </div>
+                <div class="card-body">
+
+                    @* Số điện thoại *@
+                    <div class="mb-3">
+                        <label asp-for="SoDienThoai" class="form-label"></label>
+                        <input asp-for="SoDienThoai" class="form-control" placeholder="VD: 0901234567" />
+                        <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                    </div>
+
+                    @* Email *@
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" type="email" class="form-control" placeholder="VD: email@gmail.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    @* Địa chỉ *@
+                    <div class="mb-3">
+                        <label asp-for="DiaChi" class="form-label"></label>
+                        <textarea asp-for="DiaChi" class="form-control" rows="2"
+                                  placeholder="Địa chỉ liên hệ"></textarea>
+                        <span asp-validation-for="DiaChi" class="text-danger"></span>
+                    </div>
+
+                    @* CCCD *@
+                    <div class="mb-3">
+                        <label asp-for="CCCD" class="form-label"></label>
+                        <input asp-for="CCCD" class="form-control" placeholder="9-12 chữ số" />
+                        <span asp-validation-for="CCCD" class="text-danger"></span>
+                    </div>
+
+                    @* Mã số thuế (chỉ hiện với doanh nghiệp) *@
+                    @if (Model.LoaiKhachHang == "Doanh nghiệp")
+                    {
+                        <div class="mb-3">
+                            <label asp-for="MaSoThue" class="form-label"></label>
+                            <input asp-for="MaSoThue" class="form-control" />
+                            <span asp-validation-for="MaSoThue" class="text-danger"></span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @* ==================== NÚT ==================== *@
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">💾 Lưu thay đổi</button>
+                <a asp-action="Index" class="btn btn-secondary">↩ Quay lại hồ sơ</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

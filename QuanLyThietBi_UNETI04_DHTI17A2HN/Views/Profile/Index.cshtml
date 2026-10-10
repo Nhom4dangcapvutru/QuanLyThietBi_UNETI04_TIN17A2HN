@@ -1,0 +1,141 @@
+﻿@* 
+    Họ và tên: Nguyễn Thị Thảo
+    Mã sinh viên: 23103100092
+    Nội dung thực hiện: View xem hồ sơ cá nhân
+    (Khách hàng xem thông tin của chính mình)
+*@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+}
+
+<h2 class="mb-4">👤 Hồ sơ cá nhân</h2>
+
+@* ==================== THÔNG BÁO ==================== *@
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@* ==================== THỐNG KÊ NHANH ==================== *@
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center bg-primary text-white">
+            <div class="card-body">
+                <h3>@Model.TongSoThietBi</h3>
+                <p class="mb-0">Thiết bị của tôi</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center bg-info text-white">
+            <div class="card-body">
+                <h3>@Model.TongSoPhieu</h3>
+                <p class="mb-0">Tổng phiếu sửa chữa</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center bg-warning text-dark">
+            <div class="card-body">
+                <h3>@Model.SoPhieuDangXuLy</h3>
+                <p class="mb-0">Phiếu đang xử lý</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ==================== THÔNG TIN CÁ NHÂN ==================== *@
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+        <strong>Thông tin cá nhân</strong>
+        <a asp-action="Edit" class="btn btn-sm btn-warning">✏️ Sửa thông tin</a>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-4">Mã khách hàng</dt>
+                    <dd class="col-sm-8">@Model.MaKhachHang</dd>
+
+                    <dt class="col-sm-4">Tên đăng nhập</dt>
+                    <dd class="col-sm-8">@(Model.TenDangNhap ?? "Chưa liên kết")</dd>
+
+                    <dt class="col-sm-4">Họ và tên</dt>
+                    <dd class="col-sm-8"><strong>@Model.HoTen</strong></dd>
+
+                    <dt class="col-sm-4">Số điện thoại</dt>
+                    <dd class="col-sm-8">@Model.SoDienThoai</dd>
+
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">@Model.Email</dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-4">Địa chỉ</dt>
+                    <dd class="col-sm-8">@(Model.DiaChi ?? "Chưa cập nhật")</dd>
+
+                    <dt class="col-sm-4">CCCD</dt>
+                    <dd class="col-sm-8">@(Model.CCCD ?? "Chưa cập nhật")</dd>
+
+                    <dt class="col-sm-4">Loại khách hàng</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.LoaiKhachHang == "Doanh nghiệp")
+                        {
+                            <span class="badge bg-info">@Model.LoaiKhachHang</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@Model.LoaiKhachHang</span>
+                        }
+                    </dd>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.MaSoThue))
+                    {
+                        <dt class="col-sm-4">Mã số thuế</dt>
+                        <dd class="col-sm-8">@Model.MaSoThue</dd>
+                    }
+
+                    <dt class="col-sm-4">Trạng thái</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.TrangThai == "Hoạt động")
+                        {
+                            <span class="badge bg-success">@Model.TrangThai</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">@Model.TrangThai</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4">Ngày tạo</dt>
+                    <dd class="col-sm-8">@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ==================== NÚT THAO TÁC ==================== *@
+<div class="mt-4">
+    <a asp-action="Edit" class="btn btn-warning">✏️ Sửa hồ sơ</a>
+    <a asp-controller="PhieuSuaChua" asp-action="Index" class="btn btn-info">
+        📋 Xem phiếu sửa chữa của tôi
+    </a>
+    <a asp-controller="PhieuSuaChua" asp-action="Create" class="btn btn-success">
+        ➕ Tạo phiếu sửa chữa mới
+    </a>
+</div>

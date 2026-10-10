@@ -1,0 +1,218 @@
+﻿@* 
+    Họ và tên: Nguyễn Thị Thảo
+    Mã sinh viên: 23103100092
+    Nội dung thực hiện: View danh sách khách hàng
+    (Tìm kiếm, lọc, sắp xếp, phân trang, CRUD)
+*@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels.KhachHangFilterViewModel
+
+@{
+    ViewData["Title"] = "Quản lý khách hàng";
+}
+
+<h2 class="mb-4">📋 Danh sách khách hàng</h2>
+
+@* ==================== THÔNG BÁO ==================== *@
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@* ==================== FORM TÌM KIẾM / LỌC / SẮP XẾP ==================== *@
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" asp-action="Index">
+            <div class="row g-3">
+                @* Từ khóa *@
+                <div class="col-md-4">
+                    <label class="form-label">Từ khóa</label>
+                    <input type="text" name="tuKhoa" value="@Model.TuKhoa"
+                           class="form-control" placeholder="Tên, SĐT, Email, CCCD..." />
+                </div>
+
+                @* Loại khách hàng *@
+                <div class="col-md-2">
+                    <label class="form-label">Loại KH</label>
+                    <select name="loaiKhachHang" class="form-select">
+                        <option value="">-- Tất cả --</option>
+                        @foreach (var loai in Model.DanhSachLoaiKhachHang)
+                        {
+                            <option value="@loai" selected="@(Model.LoaiKhachHang == loai)">
+                                @loai
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                @* Trạng thái *@
+                <div class="col-md-2">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="trangThai" class="form-select">
+                        <option value="">-- Tất cả --</option>
+                        @foreach (var tt in Model.DanhSachTrangThai)
+                        {
+                            <option value="@tt" selected="@(Model.TrangThai == tt)">
+                                @tt
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                @* Sắp xếp *@
+                <div class="col-md-2">
+                    <label class="form-label">Sắp xếp</label>
+                    <select name="sapXep" class="form-select">
+                        <option value="">Tên A→Z (mặc định)</option>
+                        <option value="ten_desc" selected="@(Model.SapXep == "ten_desc")">Tên Z→A</option>
+                        <option value="ngaytao_asc" selected="@(Model.SapXep == "ngaytao_asc")">Ngày tạo ↑</option>
+                        <option value="ngaytao_desc" selected="@(Model.SapXep == "ngaytao_desc")">Ngày tạo ↓</option>
+                    </select>
+                </div>
+
+                @* Nút *@
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">🔍 Tìm</button>
+                    <a asp-action="Index" class="btn btn-secondary">↺ Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* ==================== NÚT THÊM MỚI + TỔNG SỐ ==================== *@
+<div class="d-flex justify-content-between mb-3">
+    <a asp-action="Create" class="btn btn-success">➕ Thêm khách hàng</a>
+    <div class="text-muted align-self-center">
+        Tổng: <strong>@Model.TongSoBanGhi</strong> khách hàng
+    </div>
+</div>
+
+@* ==================== BẢNG DANH SÁCH ==================== *@
+@if (Model.KhachHangs.Any())
+{
+    <table class="table table-striped table-hover table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Mã</th>
+                <th>Họ tên</th>
+                <th>Số điện thoại</th>
+                <th>Email</th>
+                <th>Loại KH</th>
+                <th>Trạng thái</th>
+                <th>Ngày tạo</th>
+                <th width="220">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var kh in Model.KhachHangs)
+            {
+                <tr>
+                    <td>@kh.MaKhachHang</td>
+                    <td>@kh.HoTen</td>
+                    <td>@kh.SoDienThoai</td>
+                    <td>@kh.Email</td>
+                    <td>
+                        @if (kh.LoaiKhachHang == "Doanh nghiệp")
+                        {
+                            <span class="badge bg-info">@kh.LoaiKhachHang</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@kh.LoaiKhachHang</span>
+                        }
+                    </td>
+                    <td>
+                        @if (kh.TrangThai == "Hoạt động")
+                        {
+                            <span class="badge bg-success">@kh.TrangThai</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">@kh.TrangThai</span>
+                        }
+                    </td>
+                    <td>@kh.NgayTao.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@kh.MaKhachHang"
+                           class="btn btn-sm btn-info">Chi tiết</a>
+                        <a asp-action="Edit" asp-route-id="@kh.MaKhachHang"
+                           class="btn btn-sm btn-warning">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@kh.MaKhachHang"
+                           class="btn btn-sm btn-danger">Xóa</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @* ==================== PHÂN TRANG ==================== *@
+    @if (Model.TongSoTrang > 1)
+    {
+        <nav>
+            <ul class="pagination justify-content-center">
+                @* Trang trước *@
+                <li class="page-item @(Model.CoTrangTruoc ? "" : "disabled")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-tuKhoa="@Model.TuKhoa"
+                       asp-route-loaiKhachHang="@Model.LoaiKhachHang"
+                       asp-route-trangThai="@Model.TrangThai"
+                       asp-route-sapXep="@Model.SapXep"
+                       asp-route-trang="@(Model.TrangHienTai - 1)">
+                        « Trước
+                    </a>
+                </li>
+
+                @* Số trang *@
+                @for (int i = 1; i <= Model.TongSoTrang; i++)
+                {
+                    <li class="page-item @(i == Model.TrangHienTai ? "active" : "")">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-tuKhoa="@Model.TuKhoa"
+                           asp-route-loaiKhachHang="@Model.LoaiKhachHang"
+                           asp-route-trangThai="@Model.TrangThai"
+                           asp-route-sapXep="@Model.SapXep"
+                           asp-route-trang="@i">
+                            @i
+                        </a>
+                    </li>
+                }
+
+                @* Trang sau *@
+                <li class="page-item @(Model.CoTrangSau ? "" : "disabled")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-tuKhoa="@Model.TuKhoa"
+                       asp-route-loaiKhachHang="@Model.LoaiKhachHang"
+                       asp-route-trangThai="@Model.TrangThai"
+                       asp-route-sapXep="@Model.SapXep"
+                       asp-route-trang="@(Model.TrangHienTai + 1)">
+                        Sau »
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="text-center text-muted">
+            Trang @Model.TrangHienTai / @Model.TongSoTrang
+        </div>
+    }
+}
+else
+{
+    <div class="alert alert-info text-center">
+        Không tìm thấy khách hàng nào phù hợp.
+    </div>
+}

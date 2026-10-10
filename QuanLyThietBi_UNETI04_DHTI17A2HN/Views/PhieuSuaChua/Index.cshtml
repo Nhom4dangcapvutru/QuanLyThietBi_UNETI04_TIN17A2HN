@@ -1,0 +1,235 @@
+﻿@* 
+    Họ và tên: Nguyễn Thị Thảo
+    Mã sinh viên: 23103100092
+    Nội dung thực hiện: View danh sách phiếu sửa chữa của tôi
+    (Tìm kiếm + Lọc + Sắp xếp + Phân trang)
+*@
+@model List<QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.PhieuSuaChua>
+
+@{
+    ViewData["Title"] = "Phiếu sửa chữa của tôi";
+
+    // Lấy dữ liệu từ ViewBag
+    string? tuKhoa = ViewBag.TuKhoa as string;
+    string? trangThai = ViewBag.TrangThai as string;
+    string? sapXep = ViewBag.SapXep as string;
+    int trangHienTai = ViewBag.TrangHienTai ?? 1;
+    int tongSoTrang = ViewBag.TongSoTrang ?? 1;
+    int tongSoBanGhi = ViewBag.TongSoBanGhi ?? 0;
+    List<string> danhSachTrangThai = ViewBag.DanhSachTrangThai as List<string> ?? new List<string>();
+}
+
+<h2 class="mb-4">📋 Phiếu sửa chữa của tôi</h2>
+
+@* ==================== THÔNG BÁO ==================== *@
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@* ==================== FORM TÌM KIẾM / LỌC / SẮP XẾP ==================== *@
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" asp-action="Index">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">Từ khóa</label>
+                    <input type="text" name="tuKhoa" value="@tuKhoa"
+                           class="form-control"
+                           placeholder="Nội dung lỗi, tên thiết bị, serial..." />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="trangThai" class="form-select">
+                        <option value="">-- Tất cả --</option>
+                        @foreach (var tt in danhSachTrangThai)
+                        {
+                            <option value="@tt" selected="@(trangThai == tt)">@tt</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Sắp xếp</label>
+                    <select name="sapXep" class="form-select">
+                        <option value="">Mới nhất</option>
+                        <option value="ngay_asc" selected="@(sapXep == "ngay_asc")">Cũ nhất</option>
+                        <option value="trangthai" selected="@(sapXep == "trangthai")">Theo trạng thái</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">🔍 Tìm</button>
+                    <a asp-action="Index" class="btn btn-secondary">↺ Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* ==================== NÚT TẠO MỚI + TỔNG SỐ ==================== *@
+<div class="d-flex justify-content-between mb-3">
+    <a asp-action="Create" class="btn btn-success">➕ Tạo phiếu sửa chữa mới</a>
+    <div class="text-muted align-self-center">
+        Tổng: <strong>@tongSoBanGhi</strong> phiếu
+    </div>
+</div>
+
+@* ==================== BẢNG DANH SÁCH ==================== *@
+@if (Model.Any())
+{
+    <table class="table table-striped table-hover table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Mã phiếu</th>
+                <th>Ngày tiếp nhận</th>
+                <th>Thiết bị</th>
+                <th>Nội dung lỗi</th>
+                <th>Mức độ</th>
+                <th>Trạng thái</th>
+                <th width="180">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td>#@p.MaPhieu</td>
+                    <td>@p.NgayTiepNhan.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>
+                        @if (p.ThietBi != null)
+                        {
+                            <div>@p.ThietBi.TenThietBi</div>
+                            <small class="text-muted">S/N: @p.ThietBi.SerialNumber</small>
+                        }
+                    </td>
+                    <td>
+                        @(p.NoiDungLoi.Length > 60
+                            ? p.NoiDungLoi.Substring(0, 60) + "..."
+                            : p.NoiDungLoi)
+                    </td>
+                    <td>
+                        @if (p.MucDo == "Khẩn cấp")
+                        {
+                            <span class="badge bg-danger">@p.MucDo</span>
+                        }
+                        else if (p.MucDo == "Cao")
+                        {
+                            <span class="badge bg-warning text-dark">@p.MucDo</span>
+                        }
+                        else if (p.MucDo == "Thấp")
+                        {
+                            <span class="badge bg-light text-dark">@p.MucDo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@p.MucDo</span>
+                        }
+                    </td>
+                    <td>
+                        @if (p.TrangThai == "Hoàn thành")
+                        {
+                            <span class="badge bg-success">@p.TrangThai</span>
+                        }
+                        else if (p.TrangThai == "Đang xử lý")
+                        {
+                            <span class="badge bg-warning text-dark">@p.TrangThai</span>
+                        }
+                        else if (p.TrangThai == "Chờ tiếp nhận")
+                        {
+                            <span class="badge bg-info">@p.TrangThai</span>
+                        }
+                        else if (p.TrangThai == "Đã hủy")
+                        {
+                            <span class="badge bg-dark">@p.TrangThai</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@p.TrangThai</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@p.MaPhieu"
+                           class="btn btn-sm btn-info">Chi tiết</a>
+
+                        @if (p.TrangThai == "Chờ tiếp nhận")
+                        {
+                            <a asp-action="Huy" asp-route-id="@p.MaPhieu"
+                               class="btn btn-sm btn-danger">Hủy</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @* ==================== PHÂN TRANG ==================== *@
+    @if (tongSoTrang > 1)
+    {
+        <nav>
+            <ul class="pagination justify-content-center">
+                @* Trang trước *@
+                <li class="page-item @(trangHienTai > 1 ? "" : "disabled")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-tuKhoa="@tuKhoa"
+                       asp-route-trangThai="@trangThai"
+                       asp-route-sapXep="@sapXep"
+                       asp-route-trang="@(trangHienTai - 1)">
+                        « Trước
+                    </a>
+                </li>
+
+                @* Số trang *@
+                @for (int i = 1; i <= tongSoTrang; i++)
+                {
+                    <li class="page-item @(i == trangHienTai ? "active" : "")">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-tuKhoa="@tuKhoa"
+                           asp-route-trangThai="@trangThai"
+                           asp-route-sapXep="@sapXep"
+                           asp-route-trang="@i">
+                            @i
+                        </a>
+                    </li>
+                }
+
+                @* Trang sau *@
+                <li class="page-item @(trangHienTai < tongSoTrang ? "" : "disabled")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-tuKhoa="@tuKhoa"
+                       asp-route-trangThai="@trangThai"
+                       asp-route-sapXep="@sapXep"
+                       asp-route-trang="@(trangHienTai + 1)">
+                        Sau »
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="text-center text-muted">
+            Trang @trangHienTai / @tongSoTrang
+        </div>
+    }
+}
+else
+{
+    <div class="alert alert-info text-center">
+        <p>Bạn chưa có phiếu sửa chữa nào.</p>
+        <a asp-action="Create" class="btn btn-success">➕ Tạo phiếu đầu tiên</a>
+    </div>
+}
