@@ -1,0 +1,93 @@
+﻿@* 
+    Họ và tên: Nguyễn Thị Thảo
+    Mã sinh viên: 23103100092
+    Nội dung thực hiện: View xác nhận hủy phiếu sửa chữa
+    (Chỉ hiển thị khi phiếu ở trạng thái "Chờ tiếp nhận")
+*@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.PhieuSuaChua
+
+@{
+    ViewData["Title"] = "Hủy phiếu sửa chữa #" + Model.MaPhieu;
+}
+
+<h2 class="mb-4 text-danger">🗑️ Hủy phiếu sửa chữa</h2>
+
+@* ==================== CẢNH BÁO ==================== *@
+<div class="alert alert-warning">
+    <h5 class="alert-heading">⚠️ Bạn có chắc chắn muốn hủy phiếu này?</h5>
+    <p class="mb-0">
+        Hành động này <strong>không thể hoàn tác</strong>. Phiếu sẽ bị đánh dấu là
+        <strong>"Đã hủy"</strong> và không thể tiếp tục xử lý.
+    </p>
+</div>
+
+@* ==================== THÔNG TIN PHIẾU ==================== *@
+<div class="card mb-4">
+    <div class="card-header bg-danger text-white">
+        <strong>Thông tin phiếu sẽ bị hủy</strong>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Mã phiếu</dt>
+            <dd class="col-sm-9"><strong>#@Model.MaPhieu</strong></dd>
+
+            <dt class="col-sm-3">Ngày tiếp nhận</dt>
+            <dd class="col-sm-9">@Model.NgayTiepNhan.ToString("dd/MM/yyyy HH:mm")</dd>
+
+            <dt class="col-sm-3">Trạng thái hiện tại</dt>
+            <dd class="col-sm-9">
+                <span class="badge bg-info">@Model.TrangThai</span>
+            </dd>
+
+            <dt class="col-sm-3">Mức độ ưu tiên</dt>
+            <dd class="col-sm-9">@Model.MucDo</dd>
+
+            @if (Model.ThietBi != null)
+            {
+                <dt class="col-sm-3">Thiết bị</dt>
+                <dd class="col-sm-9">
+                    <strong>@Model.ThietBi.TenThietBi</strong>
+                    <br />
+                    <small class="text-muted">S/N: @Model.ThietBi.SerialNumber</small>
+                </dd>
+            }
+
+            <dt class="col-sm-3">Nội dung lỗi</dt>
+            <dd class="col-sm-9" style="white-space: pre-line;">@Model.NoiDungLoi</dd>
+        </dl>
+    </div>
+</div>
+
+@* ==================== LƯU Ý ==================== *@
+<div class="alert alert-info">
+    <strong>ℹ️ Lưu ý:</strong>
+    <ul class="mb-0 mt-2">
+        <li>Chỉ có thể hủy phiếu khi đang ở trạng thái <strong>"Chờ tiếp nhận"</strong>.</li>
+        <li>Sau khi hủy, bạn có thể tạo phiếu sửa chữa mới cho thiết bị này.</li>
+        <li>Nếu thiết bị đang được kỹ thuật viên xử lý, không thể hủy.</li>
+    </ul>
+</div>
+
+@* ==================== FORM XÁC NHẬN HỦY ==================== *@
+<form asp-action="Huy" method="post" class="mt-4">
+    <input type="hidden" name="id" value="@Model.MaPhieu" />
+
+    <button type="submit" class="btn btn-danger"
+            onclick="return confirm('Bạn chắc chắn muốn hủy phiếu #@Model.MaPhieu?');">
+        🗑️ Xác nhận hủy phiếu
+    </button>
+
+    <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-secondary">
+        ↩ Không hủy, quay lại chi tiết
+    </a>
+
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        📋 Về danh sách phiếu
+    </a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

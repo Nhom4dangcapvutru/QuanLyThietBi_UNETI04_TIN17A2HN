@@ -1,0 +1,148 @@
+﻿@* 
+    Họ và tên: Nguyễn Thị Thảo
+    Mã sinh viên: 23103100092
+    Nội dung thực hiện: View tạo phiếu sửa chữa
+    (Khách hàng chọn thiết bị của mình + mô tả lỗi + mức độ ưu tiên)
+*@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels.PhieuSuaChuaCreateViewModel
+
+@{
+    ViewData["Title"] = "Tạo phiếu sửa chữa";
+}
+
+<h2 class="mb-4">➕ Tạo phiếu sửa chữa mới</h2>
+
+@if (!string.IsNullOrWhiteSpace(Model.TenKhachHang))
+{
+    <div class="alert alert-info">
+        Xin chào <strong>@Model.TenKhachHang</strong>! Vui lòng chọn thiết bị cần sửa và mô tả lỗi.
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Create" method="post">
+            @* Hiển thị lỗi tổng quát *@
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            @* Ẩn mã khách hàng *@
+            <input type="hidden" asp-for="MaKhachHang" />
+            <input type="hidden" asp-for="TenKhachHang" />
+
+            @* ==================== CHỌN THIẾT BỊ ==================== *@
+            <div class="mb-3">
+                <label asp-for="MaThietBi" class="form-label">
+                    <strong>Thiết bị cần sửa</strong>
+                </label>
+                <select asp-for="MaThietBi" class="form-select" id="chonThietBi">
+                    <option value="">-- Chọn thiết bị --</option>
+                    @foreach (var item in Model.DanhSachThietBi)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+                <span asp-validation-for="MaThietBi" class="text-danger"></span>
+                <small class="text-muted">
+                    Chỉ hiển thị thiết bị thuộc quyền sở hữu của bạn.
+                </small>
+            </div>
+
+            @* ==================== THÔNG TIN THIẾT BỊ ĐƯỢC CHỌN ==================== *@
+            @if (Model.TenThietBiDuocChon != null)
+            {
+                <div class="card mb-3 border-info">
+                    <div class="card-body bg-light">
+                        <strong>Thiết bị đang chọn:</strong> @Model.TenThietBiDuocChon
+                        @if (Model.HanBaoHanhThietBi.HasValue)
+                        {
+                            <br />
+                            <strong>Hạn bảo hành:</strong>
+                            @Model.HanBaoHanhThietBi.Value.ToString("dd/MM/yyyy")
+                            @if (Model.ConBaoHanh)
+                            {
+                                <span class="badge bg-success">Còn bảo hành</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Hết bảo hành (sửa tính phí)</span>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+
+            @* ==================== MỨC ĐỘ ƯU TIÊN ==================== *@
+            <div class="mb-3">
+                <label asp-for="MucDo" class="form-label">
+                    <strong>Mức độ ưu tiên</strong>
+                </label>
+                <select asp-for="MucDo" class="form-select">
+                    @foreach (var item in Model.DanhSachMucDo)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+                <span asp-validation-for="MucDo" class="text-danger"></span>
+            </div>
+
+            @* ==================== MÔ TẢ LỖI ==================== *@
+            <div class="mb-3">
+                <label asp-for="NoiDungLoi" class="form-label">
+                    <strong>Mô tả chi tiết lỗi</strong>
+                </label>
+                <textarea asp-for="NoiDungLoi" class="form-control" rows="5"
+                          placeholder="Mô tả chi tiết tình trạng lỗi của thiết bị: hiện tượng, thời điểm xuất hiện, các bước đã thử..."></textarea>
+                <span asp-validation-for="NoiDungLoi" class="text-danger"></span>
+                <small class="text-muted">Từ 10 đến 1000 ký tự. Càng chi tiết càng giúp kỹ thuật viên xử lý nhanh.</small>
+            </div>
+
+            @* ==================== LƯU Ý ==================== *@
+            <div class="alert alert-warning">
+                <strong>ℹ️ Lưu ý:</strong>
+                <ul class="mb-0 mt-2">
+                    <li>Sau khi gửi, phiếu sẽ ở trạng thái <strong>"Chờ tiếp nhận"</strong>.</li>
+                    <li>Bạn có thể <strong>hủy phiếu</strong> khi còn ở trạng thái này.</li>
+                    <li>Mỗi thiết bị chỉ có thể có <strong>1 phiếu đang xử lý</strong> tại một thời điểm.</li>
+                </ul>
+            </div>
+
+            @* ==================== NÚT ==================== *@
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">📤 Gửi phiếu sửa chữa</button>
+                <a asp-action="Index" class="btn btn-secondary">↩ Quay lại danh sách</a>
+            </div>
+        </form>
+    </div>
+
+    @* ==================== CỘT PHẢI: HƯỚNG DẪN ==================== *@
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <strong>📖 Hướng dẫn</strong>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li class="mb-2">Chọn thiết bị cần sửa từ dropdown.</li>
+                    <li class="mb-2">Chọn mức độ ưu tiên phù hợp.</li>
+                    <li class="mb-2">Mô tả chi tiết tình trạng lỗi.</li>
+                    <li class="mb-2">Nhấn "Gửi phiếu sửa chữa".</li>
+                    <li>Chờ kỹ thuật viên tiếp nhận và xử lý.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Khi chọn thiết bị, hiển thị preview (tùy chọn AJAX nâng cao)
+        // Hiện tại chỉ log ra console, có thể mở rộng sau
+        document.getElementById("chonThietBi")?.addEventListener("change", function () {
+            console.log("Đã chọn thiết bị: " + this.value);
+        });
+    </script>
+}

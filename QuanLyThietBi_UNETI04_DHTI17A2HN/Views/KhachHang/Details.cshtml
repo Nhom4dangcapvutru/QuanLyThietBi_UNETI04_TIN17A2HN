@@ -1,0 +1,207 @@
+﻿@* 
+    Họ và tên: Nguyễn Thị Thảo
+    Mã sinh viên: 23103100092
+    Nội dung thực hiện: View xem chi tiết khách hàng
+    (Bao gồm thông tin KH + danh sách thiết bị + danh sách phiếu sửa chữa)
+*@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.KhachHang
+
+@{
+    ViewData["Title"] = "Chi tiết khách hàng";
+}
+
+<h2 class="mb-4">👤 Chi tiết khách hàng</h2>
+
+@* ==================== THÔNG TIN CÁ NHÂN ==================== *@
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <strong>Thông tin cá nhân</strong>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-4">Mã khách hàng</dt>
+                    <dd class="col-sm-8">@Model.MaKhachHang</dd>
+
+                    <dt class="col-sm-4">Họ và tên</dt>
+                    <dd class="col-sm-8"><strong>@Model.HoTen</strong></dd>
+
+                    <dt class="col-sm-4">Số điện thoại</dt>
+                    <dd class="col-sm-8">@Model.SoDienThoai</dd>
+
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">@Model.Email</dd>
+
+                    <dt class="col-sm-4">CCCD</dt>
+                    <dd class="col-sm-8">@(Model.CCCD ?? "Chưa cập nhật")</dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-4">Địa chỉ</dt>
+                    <dd class="col-sm-8">@(Model.DiaChi ?? "Chưa cập nhật")</dd>
+
+                    <dt class="col-sm-4">Loại khách hàng</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.LoaiKhachHang == "Doanh nghiệp")
+                        {
+                            <span class="badge bg-info">@Model.LoaiKhachHang</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@Model.LoaiKhachHang</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4">Mã số thuế</dt>
+                    <dd class="col-sm-8">@(Model.MaSoThue ?? "Không có")</dd>
+
+                    <dt class="col-sm-4">Trạng thái</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.TrangThai == "Hoạt động")
+                        {
+                            <span class="badge bg-success">@Model.TrangThai</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">@Model.TrangThai</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4">Ngày tạo</dt>
+                    <dd class="col-sm-8">@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</dd>
+                </dl>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.GhiChu))
+        {
+            <div class="mt-2">
+                <strong>Ghi chú:</strong> @Model.GhiChu
+            </div>
+        }
+
+        @if (Model.TaiKhoan != null)
+        {
+            <div class="mt-2">
+                <strong>Tài khoản liên kết:</strong>
+                @Model.TaiKhoan.TenDangNhap - @Model.TaiKhoan.VaiTro
+            </div>
+        }
+    </div>
+</div>
+
+@* ==================== DANH SÁCH THIẾT BỊ ==================== *@
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <strong>🔧 Thiết bị của khách hàng (@Model.ThietBis.Count)</strong>
+    </div>
+    <div class="card-body">
+        @if (Model.ThietBis.Any())
+        {
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th>Mã</th>
+                        <th>Tên thiết bị</th>
+                        <th>Serial</th>
+                        <th>Ngày mua</th>
+                        <th>Hạn bảo hành</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tb in Model.ThietBis)
+                    {
+                        <tr>
+                            <td>@tb.MaThietBi</td>
+                            <td>@tb.TenThietBi</td>
+                            <td>@tb.SerialNumber</td>
+                            <td>@tb.NgayMua.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @tb.HanBaoHanh.ToString("dd/MM/yyyy")
+                                @if (tb.ConBaoHanh)
+                                {
+                                    <span class="badge bg-success">Còn BH</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Hết BH</span>
+                                }
+                            </td>
+                            <td>@tb.TrangThai</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="text-muted mb-0">Khách hàng chưa có thiết bị nào.</p>
+        }
+    </div>
+</div>
+
+@* ==================== DANH SÁCH PHIẾU SỬA CHỮA ==================== *@
+<div class="card mb-4">
+    <div class="card-header bg-warning text-dark">
+        <strong>📋 Phiếu sửa chữa của khách hàng (@Model.PhieuSuaChuas.Count)</strong>
+    </div>
+    <div class="card-body">
+        @if (Model.PhieuSuaChuas.Any())
+        {
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th>Mã phiếu</th>
+                        <th>Ngày tiếp nhận</th>
+                        <th>Nội dung lỗi</th>
+                        <th>Mức độ</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.PhieuSuaChuas.OrderByDescending(x => x.NgayTiepNhan))
+                    {
+                        <tr>
+                            <td>@p.MaPhieu</td>
+                            <td>@p.NgayTiepNhan.ToString("dd/MM/yyyy")</td>
+                            <td>@(p.NoiDungLoi.Length > 50 ? p.NoiDungLoi.Substring(0, 50) + "..." : p.NoiDungLoi)</td>
+                            <td>@p.MucDo</td>
+                            <td>
+                                @if (p.TrangThai == "Hoàn thành")
+                                {
+                                    <span class="badge bg-success">@p.TrangThai</span>
+                                }
+                                else if (p.TrangThai == "Đang xử lý")
+                                {
+                                    <span class="badge bg-warning text-dark">@p.TrangThai</span>
+                                }
+                                else if (p.TrangThai == "Chờ tiếp nhận")
+                                {
+                                    <span class="badge bg-info">@p.TrangThai</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@p.TrangThai</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="text-muted mb-0">Khách hàng chưa có phiếu sửa chữa nào.</p>
+        }
+    </div>
+</div>
+
+@* ==================== NÚT THAO TÁC ==================== *@
+<div class="mt-4">
+    <a asp-action="Edit" asp-route-id="@Model.MaKhachHang" class="btn btn-warning">✏️ Sửa</a>
+    <a asp-action="Delete" asp-route-id="@Model.MaKhachHang" class="btn btn-danger">🗑️ Xóa</a>
+    <a asp-action="Index" class="btn btn-secondary">↩ Quay lại danh sách</a>
+</div>
