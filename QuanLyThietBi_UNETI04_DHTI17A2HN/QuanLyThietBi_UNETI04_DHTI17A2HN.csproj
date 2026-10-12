@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Controllers\AccountController.cs" Link="Controllers\AccountController.cs" />
+    <Compile Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Controllers\BaseController.cs" Link="Controllers\BaseController.cs" />
+    <Compile Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Controllers\LoaiThietBiController.cs" Link="Controllers\LoaiThietBiController.cs" />
+    <Compile Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Controllers\TaiKhoanController.cs" Link="Controllers\TaiKhoanController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -16,6 +23,27 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\Account\" />
+    <Folder Include="Views\LoaiThietBi\" />
+    <Folder Include="Views\TaiKhoan\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Views\Account\AccessDenied.cshtml" Link="Views\Account\AccessDenied.cshtml" />
+    <None Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Views\Account\Login.cshtml" Link="Views\Account\Login.cshtml" />
+    <None Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Views\LoaiThietBi\Create.cshtml" Link="Views\LoaiThietBi\Create.cshtml" />
+    <None Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Views\LoaiThietBi\Delete.cshtml" Link="Views\LoaiThietBi\Delete.cshtml" />
+    <None Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Views\LoaiThietBi\Details.cshtml" Link="Views\LoaiThietBi\Details.cshtml" />
+    <None Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Views\LoaiThietBi\Edit.cshtml" Link="Views\LoaiThietBi\Edit.cshtml" />
+    <None Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Views\LoaiThietBi\Index.cshtml" Link="Views\LoaiThietBi\Index.cshtml" />
+    <None Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Views\TaiKhoan\Create.cshtml" Link="Views\TaiKhoan\Create.cshtml" />
+    <None Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Views\TaiKhoan\Delete.cshtml" Link="Views\TaiKhoan\Delete.cshtml" />
+    <None Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Views\TaiKhoan\Details.cshtml" Link="Views\TaiKhoan\Details.cshtml" />
+    <None Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Views\TaiKhoan\Edit.cshtml" Link="Views\TaiKhoan\Edit.cshtml" />
+    <None Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Views\TaiKhoan\Index.cshtml" Link="Views\TaiKhoan\Index.cshtml" />
   </ItemGroup>
 
 </Project>
