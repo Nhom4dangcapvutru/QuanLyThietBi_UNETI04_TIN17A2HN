@@ -1,6 +1,6 @@
-﻿// Họ và tên: [Tên SV 3 và SV 4]
-// Mã sinh viên: [Mã SV 3, Mã SV 4]
-// Nội dung thực hiện: Entity PhieuSuaChua - Luồng tiếp nhận, sửa chữa, trạng thái nghiệp vụ
+﻿// Họ và tên:
+// Nội dung thực hiện: Entity PhieuSuaChua bổ sung trường
+// phục vụ Tiếp nhận, Chẩn đoán, Sửa chữa, Cập nhật trạng thái và chi phí
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -35,12 +35,12 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities
         [Required]
         [StringLength(50)]
         [Display(Name = "Trạng thái phiếu")]
-        public string TrangThai { get; set; } = "Chờ tiếp nhận"; // Chờ tiếp nhận -> Đang xử lý -> Hoàn thành (hoặc Đã hủy, Từ chối)
+        public string TrangThai { get; set; } = "Chờ tiếp nhận";
 
         [Required]
         [StringLength(50)]
         [Display(Name = "Mức độ ưu tiên")]
-        public string MucDo { get; set; } = "Bình thường"; // Thấp, Bình thường, Cao, Khẩn cấp
+        public string MucDo { get; set; } = "Trung bình";
 
         [DataType(DataType.Date)]
         [Display(Name = "Hạn dự kiến xong")]
@@ -49,12 +49,43 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities
         [Display(Name = "Ngày hoàn thành")]
         public DateTime? NgayHoanThanh { get; set; }
 
+        // ===== BỔ SUNG CHO MODULE 4 =====
+        [Display(Name = "Kỹ thuật viên tiếp nhận")]
+        public int? MaKyThuatVienTiepNhan { get; set; }
+
+        [StringLength(1000)]
+        [Display(Name = "Kết quả chẩn đoán")]
+        public string? KetQuaChanDoan { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, double.MaxValue, ErrorMessage = "Chi phí dự kiến phải >= 0")]
+        [Display(Name = "Chi phí dự kiến (VNĐ)")]
+        public decimal? ChiPhiDuKien { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, double.MaxValue, ErrorMessage = "Tổng chi phí phải >= 0")]
+        [Display(Name = "Tổng chi phí thực tế (VNĐ)")]
+        public decimal? TongChiPhi { get; set; }
+
+        [Display(Name = "Ngày hẹn trả khách")]
+        public DateTime? NgayHenTra { get; set; }
+
+        [StringLength(500)]
+        [Display(Name = "Lý do hủy / từ chối")]
+        public string? LyDoHuy { get; set; }
+
+        [Display(Name = "Ngày cập nhật cuối")]
+        public DateTime? NgayCapNhat { get; set; }
+
         // Navigation properties
         [ForeignKey("MaThietBi")]
         public virtual ThietBi? ThietBi { get; set; }
 
         [ForeignKey("MaKhachHang")]
         public virtual KhachHang? KhachHang { get; set; }
+
+        [ForeignKey("MaKyThuatVienTiepNhan")]
+        public virtual TaiKhoan? KyThuatVienTiepNhan { get; set; }
 
         public virtual ICollection<ChiTietSuaChua> ChiTietSuaChuas { get; set; } = new List<ChiTietSuaChua>();
     }

@@ -1,0 +1,67 @@
+@* Họ và tên: DINH THI THUY LINH
+    MSV: 23103100110
+   Nội dung thực hiện: Form chẩn đoán & báo chi phí dự kiến *@
+
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModels.ChanDoanViewModel
+@{
+    ViewData["Title"] = "Chẩn đoán phiếu #" + Model.MaPhieu;
+}
+
+<h2>🔍 Chẩn đoán phiếu #@Model.MaPhieu</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p><strong>Khách hàng:</strong> @Model.TenKhachHang</p>
+        <p><strong>Thiết bị:</strong> @Model.TenThietBi — S/N: @Model.SerialNumber</p>
+        <p>
+            <strong>Bảo hành:</strong>
+            @if (Model.ConBaoHanh)
+            {
+                <span class="badge bg-success">Còn bảo hành</span>
+            }
+            else
+            {
+                <span class="badge bg-danger">Hết bảo hành</span>
+            }
+        </p>
+        <p><strong>Nội dung lỗi khách báo:</strong> @Model.NoiDungLoi</p>
+    </div>
+</div>
+
+<form asp-action="ChanDoan" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="MaPhieu" />
+    <input type="hidden" asp-for="TenKhachHang" />
+    <input type="hidden" asp-for="TenThietBi" />
+    <input type="hidden" asp-for="SerialNumber" />
+    <input type="hidden" asp-for="NoiDungLoi" />
+    <input type="hidden" asp-for="TrangThaiHienTai" />
+    <input type="hidden" asp-for="ConBaoHanh" />
+
+    <div class="mb-3">
+        <label asp-for="KetQuaChanDoan" class="form-label"></label>
+        <textarea asp-for="KetQuaChanDoan" class="form-control" rows="4"
+                  placeholder="Mô tả kết quả kiểm tra, nguyên nhân hư hỏng..."></textarea>
+        <span asp-validation-for="KetQuaChanDoan" class="text-danger"></span>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="ChiPhiDuKien" class="form-label"></label>
+            <input asp-for="ChiPhiDuKien" type="number" step="1000" class="form-control" />
+            <span asp-validation-for="ChiPhiDuKien" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="HanDuKien" class="form-label"></label>
+            <input asp-for="HanDuKien" type="date" class="form-control" />
+            <span asp-validation-for="HanDuKien" class="text-danger"></span>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-warning">💾 Lưu chẩn đoán</button>
+    <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-secondary">Hủy</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
