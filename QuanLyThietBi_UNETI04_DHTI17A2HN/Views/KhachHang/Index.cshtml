@@ -1,4 +1,4 @@
-﻿@* 
+@* 
     Họ và tên: Nguyễn Thị Thảo
     Mã sinh viên: 23103100092
     Nội dung thực hiện: View danh sách khách hàng
@@ -73,7 +73,8 @@
                 <div class="col-md-2">
                     <label class="form-label">Sắp xếp</label>
                     <select name="sapXep" class="form-select">
-                        <option value="">Tên A→Z (mặc định)</option>
+                        <option value="">Mã KH ↑ (mặc định)</option>
+                        <option value="ten_asc" selected="@(Model.SapXep == "ten_asc")">Tên A→Z</option>
                         <option value="ten_desc" selected="@(Model.SapXep == "ten_desc")">Tên Z→A</option>
                         <option value="ngaytao_asc" selected="@(Model.SapXep == "ngaytao_asc")">Ngày tạo ↑</option>
                         <option value="ngaytao_desc" selected="@(Model.SapXep == "ngaytao_desc")">Ngày tạo ↓</option>

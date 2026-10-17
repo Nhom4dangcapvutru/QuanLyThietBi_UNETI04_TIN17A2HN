@@ -1,4 +1,4 @@
-﻿// Họ và tên: Nguyễn Thị Thảo
+// Họ và tên: Nguyễn Thị Thảo
 // Mã sinh viên: 23103100092
 // Nội dung thực hiện: Quản lý khách hàng - CRUD, tìm kiếm, lọc, sắp xếp, phân trang
 // Phân quyền: Admin/Kỹ thuật viên được truy cập; Khách hàng bị chặn.
@@ -25,6 +25,26 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         // ====================================================================
         // KIỂM TRA PHÂN QUYỀN: chỉ Admin/Kỹ thuật viên được dùng các chức năng
         // ====================================================================
+        public override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context)
+        {
+            if (!SessionHelper.IsLoggedIn(context.HttpContext.Session))
+            {
+                var returnUrl = context.HttpContext.Request.Path + context.HttpContext.Request.QueryString;
+                TempData["ErrorMessage"] = "Vui lòng đăng nhập để tiếp tục.";
+                context.Result = RedirectToAction("Login", "Account", new { returnUrl = returnUrl.ToString() });
+                return;
+            }
+
+            if (!SessionHelper.IsAdminOrKyThuatVien(context.HttpContext.Session))
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền truy cập chức năng này. Chỉ Admin và Kỹ thuật viên mới được quản lý khách hàng.";
+                context.Result = RedirectToAction("AccessDenied", "Account");
+                return;
+            }
+
+            base.OnActionExecuting(context);
+        }
+
         private bool KiemTraQuyenNhanVien()
         {
             return SessionHelper.IsAdminOrKyThuatVien(HttpContext.Session);
@@ -83,10 +103,11 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             // ----------------------------------------------------------------
             query = sapXep switch
             {
+                "ten_asc" => query.OrderBy(k => k.HoTen),
                 "ten_desc" => query.OrderByDescending(k => k.HoTen),
                 "ngaytao_asc" => query.OrderBy(k => k.NgayTao),
                 "ngaytao_desc" => query.OrderByDescending(k => k.NgayTao),
-                _ => query.OrderBy(k => k.HoTen) // Mặc định: tên A → Z
+                _ => query.OrderBy(k => k.MaKhachHang) // Mặc định: Mã tăng dần (1, 2, 3...)
             };
 
             // ----------------------------------------------------------------

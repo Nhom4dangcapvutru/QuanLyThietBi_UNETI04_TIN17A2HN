@@ -1,4 +1,4 @@
-﻿// Họ và tên: Nguyễn Thị Thảo
+// Họ và tên: Nguyễn Thị Thảo
 // Mã sinh viên: 23103100092
 // Nội dung thực hiện: Phiếu sửa chữa - Tạo phiếu, theo dõi, hủy phiếu
 // (Khách hàng chỉ thấy phiếu của chính mình; kiểm tra quyền sở hữu trên Controller)
@@ -52,7 +52,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             if (!SessionHelper.IsLoggedIn(HttpContext.Session))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập để xem phiếu sửa chữa.";
-                return RedirectToAction("DangNhap", "TaiKhoan");
+                return RedirectToAction("Login", "Account");
             }
 
             // Lấy mã khách hàng đang đăng nhập
@@ -140,7 +140,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             if (!SessionHelper.IsLoggedIn(HttpContext.Session))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập.";
-                return RedirectToAction("DangNhap", "TaiKhoan");
+                return RedirectToAction("Login", "Account");
             }
 
             if (id == null)
@@ -206,7 +206,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             if (!SessionHelper.IsLoggedIn(HttpContext.Session))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập để tạo phiếu sửa chữa.";
-                return RedirectToAction("DangNhap", "TaiKhoan");
+                return RedirectToAction("Login", "Account");
             }
 
             var maKhachHang = await GetCurrentMaKhachHangAsync();
@@ -254,7 +254,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             if (!SessionHelper.IsLoggedIn(HttpContext.Session))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập.";
-                return RedirectToAction("DangNhap", "TaiKhoan");
+                return RedirectToAction("Login", "Account");
             }
 
             var maKhachHang = await GetCurrentMaKhachHangAsync();
@@ -365,7 +365,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             if (!SessionHelper.IsLoggedIn(HttpContext.Session))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập.";
-                return RedirectToAction("DangNhap", "TaiKhoan");
+                return RedirectToAction("Login", "Account");
             }
 
             if (id == null)
@@ -418,7 +418,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             if (!SessionHelper.IsLoggedIn(HttpContext.Session))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập.";
-                return RedirectToAction("DangNhap", "TaiKhoan");
+                return RedirectToAction("Login", "Account");
             }
 
             var maKhachHang = await GetCurrentMaKhachHangAsync();
