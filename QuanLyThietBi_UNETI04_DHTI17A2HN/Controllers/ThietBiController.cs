@@ -1,4 +1,4 @@
-﻿// Họ và tên: Nguyễn Văn Tú
+// Họ và tên: Nguyễn Văn Tú
 // Mã sinh viên: 23103100077
 // Nội dung thực hiện: Module 2 - Quản lý thiết bị: CRUD, Tìm kiếm, Lọc kết hợp, Sắp xếp, Phân trang LINQ
 
@@ -10,13 +10,10 @@ using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Common;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModels;
-using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
-using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
-using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 
 namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 {
-    public class ThietBiController : Controller
+    public class ThietBiController : BaseController
     {
         private const int PageSize = 6; // Số lượng bản ghi trên 1 trang
         private readonly ApplicationDbContext _context;
