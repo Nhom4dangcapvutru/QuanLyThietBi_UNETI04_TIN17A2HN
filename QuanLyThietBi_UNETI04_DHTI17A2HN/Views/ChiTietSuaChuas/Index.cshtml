@@ -1,0 +1,374 @@
+@model IEnumerable<QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.ChiTietSuaChua>
+
+@{
+    ViewData["Title"] = "Chi tiết sửa chữa";
+
+    var tongChiTiet = Model?.Count() ?? 0;
+    var tongChiPhi = Model?.Sum(x => x.ThanhTien) ?? 0;
+    var tongLinhKien = Model?.Sum(x => x.SoLuong) ?? 0;
+}
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        --bg-main: #f8fafc;
+        --card-bg: #ffffff;
+        --text-title: #0f172a;
+        --text-sub: #64748b;
+        --border-color: #e2e8f0;
+    }
+
+    body {
+        background-color: var(--bg-main);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #334155;
+    }
+
+
+    .hero-card {
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+        border-radius: 24px;
+        padding: 2.5rem;
+        color: #ffffff;
+        box-shadow: 0 20px 40px -15px rgba(67, 56, 202, 0.35);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .hero-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+    .kpi-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 1.5rem;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            border-color: #cbd5e1;
+        }
+
+    .kpi-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+    }
+
+
+    .filter-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+
+    
+    .table-container {
+        background: #ffffff;
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+
+    .custom-table {
+        margin: 0;
+        vertical-align: middle;
+    }
+
+        .custom-table thead th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 1.1rem 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .custom-table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+            .custom-table tbody tr:hover {
+                background-color: #f1f5f9 !important;
+            }
+
+        .custom-table td {
+            padding: 1.1rem 1.25rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.9rem;
+        }
+
+  
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+    }
+
+    .btn-action-view {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+        .btn-action-view:hover {
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+    .btn-action-edit {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+        .btn-action-edit:hover {
+            background: #d97706;
+            color: #ffffff;
+        }
+
+    .btn-action-delete {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+        .btn-action-delete:hover {
+            background: #dc2626;
+            color: #ffffff;
+        }
+
+    
+    .badge-ticket {
+        background: #e0e7ff;
+        color: #3730a3;
+        font-weight: 700;
+        padding: 0.4em 0.8em;
+        border-radius: 8px;
+    }
+
+    .badge-qty {
+        background: #f1f5f9;
+        color: #334155;
+        font-weight: 700;
+        border: 1px solid #cbd5e1;
+    }
+</style>
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="hero-card mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <div class="d-inline-flex align-items-center bg-white bg-opacity-10 px-3 py-1 rounded-pill mb-3">
+                <i class="fa-solid fa-microchip me-2 text-warning"></i>
+                <span class="small fw-semibold text-white-80">UNETI - Quản Lý Thiết Bị</span>
+            </div>
+            <h1 class="fw-bold fs-2 text-white mb-2">Chi Tiết Sửa Chữa</h1>
+
+        </div>
+        <div>
+            <a asp-action="Create" class="btn btn-light btn-lg px-4 py-3 rounded-4 fw-bold text-primary shadow-sm border-0 d-inline-flex align-items-center gap-2">
+                <i class="fa-solid fa-plus-circle fs-5"></i>
+                <span>Thêm chi tiết mới</span>
+            </a>
+        </div>
+    </div>
+
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+            <div class="kpi-card d-flex align-items-center">
+                <div class="kpi-icon bg-indigo-subtle text-primary me-3" style="background: #e0e7ff; color: #4f46e5;">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <div>
+                    <div class="text-uppercase small fw-bold text-muted">Tổng lượt ghi nhận</div>
+                    <div class="fs-3 fw-bold text-dark">@tongChiTiet <span class="fs-6 text-muted font-normal">mục</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="kpi-card d-flex align-items-center">
+                <div class="kpi-icon me-3" style="background: #fef3c7; color: #d97706;">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+                <div>
+                    <div class="text-uppercase small fw-bold text-muted">Linh kiện đã xuất</div>
+                    <div class="fs-3 fw-bold text-dark">@tongLinhKien <span class="fs-6 text-muted font-normal">đơn vị</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="kpi-card d-flex align-items-center">
+                <div class="kpi-icon me-3" style="background: #dcfce7; color: #16a34a;">
+                    <i class="fa-solid fa-sack-dollar"></i>
+                </div>
+                <div>
+                    <div class="text-uppercase small fw-bold text-muted">Tổng thành tiền</div>
+                    <div class="fs-3 fw-bold text-success">@tongChiPhi.ToString("N0") <span class="fs-6 text-muted font-normal">VNĐ</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 rounded-4 shadow-sm mb-4 p-3" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fa-solid fa-circle-check fs-4 me-3 text-success"></i>
+                <span class="fw-semibold text-dark">@TempData["Success"]</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+ 
+    <div class="filter-card mb-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+        <div class="input-group search-box style-input" style="max-width: 400px;">
+            <span class="input-group-text bg-light border-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+            <input type="text" id="searchInput" class="form-control bg-light border-0" placeholder="Tìm theo mã, linh kiện, kỹ thuật viên...">
+        </div>
+        <div class="text-muted small">
+            Hiển thị <span class="fw-bold text-dark">@tongChiTiet</span> kết quả
+        </div>
+    </div>
+
+    
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table custom-table align-middle" id="dataTable">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Mã CT</th>
+                        <th>Mã phiếu</th>
+                        <th>Kỹ thuật viên</th>
+                        <th>Linh kiện</th>
+                        <th class="text-center">Số lượng</th>
+                        <th class="text-end">Đơn giá</th>
+                        <th class="text-end">Thành tiền</th>
+                        <th>Chẩn đoán</th>
+                        <th class="text-center pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center py-5">
+                                <div class="py-4">
+                                    <i class="fa-solid fa-box-open fa-3x text-muted mb-3 opacity-50"></i>
+                                    <p class="text-muted fw-semibold mb-0">Chưa có thông tin chi tiết sửa chữa nào.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="fw-bold text-dark">#@item.MaChiTiet</span>
+                                </td>
+                                <td>
+                                    <span class="badge-ticket">
+                                        #@item.MaPhieu
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2 text-primary fw-bold" style="width: 34px; height: 34px; font-size: 13px;">
+                                            <i class="fa-solid fa-user-gear"></i>
+                                        </div>
+                                        <span class="fw-semibold text-dark">@(item.KyThuatVien?.HoTen ?? "Chưa phân công")</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold text-dark">
+                                        @(item.LinhKien?.TenLinhKien ?? "Không xác định")
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge badge-qty px-3 py-1 rounded-pill">
+                                        @item.SoLuong
+                                    </span>
+                                </td>
+                                <td class="text-end text-muted font-monospace">
+                                    @item.DonGia.ToString("N0") <small>đ</small>
+                                </td>
+                                <td class="text-end font-monospace">
+                                    <span class="fw-bold text-success fs-6">
+                                        @item.ThanhTien.ToString("N0") <small>đ</small>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-secondary text-truncate d-inline-block" style="max-width: 180px;" title="@item.KetQuaChanDoan">
+                                        @(string.IsNullOrEmpty(item.KetQuaChanDoan) ? "—" : item.KetQuaChanDoan)
+                                    </span>
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a asp-action="Details" asp-route-id="@item.MaChiTiet" class="btn-action btn-action-view" title="Xem chi tiết">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.MaChiTiet" class="btn-action btn-action-edit" title="Chỉnh sửa">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.MaChiTiet" class="btn-action btn-action-delete" title="Xóa">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.getElementById('searchInput').addEventListener('keyup', function () {
+        let filter = this.value.toLowerCase();
+        let rows = document.querySelectorAll('#dataTable tbody tr');
+
+        rows.forEach(row => {
+            let text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+</script>
