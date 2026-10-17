@@ -1,4 +1,4 @@
-﻿// Họ và tên: Cả nhóm thống nhất thực hiện
+// Họ và tên: Cả nhóm thống nhất thực hiện
 // Mã sinh viên: Dùng chung 5 thành viên
 // Nội dung thực hiện: DbContext Entity Framework Core 10 - Cấu hình quan hệ và ràng buộc CSDL
 
@@ -71,6 +71,12 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Data
                 .HasOne(p => p.KhachHang)
                 .WithMany(k => k.PhieuSuaChuas)
                 .HasForeignKey(p => p.MaKhachHang)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PhieuSuaChua>()
+                .HasOne(p => p.KyThuatVienTiepNhan)
+                .WithMany()
+                .HasForeignKey(p => p.MaKyThuatVienTiepNhan)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // 6. Quan hệ ChiTietSuaChua với PhieuSuaChua, LinhKien, TaiKhoan (KTV)
