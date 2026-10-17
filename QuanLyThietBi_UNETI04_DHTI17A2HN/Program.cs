@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,9 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+// 3. Đăng ký Service nghiệp vụ cho Module 4 (Xử lý sửa chữa)
+builder.Services.AddScoped<IQuyTrinhSuaChuaService, QuyTrinhSuaChuaService>();
 
 builder.Services.AddControllersWithViews();
 

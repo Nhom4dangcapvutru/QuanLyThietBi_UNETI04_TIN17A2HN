@@ -1,4 +1,4 @@
-﻿// Họ và tên: Cả nhóm thống nhất thực hiện
+// Họ và tên: Cả nhóm thống nhất thực hiện
 // Mã sinh viên: Dùng chung 5 thành viên
 // Nội dung thực hiện: Tạo dữ liệu mẫu (Seed Data) chuẩn số lượng yêu cầu để kiểm thử 5 Module
 
@@ -13,8 +13,35 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Data
         {
             context.Database.EnsureCreated();
 
-            // Nếu đã có dữ liệu thì không seed lại
-            if (context.TaiKhoans.Any()) return;
+            // Nếu đã có dữ liệu: Tự động cập nhật nội dung lỗi chân thực cho các phiếu cũ nếu đang dùng chuỗi dập khuôn
+            if (context.TaiKhoans.Any())
+            {
+                var phieusCu = context.PhieuSuaChuas
+                    .Where(p => p.NoiDungLoi.Contains("lỗi nguồn/màn hình/bàn phím số"))
+                    .ToList();
+
+                if (phieusCu.Any())
+                {
+                    string[] dsLoiCapNhat = {
+                        "Máy không lên nguồn, cắm sạc không sáng đèn báo tín hiệu",
+                        "Màn hình xuất hiện sọc ngang nhấp nháy, hình ảnh chập chờn",
+                        "Pin bị chai phồng nhẹ, tụt pin nhanh và nóng máy khi sử dụng",
+                        "Bàn phím bị liệt phím Space và hàng phím số, touchpad không nhạy",
+                        "Mặt kính bị nứt vỡ do va đập, cảm ứng góc phải bị loạn",
+                        "Máy in bị kẹt giấy liên tục khi in từ 3 trang trở lên",
+                        "Bản in bị mờ chữ và xuất hiện các vệt đen dọc suốt trang giấy",
+                        "Quạt tản nhiệt kêu to bất thường, máy tự động sập nguồn khi chạy nặng",
+                        "Không nhận cổng kết nối HDMI / Type-C và mất tín hiệu loa ngoài"
+                    };
+
+                    for (int k = 0; k < phieusCu.Count; k++)
+                    {
+                        phieusCu[k].NoiDungLoi = dsLoiCapNhat[k % dsLoiCapNhat.Length];
+                    }
+                    context.SaveChanges();
+                }
+                return;
+            }
 
             // ==============================================================
             // 1. TÀI KHOẢN (2 Admin, 3 Kỹ thuật viên, 5 Khách hàng có tài khoản)
@@ -168,6 +195,18 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Data
                 TrangThaiPhieu.TuChoi
             };
 
+            string[] danhSachLoi = {
+                "Máy không lên nguồn, cắm sạc không sáng đèn báo tín hiệu",
+                "Màn hình xuất hiện sọc ngang nhấp nháy, hình ảnh chập chờn",
+                "Pin bị chai phồng nhẹ, tụt pin nhanh và nóng máy khi sử dụng",
+                "Bàn phím bị liệt phím Space và hàng phím số, touchpad không nhạy",
+                "Mặt kính bị nứt vỡ do va đập, cảm ứng góc phải bị loạn",
+                "Máy in bị kẹt giấy liên tục khi in từ 3 trang trở lên",
+                "Bản in bị mờ chữ và xuất hiện các vệt đen dọc suốt trang giấy",
+                "Quạt tản nhiệt kêu to bất thường, máy tự động sập nguồn khi chạy nặng",
+                "Không nhận cổng kết nối HDMI / Type-C và mất tín hiệu loa ngoài"
+            };
+
             for (int i = 1; i <= 45; i++)
             {
                 var tb = thietBis[(i - 1) % 15];
@@ -179,7 +218,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Data
                     MaThietBi = tb.MaThietBi,
                     MaKhachHang = tb.MaKhachHang,
                     NgayTiepNhan = ngayNhan,
-                    NoiDungLoi = $"Thiết bị gặp sự cố lỗi nguồn/màn hình/bàn phím số #{i}",
+                    NoiDungLoi = danhSachLoi[(i - 1) % danhSachLoi.Length],
                     TrangThai = st,
                     MucDo = (i % 4 == 0) ? MucDoUuTien.KhanCap : MucDoUuTien.TrungBinh,
                     HanDuKien = ngayNhan.AddDays(3),
