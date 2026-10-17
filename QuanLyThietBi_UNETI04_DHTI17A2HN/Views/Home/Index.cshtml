@@ -1,8 +1,76 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Trang chủ - Hệ thống Quản lý Sửa chữa Thiết bị";
+    var hoTen = Context.Session.GetString("HoTen");
+    var vaiTro = Context.Session.GetString("VaiTro");
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="py-4 text-center">
+    <h1 class="display-5 fw-bold text-primary">HỆ THỐNG QUẢN LÝ BẢO HÀNH & SỬA CHỮA THIẾT BỊ</h1>
+    <p class="lead text-muted">BÀI TẬP LỚN MÔN LẬP TRÌNH .NET - NHÓM 04 - LỚP DHTI17A2HN - UNETI</p>
+    @if (!string.IsNullOrEmpty(hoTen))
+    {
+        <div class="alert alert-success d-inline-block px-4 py-2 mt-2">
+            👋 Xin chào: <strong>@hoTen</strong> (Vai trò: <span class="badge bg-primary">@vaiTro</span>)
+        </div>
+    }
+</div>
+
+<div class="row g-4 mt-2">
+    <!-- Module 1: Tài khoản & Loại thiết bị -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 shadow-sm border-0 border-top border-4 border-primary">
+            <div class="card-body">
+                <h5 class="card-title text-primary">🔐 Module 1</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Tài khoản & Phân quyền</h6>
+                <p class="card-text small text-secondary">Đăng nhập, phân quyền người dùng, quản lý tài khoản và danh mục loại thiết bị.</p>
+                <div class="d-grid gap-2">
+                    <a asp-controller="LoaiThietBi" asp-action="Index" class="btn btn-outline-primary btn-sm">📦 Loại thiết bị</a>
+                    <a asp-controller="TaiKhoan" asp-action="Index" class="btn btn-outline-secondary btn-sm">👥 Tài khoản</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module 2: Quản lý thiết bị -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 shadow-sm border-0 border-top border-4 border-success">
+            <div class="card-body">
+                <h5 class="card-title text-success">💻 Module 2</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Quản lý Thiết bị</h6>
+                <p class="card-text small text-secondary">CRUD thiết bị, tìm kiếm, lọc đa tiêu chí, phân trang LINQ và kiểm tra bảo hành.</p>
+                <div class="d-grid mt-4">
+                    <a asp-controller="ThietBi" asp-action="Index" class="btn btn-success btn-sm">Xem Danh sách Thiết bị</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module 3: Khách hàng & Phiếu sửa chữa -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 shadow-sm border-0 border-top border-4 border-info">
+            <div class="card-body">
+                <h5 class="card-title text-info">📋 Module 3</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Khách hàng & Phiếu</h6>
+                <p class="card-text small text-secondary">Quản lý hồ sơ khách hàng, tiếp nhận thiết bị và tạo phiếu tiếp nhận sửa chữa.</p>
+                <div class="d-grid gap-2 mt-3">
+                    <a asp-controller="KhachHang" asp-action="Index" class="btn btn-outline-info btn-sm">👤 Khách hàng</a>
+                    <a asp-controller="PhieuSuaChua" asp-action="Index" class="btn btn-info btn-sm text-white">📋 Phiếu sửa chữa</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module 4: Xử lý sửa chữa -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 shadow-sm border-0 border-top border-4 border-warning">
+            <div class="card-body">
+                <h5 class="card-title text-warning text-dark">⚙️ Module 4</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Xử lý sửa chữa</h6>
+                <p class="card-text small text-secondary">Kỹ thuật viên cập nhật tiến độ, thay thế linh kiện và tính chi phí sửa chữa.</p>
+                <div class="d-grid mt-4">
+                    <a asp-controller="XuLySuaChua" asp-action="Index" class="btn btn-warning btn-sm">🛠️ Xử lý sửa chữa</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
