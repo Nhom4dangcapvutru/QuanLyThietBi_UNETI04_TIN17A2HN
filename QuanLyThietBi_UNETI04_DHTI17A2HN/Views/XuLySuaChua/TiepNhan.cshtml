@@ -1,0 +1,44 @@
+@* Họ và tên: DINH THI THUY LINH
+    MSV: 23103100110
+   Nội dung thực hiện: Form tiếp nhận phiếu *@
+
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModels.TiepNhanViewModel
+@{
+    ViewData["Title"] = "Tiếp nhận phiếu";
+}
+
+<h2>✅ Tiếp nhận phiếu #@Model.MaPhieu</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p><strong>Khách hàng:</strong> @ViewBag.TenKhachHang</p>
+        <p><strong>Thiết bị:</strong> @ViewBag.TenThietBi</p>
+        <p><strong>Serial:</strong> @ViewBag.SerialNumber</p>
+        <p><strong>Nội dung lỗi:</strong> @ViewBag.NoiDungLoi</p>
+    </div>
+</div>
+
+<form asp-action="TiepNhan" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="MaPhieu" />
+
+    <div class="mb-3">
+        <label asp-for="MucDo" class="form-label"></label>
+        <select asp-for="MucDo" asp-items="Model.DanhSachMucDo" class="form-select"></select>
+        <span asp-validation-for="MucDo" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="GhiChu" class="form-label"></label>
+        <textarea asp-for="GhiChu" class="form-control" rows="3"
+                  placeholder="Ghi chú thêm về tình trạng khi nhận máy..."></textarea>
+        <span asp-validation-for="GhiChu" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">✅ Xác nhận tiếp nhận</button>
+    <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-secondary">Hủy</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

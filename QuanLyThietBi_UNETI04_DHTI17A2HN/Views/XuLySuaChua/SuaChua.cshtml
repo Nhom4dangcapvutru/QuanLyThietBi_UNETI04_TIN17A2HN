@@ -1,0 +1,126 @@
+@* Họ và tên: DINH THI THUY LINH
+    MSV: 23103100110
+   Nội dung thực hiện: Trang sửa chữa + thêm/xóa linh kiện *@
+
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModels.SuaChuaViewModel
+@{
+    ViewData["Title"] = "Sửa chữa phiếu #" + Model.MaPhieu;
+}
+
+<h2>🔧 Sửa chữa phiếu #@Model.MaPhieu</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p><strong>Khách hàng:</strong> @Model.TenKhachHang</p>
+        <p><strong>Thiết bị:</strong> @Model.TenThietBi</p>
+        <p>
+            <strong>Chi phí dự kiến:</strong>
+            @(Model.ChiPhiDuKien.HasValue ? Model.ChiPhiDuKien.Value.ToString("N0") + " VNĐ" : "Chưa báo")
+        </p>
+    </div>
+</div>
+
+@* ===== FORM THÊM LINH KIỆN ===== *@
+<div class="card mb-3">
+    <div class="card-header bg-primary text-white">➕ Thêm linh kiện thay thế</div>
+    <div class="card-body">
+        <form asp-action="ThemLinhKien" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="MaPhieu" />
+            <div class="row g-2">
+                <div class="col-md-5">
+                    <label asp-for="MaLinhKien" class="form-label">Linh kiện</label>
+                    <select asp-for="MaLinhKien" asp-items="Model.LinhKienList" class="form-select">
+                        <option value="">-- Chọn linh kiện --</option>
+                    </select>
+                    <span asp-validation-for="MaLinhKien" class="text-danger"></span>
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="SoLuong" class="form-label"></label>
+                    <input asp-for="SoLuong" type="number" min="1" value="1" class="form-control" />
+                    <span asp-validation-for="SoLuong" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="GhiChu" class="form-label"></label>
+                    <input asp-for="GhiChu" class="form-control" />
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Thêm</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* ===== DANH SÁCH LINH KIỆN ĐÃ DÙNG ===== *@
+<div class="card mb-3">
+    <div class="card-header bg-secondary text-white">
+        Danh sách linh kiện đã dùng (@Model.DanhSachChiTiet.Count)
+    </div>
+    <div class="card-body p-0">
+        @if (Model.DanhSachChiTiet.Count == 0)
+        {
+            <p class="text-muted text-center p-3 mb-0">Chưa có linh kiện nào.</p>
+        }
+        else
+        {
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Linh kiện</th>
+                        <th>SL</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ct in Model.DanhSachChiTiet)
+                    {
+                        <tr>
+                            <td>@ct.LinhKien?.TenLinhKien</td>
+                            <td>@ct.SoLuong</td>
+                            <td>@ct.DonGia.ToString("N0")</td>
+                            <td>@ct.ThanhTien.ToString("N0")</td>
+                            <td>
+                                <form asp-action="XoaLinhKien" method="post" class="d-inline"
+                                      onsubmit="return confirm('Xóa linh kiện này?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="maChiTiet" value="@ct.MaChiTiet" />
+                                    <input type="hidden" name="maPhieu" value="@Model.MaPhieu" />
+                                    <button type="submit" class="btn btn-sm btn-danger">🗑 Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold">
+                        <td colspan="3" class="text-end">Tổng tiền linh kiện:</td>
+                        <td colspan="2" class="text-danger">@Model.TongTienLinhKien.ToString("N0") VNĐ</td>
+                    </tr>
+                </tfoot>
+            </table>
+        }
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="CapNhatTrangThai" asp-route-id="@Model.MaPhieu" class="btn btn-success">
+        ✅ Hoàn tất & cập nhật trạng thái
+    </a>
+    <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-secondary">← Quay lại</a>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

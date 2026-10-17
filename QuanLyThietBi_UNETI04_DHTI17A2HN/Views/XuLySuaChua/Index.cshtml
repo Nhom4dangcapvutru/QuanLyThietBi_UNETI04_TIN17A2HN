@@ -1,0 +1,191 @@
+@* Họ và tên: DINH THI THUY LINH
+    MSV: 23103100110
+   Nội dung thực hiện: Danh sách phiếu cần xử lý *@
+
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModels.PhieuCanXuLyIndexViewModel
+@{
+    ViewData["Title"] = "Danh sách phiếu cần xử lý";
+}
+
+<h2 class="mb-3">📋 Danh sách phiếu cần xử lý</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@* ===== FORM TÌM KIẾM + LỌC ===== *@
+<form method="get" asp-action="Index" class="card card-body mb-3">
+    <div class="row g-2">
+        <div class="col-md-3">
+            <label class="form-label">Tìm kiếm</label>
+            <input type="text" name="searchString" value="@Model.SearchString"
+                   class="form-control" placeholder="KH / thiết bị / serial" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Trạng thái</label>
+            <select name="trangThai" class="form-select" asp-items="Model.TrangThaiList">
+                <option value="">-- Tất cả --</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Mức độ</label>
+            <select name="mucDo" class="form-select" asp-items="Model.MucDoList">
+                <option value="">-- Tất cả --</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Loại thiết bị</label>
+            <select name="maLoaiThietBi" class="form-select" asp-items="Model.LoaiThietBiList">
+                <option value="">-- Tất cả --</option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <label class="form-label">Từ ngày</label>
+            <input type="date" name="tuNgay" value="@Model.TuNgay?.ToString("yyyy-MM-dd")"
+                   class="form-control" />
+        </div>
+        <div class="col-md-1">
+            <label class="form-label">Đến ngày</label>
+            <input type="date" name="denNgay" value="@Model.DenNgay?.ToString("yyyy-MM-dd")"
+                   class="form-control" />
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">🔍 Lọc</button>
+        </div>
+    </div>
+    <div class="mt-2">
+        <a asp-action="Index" class="btn btn-sm btn-secondary">🔄 Reset</a>
+    </div>
+</form>
+
+@* ===== BẢNG DANH SÁCH ===== *@
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Mã</th>
+            <th>
+                <a asp-action="Index"
+                   asp-route-sortOrder="@ViewData["NameSort"]"
+                   asp-route-searchString="@Model.SearchString"
+                   asp-route-trangThai="@Model.TrangThai"
+                   asp-route-mucDo="@Model.MucDo">Khách hàng ⇅</a>
+            </th>
+            <th>Thiết bị</th>
+            <th>Nội dung lỗi</th>
+            <th>
+                <a asp-action="Index"
+                   asp-route-sortOrder="@ViewData["StatusSort"]"
+                   asp-route-searchString="@Model.SearchString"
+                   asp-route-trangThai="@Model.TrangThai"
+                   asp-route-mucDo="@Model.MucDo">Trạng thái ⇅</a>
+            </th>
+            <th>Mức độ</th>
+            <th>
+                <a asp-action="Index"
+                   asp-route-sortOrder="@ViewData["DateSort"]"
+                   asp-route-searchString="@Model.SearchString"
+                   asp-route-trangThai="@Model.TrangThai"
+                   asp-route-mucDo="@Model.MucDo">Ngày tiếp nhận ⇅</a>
+            </th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.DanhSachPhieu.Count == 0)
+        {
+            <tr><td colspan="8" class="text-center text-muted">Không có phiếu nào.</td></tr>
+        }
+        @foreach (var p in Model.DanhSachPhieu)
+        {
+            <tr>
+                <td>#@p.MaPhieu</td>
+                <td>@p.KhachHang?.HoTen</td>
+                <td>
+                    @p.ThietBi?.TenThietBi
+                    <br /><small class="text-muted">S/N: @p.ThietBi?.SerialNumber</small>
+                </td>
+                <td>@(p.NoiDungLoi.Length > 50 ? p.NoiDungLoi.Substring(0, 50) + "..." : p.NoiDungLoi)</td>
+                <td>
+                    @{
+                        var badge = p.TrangThai switch
+                        {
+                            "Chờ tiếp nhận" => "bg-warning text-dark",
+                            "Đang xử lý" => "bg-info text-dark",
+                            "Hoàn thành" => "bg-success",
+                            "Đã hủy" => "bg-secondary",
+                            "Từ chối tiếp nhận" => "bg-danger",
+                            _ => "bg-light text-dark"
+                        };
+                    }
+                    <span class="badge @badge">@p.TrangThai</span>
+                </td>
+                <td>@p.MucDo</td>
+                <td>@p.NgayTiepNhan.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@p.MaPhieu"
+                       class="btn btn-sm btn-info">👁 Chi tiết</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@* ===== PHÂN TRANG ===== *@
+@if (Model.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-pageIndex="@(Model.PageIndex - 1)"
+                   asp-route-searchString="@Model.SearchString"
+                   asp-route-trangThai="@Model.TrangThai"
+                   asp-route-mucDo="@Model.MucDo"
+                   asp-route-maLoaiThietBi="@Model.MaLoaiThietBi"
+                   asp-route-tuNgay="@Model.TuNgay?.ToString("yyyy-MM-dd")"
+                   asp-route-denNgay="@Model.DenNgay?.ToString("yyyy-MM-dd")"
+                   asp-route-sortOrder="@Model.SortOrder">« Trước</a>
+            </li>
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-pageIndex="@i"
+                       asp-route-searchString="@Model.SearchString"
+                       asp-route-trangThai="@Model.TrangThai"
+                       asp-route-mucDo="@Model.MucDo"
+                       asp-route-maLoaiThietBi="@Model.MaLoaiThietBi"
+                       asp-route-tuNgay="@Model.TuNgay?.ToString("yyyy-MM-dd")"
+                       asp-route-denNgay="@Model.DenNgay?.ToString("yyyy-MM-dd")"
+                       asp-route-sortOrder="@Model.SortOrder">@i</a>
+                </li>
+            }
+            <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-pageIndex="@(Model.PageIndex + 1)"
+                   asp-route-searchString="@Model.SearchString"
+                   asp-route-trangThai="@Model.TrangThai"
+                   asp-route-mucDo="@Model.MucDo"
+                   asp-route-maLoaiThietBi="@Model.MaLoaiThietBi"
+                   asp-route-tuNgay="@Model.TuNgay?.ToString("yyyy-MM-dd")" a
+                   asp-route-denNgay="@Model.DenNgay?.ToString("yyyy-MM-dd")"
+                   asp-route-sortOrder="@Model.SortOrder">Sau »</a>
+            </li>
+        </ul>
+    </nav>
+    <p class="text-muted">Tổng: @Model.TotalItems phiếu — Trang @Model.PageIndex / @Model.TotalPages</p>
+}
