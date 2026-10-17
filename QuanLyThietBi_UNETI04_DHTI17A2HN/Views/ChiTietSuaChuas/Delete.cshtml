@@ -1,0 +1,236 @@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.ChiTietSuaChua
+
+@{
+    ViewData["Title"] = "Xóa chi tiết sửa chữa #" + Model.MaChiTiet;
+}
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --bg-main: #f8fafc;
+        --card-bg: #ffffff;
+        --border-color: #e2e8f0;
+    }
+
+    body {
+        background-color: var(--bg-main);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #334155;
+    }
+
+
+    .danger-header {
+        background: linear-gradient(135deg, #991b1b 0%, #dc2626 50%, #ef4444 100%);
+        border-radius: 20px;
+        padding: 2rem 2.5rem;
+        color: #ffffff;
+        box-shadow: 0 15px 30px -10px rgba(220, 38, 38, 0.35);
+    }
+
+
+    .warning-box {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+    }
+
+ 
+    .delete-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+
+    .delete-card-header {
+        background: #f8fafc;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 700;
+        color: #0f172a;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .info-item {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+    .info-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+    }
+
+    .info-value {
+        font-size: 0.975rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+
+    .price-box {
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+    }
+
+x
+    .badge-ticket {
+        background: #e0e7ff;
+        color: #3730a3;
+        font-weight: 700;
+        padding: 0.4em 0.8em;
+        border-radius: 8px;
+    }
+
+    
+    .btn-custom-secondary {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        color: #475569;
+        font-weight: 600;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.2s ease;
+    }
+
+        .btn-custom-secondary:hover {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+
+    .btn-custom-danger {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: #ffffff;
+        font-weight: 600;
+        border-radius: 12px;
+        padding: 0.75rem 1.75rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        transition: all 0.2s ease;
+    }
+
+        .btn-custom-danger:hover {
+            background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+        }
+</style>
+
+<div class="container-fluid px-4 py-4" style="max-width: 900px;">
+
+   
+    <div class="danger-header mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <div class="d-inline-flex align-items-center bg-white bg-opacity-20 px-3 py-1 rounded-pill mb-2">
+                <i class="fa-solid fa-triangle-exclamation me-2 text-warning"></i>
+                <span class="small fw-semibold text-white">Xác nhận thao tác</span>
+            </div>
+            <h2 class="fw-bold fs-2 text-white mb-1">Xóa Chi Tiết Sửa Chữa</h2>
+            <p class="text-white-50 mb-0">Thao tác này sẽ gỡ bỏ bản ghi và điều chỉnh lại số lượng tồn kho</p>
+        </div>
+        <div>
+            <span class="badge bg-white text-danger fs-6 px-3 py-2 rounded-pill fw-bold shadow-sm">
+                #@Model.MaChiTiet
+            </span>
+        </div>
+    </div>
+
+
+    <div class="warning-box mb-4 d-flex align-items-start gap-3">
+        <div class="rounded-circle bg-danger bg-opacity-10 text-danger p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;">
+            <i class="fa-solid fa-rotate-left fs-5"></i>
+        </div>
+        <div>
+            <h6 class="fw-bold text-danger mb-1">Bạn có chắc chắn muốn xóa bản ghi này?</h6>
+            <p class="text-secondary small mb-0">
+                Linh kiện đã ghi nhận sẽ được <strong>hoàn lại vào kho hàng</strong>. Vui lòng kiểm tra kỹ các thông tin trước khi xác nhận.
+            </p>
+        </div>
+    </div>
+
+  
+    <div class="delete-card mb-4">
+        <div class="delete-card-header">
+            <i class="fa-solid fa-receipt text-danger fs-5"></i>
+            <span>Thông Tin Chi Tiết Sắp Xóa</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="row g-0">
+                <div class="col-12 col-sm-6 border-end-sm">
+                    <div class="info-item">
+                        <span class="info-label">Mã Chi Tiết</span>
+                        <span class="info-value text-danger">#@Model.MaChiTiet</span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6">
+                    <div class="info-item">
+                        <span class="info-label">Mã Phiếu Sửa Chữa</span>
+                        <span class="info-value">
+                            <span class="badge badge-ticket">#@Model.MaPhieu</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="info-item">
+                        <span class="info-label">Linh Kiện Tương Ứng</span>
+                        <span class="info-value text-dark fs-6 mt-1">
+                            <i class="fa-solid fa-microchip text-secondary me-2"></i>
+                            @(Model.LinhKien?.TenLinhKien ?? "Không xác định")
+                        </span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 border-end-sm">
+                    <div class="info-item">
+                        <span class="info-label">Số Lượng Xuất</span>
+                        <span class="info-value text-dark fs-6">@Model.SoLuong</span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6">
+                    <div class="info-item">
+                        <span class="info-label">Tổng Thành Tiền</span>
+                        <span class="info-value text-success font-monospace fs-6">
+                            @Model.ThanhTien.ToString("N0") VNĐ
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="MaChiTiet" />
+
+        <div class="d-flex justify-content-end align-items-center gap-3">
+            <a asp-action="Index" class="btn btn-custom-secondary d-inline-flex align-items-center gap-2">
+                <i class="fa-solid fa-xmark"></i>
+                <span>Hủy bỏ</span>
+            </a>
+            <button type="submit" class="btn btn-custom-danger d-inline-flex align-items-center gap-2">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Xác nhận xóa</span>
+            </button>
+        </div>
+    </form>
+</div>

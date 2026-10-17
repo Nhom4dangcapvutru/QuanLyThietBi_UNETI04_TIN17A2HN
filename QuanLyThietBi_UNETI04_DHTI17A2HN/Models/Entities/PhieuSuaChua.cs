@@ -46,6 +46,13 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities
         [Display(Name = "Hạn dự kiến xong")]
         public DateTime? HanDuKien { get; set; }
 
+        [Display(Name = "Ngày cập nhật cuối")]
+        public DateTime? NgayCapNhat { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, double.MaxValue, ErrorMessage = "Tổng chi phí phải >= 0")]
+        [Display(Name = "Tổng chi phí thực tế (VNĐ)")]
+        public decimal? TongChiPhi { get; set; }
+
         [Display(Name = "Ngày hoàn thành")]
         public DateTime? NgayHoanThanh { get; set; }
 
