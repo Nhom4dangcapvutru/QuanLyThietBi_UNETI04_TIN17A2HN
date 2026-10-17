@@ -5,14 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Controllers\AccountController.cs" Link="Controllers\AccountController.cs" />
-    <Compile Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Controllers\BaseController.cs" Link="Controllers\BaseController.cs" />
-    <Compile Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Controllers\LoaiThietBiController.cs" Link="Controllers\LoaiThietBiController.cs" />
-    <Compile Include="D:\BAI_TAP_NNHOM\BuiThiThuTrang\Controllers\TaiKhoanController.cs" Link="Controllers\TaiKhoanController.cs" />
-  </ItemGroup>
-
+	
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
       <PrivateAssets>all</PrivateAssets>
