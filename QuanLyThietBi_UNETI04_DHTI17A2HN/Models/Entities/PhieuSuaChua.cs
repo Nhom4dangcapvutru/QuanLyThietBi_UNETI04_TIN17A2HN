@@ -69,10 +69,10 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities
         [Display(Name = "Chi phí dự kiến (VNĐ)")]
         public decimal? ChiPhiDuKien { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
-        [Range(0, double.MaxValue, ErrorMessage = "Tổng chi phí phải >= 0")]
-        [Display(Name = "Tổng chi phí thực tế (VNĐ)")]
-        public decimal? TongChiPhi { get; set; }
+        //[Column(TypeName = "decimal(18,2)")]
+        //[Range(0, double.MaxValue, ErrorMessage = "Tổng chi phí phải >= 0")]
+        //[Display(Name = "Tổng chi phí thực tế (VNĐ)")]
+        //public decimal? TongChiPhi { get; set; }
 
         [Display(Name = "Ngày hẹn trả khách")]
         public DateTime? NgayHenTra { get; set; }
@@ -81,8 +81,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities
         [Display(Name = "Lý do hủy / từ chối")]
         public string? LyDoHuy { get; set; }
 
-        [Display(Name = "Ngày cập nhật cuối")]
-        public DateTime? NgayCapNhat { get; set; }
+        //[Display(Name = "Ngày cập nhật cuối")]
+        //public DateTime? NgayCapNhat { get; set; }
 
         // Navigation properties
         [ForeignKey("MaThietBi")]

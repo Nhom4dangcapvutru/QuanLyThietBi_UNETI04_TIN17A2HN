@@ -17,7 +17,7 @@
 
 <div class="row g-4 mt-2">
     <!-- Module 1: Tài khoản & Loại thiết bị -->
-    <div class="col-md-6 col-lg-3">
+    <div class="col-md-6 col-lg-4">
         <div class="card h-100 shadow-sm border-0 border-top border-4 border-primary">
             <div class="card-body">
                 <h5 class="card-title text-primary">🔐 Module 1</h5>
@@ -32,7 +32,7 @@
     </div>
 
     <!-- Module 2: Quản lý thiết bị -->
-    <div class="col-md-6 col-lg-3">
+    <div class="col-md-6 col-lg-4">
         <div class="card h-100 shadow-sm border-0 border-top border-4 border-success">
             <div class="card-body">
                 <h5 class="card-title text-success">💻 Module 2</h5>
@@ -46,7 +46,7 @@
     </div>
 
     <!-- Module 3: Khách hàng & Phiếu sửa chữa -->
-    <div class="col-md-6 col-lg-3">
+    <div class="col-md-6 col-lg-4">
         <div class="card h-100 shadow-sm border-0 border-top border-4 border-info">
             <div class="card-body">
                 <h5 class="card-title text-info">📋 Module 3</h5>
@@ -61,14 +61,32 @@
     </div>
 
     <!-- Module 4: Xử lý sửa chữa -->
-    <div class="col-md-6 col-lg-3">
+    <div class="col-md-6 col-lg-4">
         <div class="card h-100 shadow-sm border-0 border-top border-4 border-warning">
             <div class="card-body">
                 <h5 class="card-title text-warning text-dark">⚙️ Module 4</h5>
                 <h6 class="card-subtitle mb-2 text-muted">Xử lý sửa chữa</h6>
-                <p class="card-text small text-secondary">Kỹ thuật viên cập nhật tiến độ, thay thế linh kiện và tính chi phí sửa chữa.</p>
+                <p class="card-text small text-secondary">Kỹ thuật viên cập nhật tiến độ, chẩn đoán lỗi, thay thế linh kiện và tính chi phí.</p>
                 <div class="d-grid mt-4">
                     <a asp-controller="XuLySuaChua" asp-action="Index" class="btn btn-warning btn-sm">🛠️ Xử lý sửa chữa</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module 5: Báo cáo, Thống kê & Chi tiết sửa chữa -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0 border-top border-4 border-danger">
+            <div class="card-body">
+                <h5 class="card-title text-danger">📊 Module 5</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Dashboard & Thống kê</h6>
+                <p class="card-text small text-secondary">Dashboard tổng quan KPI, biểu đồ thống kê doanh thu và quản lý chi tiết sửa chữa.</p>
+                <div class="d-grid gap-2 mt-3">
+                    <div class="btn-group">
+                        <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-danger btn-sm">📈 Dashboard</a>
+                        <a asp-controller="ThongKe" asp-action="Index" class="btn btn-danger btn-sm text-white">📊 Thống kê</a>
+                    </div>
+                    <a asp-controller="ChiTietSuaChuas" asp-action="Index" class="btn btn-outline-secondary btn-sm">🔩 Chi tiết sửa chữa</a>
                 </div>
             </div>
         </div>

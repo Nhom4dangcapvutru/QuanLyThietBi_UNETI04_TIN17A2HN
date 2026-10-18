@@ -40,6 +40,34 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Data
                     }
                     context.SaveChanges();
                 }
+
+                // Cập nhật tổng chi phí cho các phiếu sửa chữa nếu chưa có (để Module 5 hiển thị biểu đồ & doanh thu)
+                var phieusChuaCoChiPhi = context.PhieuSuaChuas
+                    .Where(p => p.TongChiPhi == null || p.TongChiPhi == 0)
+                    .ToList();
+
+                if (phieusChuaCoChiPhi.Any())
+                {
+                    var chiTietTheoPhieu = context.ChiTietSuaChuas
+                        .GroupBy(c => c.MaPhieu)
+                        .ToDictionary(g => g.Key, g => g.Sum(c => c.ThanhTien));
+
+                    decimal[] chiPhiMacDinh = { 350000m, 550000m, 850000m, 1200000m, 450000m, 600000m, 950000m };
+
+                    for (int k = 0; k < phieusChuaCoChiPhi.Count; k++)
+                    {
+                        var p = phieusChuaCoChiPhi[k];
+                        if (chiTietTheoPhieu.TryGetValue(p.MaPhieu, out decimal tongChiTiet) && tongChiTiet > 0)
+                        {
+                            p.TongChiPhi = tongChiTiet;
+                        }
+                        else if (p.TrangThai == TrangThaiPhieu.HoanThanh)
+                        {
+                            p.TongChiPhi = chiPhiMacDinh[k % chiPhiMacDinh.Length];
+                        }
+                    }
+                    context.SaveChanges();
+                }
                 return;
             }
 

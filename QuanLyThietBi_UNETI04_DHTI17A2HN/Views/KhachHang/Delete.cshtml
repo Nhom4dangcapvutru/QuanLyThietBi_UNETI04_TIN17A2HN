@@ -1,4 +1,4 @@
-﻿@* 
+@* 
     Họ và tên: Nguyễn Thị Thảo
     Mã sinh viên: 23103100092
     Nội dung thực hiện: View xác nhận xóa khách hàng
@@ -31,11 +31,11 @@
         <ul class="mb-0 mt-2">
             @if (coThietBi)
             {
-                <li>Khách hàng đang có <strong>@Model.ThietBis.Count thiết bị</strong> trong hệ thống.</li>
+                <li>Khách hàng đang có <strong>@(Model.ThietBis?.Count ?? 0) thiết bị</strong> trong hệ thống.</li>
             }
             @if (coPhieu)
             {
-                <li>Khách hàng đang có <strong>@Model.PhieuSuaChuas.Count phiếu sửa chữa</strong> trong hệ thống.</li>
+                <li>Khách hàng đang có <strong>@(Model.PhieuSuaChuas?.Count ?? 0) phiếu sửa chữa</strong> trong hệ thống.</li>
             }
         </ul>
         <p class="mb-0 mt-2">Vui lòng xóa thiết bị và phiếu sửa chữa trước khi xóa khách hàng.</p>

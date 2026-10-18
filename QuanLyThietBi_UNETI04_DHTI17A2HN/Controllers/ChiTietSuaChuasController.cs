@@ -1,21 +1,46 @@
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 
-public class ChiTietSuaChuasController : Controller
+namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 {
-    private readonly ApplicationDbContext _context;
-
-    public ChiTietSuaChuasController(ApplicationDbContext context)
+    public class ChiTietSuaChuasController : BaseController
     {
-        _context = context;
-    }
+        private readonly ApplicationDbContext _context;
 
-    public async Task<IActionResult> Index()
-    {
+        public ChiTietSuaChuasController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            var vaiTro = context.HttpContext.Session.GetString("VaiTro");
+            if (string.IsNullOrEmpty(vaiTro))
+            {
+                var returnUrl = context.HttpContext.Request.Path + context.HttpContext.Request.QueryString;
+                TempData["ErrorMessage"] = "Vui lòng đăng nhập để tiếp tục.";
+                context.Result = RedirectToAction("Login", "Account", new { returnUrl = returnUrl.ToString() });
+                return;
+            }
+
+            if (vaiTro != VaiTroConstant.Admin && vaiTro != VaiTroConstant.KyThuatVien)
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền truy cập chức năng này. Chỉ Admin và Kỹ thuật viên mới được quản lý chi tiết sửa chữa.";
+                context.Result = RedirectToAction("AccessDenied", "Account");
+                return;
+            }
+
+            base.OnActionExecuting(context);
+        }
+
+        public async Task<IActionResult> Index()
+        {
         var data = await _context.ChiTietSuaChuas
             .Include(c => c.PhieuSuaChua)
             .Include(c => c.LinhKien)
@@ -386,8 +411,8 @@ public class ChiTietSuaChuasController : Controller
             maPhieu);
 
         var kyThuatVienList = await _context.TaiKhoans
-            .Where(t => t.VaiTro == "NhanVien"
-                     || t.VaiTro == "KyThuatVien")
+            .Where(t => t.VaiTro == VaiTroConstant.KyThuatVien
+                     || t.VaiTro == VaiTroConstant.Admin)
             .OrderBy(t => t.HoTen)
             .ToListAsync();
 
@@ -409,4 +434,4 @@ public class ChiTietSuaChuasController : Controller
             maLinhKien);
     }
 }
-
+}

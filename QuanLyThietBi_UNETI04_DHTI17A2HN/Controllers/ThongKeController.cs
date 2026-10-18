@@ -1,5 +1,6 @@
-﻿
+
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
@@ -7,7 +8,7 @@ using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModel;
 
 namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 {
-    public class ThongKeController : Controller
+    public class ThongKeController : BaseController
     {
         private readonly ApplicationDbContext _context;
 
@@ -16,16 +17,30 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             _context = context;
         }
 
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            var vaiTro = context.HttpContext.Session.GetString("VaiTro");
+            if (string.IsNullOrEmpty(vaiTro))
+            {
+                var returnUrl = context.HttpContext.Request.Path + context.HttpContext.Request.QueryString;
+                TempData["ErrorMessage"] = "Vui lòng đăng nhập để tiếp tục.";
+                context.Result = RedirectToAction("Login", "Account", new { returnUrl = returnUrl.ToString() });
+                return;
+            }
+
+            if (vaiTro != VaiTroConstant.Admin && vaiTro != VaiTroConstant.KyThuatVien)
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền truy cập trang Thống kê. Chỉ Admin và Kỹ thuật viên mới có quyền xem.";
+                context.Result = RedirectToAction("AccessDenied", "Account");
+                return;
+            }
+
+            base.OnActionExecuting(context);
+        }
+
         // GET: /ThongKe
         public async Task<IActionResult> Index()
         {
-            //var vaiTro = HttpContext.Session.GetString("VaiTro");
-            //if (string.IsNullOrEmpty(vaiTro) ||
-            //    (vaiTro != VaiTroConstant.Admin && vaiTro != VaiTroConstant.KyThuatVien))
-            //{
-            //    return RedirectToAction("Login", "TaiKhoan");
-            //}
-
             var model = new ThongKeViewModel();
 
        

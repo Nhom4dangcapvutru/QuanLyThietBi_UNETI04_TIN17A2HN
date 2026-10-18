@@ -60,6 +60,22 @@
                         <li class="nav-item">
                             <a class="nav-link text-primary fw-bold" asp-controller="XuLySuaChua" asp-action="Index">⚙️ Xử lý sửa chữa</a>
                         </li>
+
+                        @* Module 5: Báo cáo, Thống kê & Chi tiết sửa chữa *@
+                        @if (isLogged && (vaiTro == VaiTroConstant.Admin || vaiTro == VaiTroConstant.KyThuatVien))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark fw-semibold" href="#" id="module5Dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    📊 Báo cáo & Thống kê
+                                </a>
+                                <ul class="dropdown-menu shadow" aria-labelledby="module5Dropdown">
+                                    <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Index">📈 Dashboard Tổng quan</a></li>
+                                    <li><a class="dropdown-item" asp-controller="ThongKe" asp-action="Index">📊 Thống kê chi tiết</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="ChiTietSuaChuas" asp-action="Index">🔩 Chi tiết sửa chữa</a></li>
+                                </ul>
+                            </li>
+                        }
                     </ul>
 
                     @* Khu vực tài khoản / Đăng nhập bên phải *@
