@@ -1,8 +1,7 @@
-﻿// Họ và tên: Bùi Thị Thu Trang
+// Họ và tên: Bùi Thị Thu Trang
 // Mã sinh viên: 23103100103
 // Nội dung thực hiện: BaseController - Kiểm tra đăng nhập + phân quyền
-// ĐÃ SỬA: Cho phép PUBLIC controller (Home, Account) chạy không cần login
-//         Redirect login kèm returnUrl để quay lại đúng trang
+// ĐÃ SỬA: Bảo mật toàn diện hệ thống, bắt buộc đăng nhập mọi controller (trừ Account)
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -15,7 +14,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         // ✅ DANH SÁCH CONTROLLER PUBLIC - Không cần đăng nhập
         private static readonly HashSet<string> PublicControllers = new(StringComparer.OrdinalIgnoreCase)
         {
-            "Home",      // Trang chủ, giới thiệu, dịch vụ
             "Account"    // Login, Logout, Register, AccessDenied
         };
 
@@ -24,6 +22,15 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         {
             "TaiKhoan",
             "LoaiThietBi"
+        };
+
+        // ✅ CÁC CONTROLLER NHÂN VIÊN/ADMIN - Khách hàng không được truy cập
+        private static readonly HashSet<string> StaffOnlyControllers = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Dashboard",
+            "XuLySuaChua",
+            "ThongKe",
+            "ChiTietSuaChuas"
         };
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -55,6 +62,14 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             if (AdminOnlyControllers.Contains(controller) && vaiTro != VaiTroConstant.Admin)
             {
                 TempData["Error"] = "Bạn không có quyền truy cập chức năng này.";
+                context.Result = RedirectToAction("AccessDenied", "Account");
+                return;
+            }
+
+            // 4. Phân quyền NHÂN VIÊN / ADMIN (Khách hàng không được truy cập)
+            if (StaffOnlyControllers.Contains(controller) && vaiTro != VaiTroConstant.Admin && vaiTro != VaiTroConstant.KyThuatVien)
+            {
+                TempData["Error"] = "Bạn không có quyền truy cập vào phân hệ quản trị kỹ thuật.";
                 context.Result = RedirectToAction("AccessDenied", "Account");
                 return;
             }

@@ -1,6 +1,8 @@
 @model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModel.DashboardViewModel
+@using QuanLyThietBi_UNETI04_DHTI17A2HN.Helpers
 @{
-    ViewData["Title"] = "Dashboard Trung tâm Sửa chữa";
+    bool isKhachHang = SessionHelper.IsKhachHang(Context.Session);
+    ViewData["Title"] = isKhachHang ? "Cổng Dịch vụ Khách hàng" : "Dashboard Trung tâm Sửa chữa";
     var hoTen = Context.Session.GetString("HoTen");
     var vaiTro = Context.Session.GetString("VaiTro");
     
@@ -15,33 +17,57 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
-                <h3 class="fw-bold mb-0 text-dark">Trung tâm Điều hành & Quản lý Sửa chữa</h3>
-                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                    <i class="bi bi-broadcast me-1"></i>Trực quan thời gian thực
-                </span>
+                @if (isKhachHang)
+                {
+                    <h3 class="fw-bold mb-0 text-dark">Cổng Dịch vụ Khách hàng</h3>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                        <i class="bi bi-person-check me-1"></i>Khách hàng: @hoTen
+                    </span>
+                }
+                else
+                {
+                    <h3 class="fw-bold mb-0 text-dark">Trung tâm Điều hành & Quản lý Sửa chữa</h3>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                        <i class="bi bi-broadcast me-1"></i>Trực quan thời gian thực
+                    </span>
+                }
             </div>
-            <p class="text-muted small mb-0">Hệ thống theo dõi quy trình bảo hành, tiếp nhận thiết bị và tiến độ xử lý kỹ thuật UNETI</p>
+            <p class="text-muted small mb-0">
+                @(isKhachHang 
+                    ? "Theo dõi tình trạng thiết bị cá nhân, đăng ký sửa chữa bảo hành và tiến độ xử lý kỹ thuật" 
+                    : "Hệ thống theo dõi quy trình bảo hành, tiếp nhận thiết bị và tiến độ xử lý kỹ thuật UNETI")
+            </p>
         </div>
         <div class="d-flex align-items-center gap-2">
             <a asp-controller="PhieuSuaChua" asp-action="Create" class="btn btn-primary btn-sm d-flex align-items-center gap-2 shadow-sm px-3 py-2">
                 <i class="bi bi-plus-circle-fill"></i>
-                <span class="fw-semibold">Tiếp nhận phiếu mới</span>
+                <span class="fw-semibold">@(isKhachHang ? "Tạo phiếu sửa chữa" : "Tiếp nhận phiếu mới")</span>
             </a>
-            <a asp-controller="ThongKe" asp-action="Index" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2 px-3 py-2">
-                <i class="bi bi-bar-chart-line-fill"></i>
-                <span>Thống kê chi tiết</span>
-            </a>
+            @if (isKhachHang)
+            {
+                <a asp-controller="Profile" asp-action="Index" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2 px-3 py-2">
+                    <i class="bi bi-person-badge"></i>
+                    <span>Hồ sơ của tôi</span>
+                </a>
+            }
+            else
+            {
+                <a asp-controller="ThongKe" asp-action="Index" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2 px-3 py-2">
+                    <i class="bi bi-bar-chart-line-fill"></i>
+                    <span>Thống kê chi tiết</span>
+                </a>
+            }
         </div>
     </div>
 
     <!-- HÀNG THẺ KPI METRICS (4 CỘT) -->
     <div class="row g-3 mb-4">
-        <!-- KPI 1: Tổng thiết bị -->
+        <!-- KPI 1: Thiết bị -->
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="card card-enterprise h-100 p-3 mb-0">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold text-uppercase">Tổng thiết bị</span>
+                        <span class="text-muted small fw-semibold text-uppercase">@(isKhachHang ? "Thiết bị của tôi" : "Tổng thiết bị")</span>
                         <h2 class="fw-bold text-dark my-1">@Model.TongSoThietBi</h2>
                         <span class="text-muted small">
                             <i class="bi bi-check-circle-fill text-success me-1"></i>@Model.SoThietBiKhaDung hoạt động
@@ -80,7 +106,7 @@
                         <span class="text-muted small fw-semibold text-uppercase">Đang xử lý</span>
                         <h2 class="fw-bold text-primary my-1">@Model.SoGiaoDichDangXuLy</h2>
                         <span class="text-muted small">
-                            <i class="bi bi-wrench-adjustable me-1"></i>KTV đang thao tác
+                            <i class="bi bi-wrench-adjustable me-1"></i>@(isKhachHang ? "Đang được xử lý" : "KTV đang thao tác")
                         </span>
                     </div>
                     <div style="width: 48px; height: 48px; border-radius: 12px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
@@ -98,7 +124,7 @@
                         <span class="text-muted small fw-semibold text-uppercase">Đã hoàn thành</span>
                         <h2 class="fw-bold text-success my-1">@Model.SoGiaoDichHoanThanh</h2>
                         <span class="text-muted small">
-                            <i class="bi bi-check2-all me-1"></i>Sẵn sàng bàn giao
+                            <i class="bi bi-check2-all me-1"></i>Sẵn sàng nhận máy
                         </span>
                     </div>
                     <div style="width: 48px; height: 48px; border-radius: 12px; background: #dcfce7; color: #15803d; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
@@ -109,46 +135,67 @@
         </div>
     </div>
 
-    <!-- BANNER DOANH THU & CHỈ SỐ NHANH -->
+    <!-- BANNER TỔNG HỢP CHI PHÍ / DOANH THU -->
     <div class="card card-enterprise p-4 mb-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; border: none;">
         <div class="row align-items-center g-3">
             <div class="col-md-7">
                 <span class="text-uppercase small fw-bold" style="color: #94a3b8; letter-spacing: 0.05em;">
-                    <i class="bi bi-cash-stack me-1"></i>Tổng doanh thu dịch vụ sửa chữa thực tế
+                    <i class="bi bi-cash-stack me-1"></i>
+                    @(isKhachHang ? "Tổng chi phí sửa chữa của bạn" : "Tổng doanh thu dịch vụ sửa chữa thực tế")
                 </span>
                 <div class="display-6 fw-bold text-warning my-1">
                     @Model.TongGiaTriPhatSinh.ToString("N0") <span class="fs-4 text-light fw-normal">VNĐ</span>
                 </div>
                 <div class="small text-muted" style="color: #cbd5e1 !important;">
-                    Số liệu doanh thu tổng hợp từ tất cả các phiếu sửa chữa đã nghiệm thu và hoàn tất bàn giao cho khách hàng.
+                    @(isKhachHang 
+                        ? "Tổng chi phí tích lũy từ các phiếu sửa chữa của bạn đã được kỹ thuật viên hoàn tất nghiệm thu." 
+                        : "Số liệu doanh thu tổng hợp từ tất cả các phiếu sửa chữa đã nghiệm thu và hoàn tất bàn giao cho khách hàng.")
                 </div>
             </div>
             <div class="col-md-5 d-flex flex-wrap justify-content-md-end gap-2">
-                <div class="bg-dark bg-opacity-50 p-3 rounded-3 text-center border border-secondary" style="min-width: 120px;">
-                    <span class="d-block small text-muted">Tổng số phiếu</span>
-                    <strong class="fs-5 text-white">@Model.TongSoGiaoDich</strong>
-                </div>
-                <div class="bg-dark bg-opacity-50 p-3 rounded-3 text-center border border-secondary" style="min-width: 120px;">
-                    <span class="d-block small text-muted">Khách hàng</span>
-                    <strong class="fs-5 text-info">@Model.TongSoKhachHang</strong>
-                </div>
-                <div class="bg-dark bg-opacity-50 p-3 rounded-3 text-center border border-secondary" style="min-width: 120px;">
-                    <span class="d-block small text-muted">Loại thiết bị</span>
-                    <strong class="fs-5 text-primary">@Model.TongSoLoaiThietBi</strong>
-                </div>
+                @if (isKhachHang)
+                {
+                    <div class="bg-dark bg-opacity-50 p-3 rounded-3 text-center border border-secondary" style="min-width: 120px;">
+                        <span class="d-block small text-muted">Phiếu của tôi</span>
+                        <strong class="fs-5 text-white">@Model.TongSoGiaoDich</strong>
+                    </div>
+                    <div class="bg-dark bg-opacity-50 p-3 rounded-3 text-center border border-secondary" style="min-width: 120px;">
+                        <span class="d-block small text-muted">Đang xử lý</span>
+                        <strong class="fs-5 text-warning">@Model.SoGiaoDichDangXuLy</strong>
+                    </div>
+                    <div class="bg-dark bg-opacity-50 p-3 rounded-3 text-center border border-secondary" style="min-width: 120px;">
+                        <span class="d-block small text-muted">Đã xong</span>
+                        <strong class="fs-5 text-success">@Model.SoGiaoDichHoanThanh</strong>
+                    </div>
+                }
+                else
+                {
+                    <div class="bg-dark bg-opacity-50 p-3 rounded-3 text-center border border-secondary" style="min-width: 120px;">
+                        <span class="d-block small text-muted">Tổng số phiếu</span>
+                        <strong class="fs-5 text-white">@Model.TongSoGiaoDich</strong>
+                    </div>
+                    <div class="bg-dark bg-opacity-50 p-3 rounded-3 text-center border border-secondary" style="min-width: 120px;">
+                        <span class="d-block small text-muted">Khách hàng</span>
+                        <strong class="fs-5 text-info">@Model.TongSoKhachHang</strong>
+                    </div>
+                    <div class="bg-dark bg-opacity-50 p-3 rounded-3 text-center border border-secondary" style="min-width: 120px;">
+                        <span class="d-block small text-muted">Loại thiết bị</span>
+                        <strong class="fs-5 text-primary">@Model.TongSoLoaiThietBi</strong>
+                    </div>
+                }
             </div>
         </div>
     </div>
 
     <!-- HÀNG BIỂU ĐỒ THỐNG KÊ (CHART.JS) -->
     <div class="row g-4 mb-4">
-        <!-- Biểu đồ cột: Xu hướng số lượng & doanh thu -->
+        <!-- Biểu đồ cột: Xu hướng -->
         <div class="col-12 col-lg-8">
             <div class="card card-enterprise h-100 mb-0">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <div>
                         <i class="bi bi-graph-up text-primary me-2"></i>
-                        <span>Xu hướng tiếp nhận phiếu & Doanh thu 6 tháng gần nhất</span>
+                        <span>@(isKhachHang ? "Lịch sử tiếp nhận phiếu 6 tháng gần nhất của bạn" : "Xu hướng tiếp nhận phiếu & Doanh thu 6 tháng gần nhất")</span>
                     </div>
                     <span class="badge bg-light text-secondary border">Chart.js</span>
                 </div>
@@ -163,7 +210,7 @@
             <div class="card card-enterprise h-100 mb-0">
                 <div class="card-header">
                     <i class="bi bi-pie-chart text-info me-2"></i>
-                    <span>Cơ cấu trạng thái phiếu</span>
+                    <span>@(isKhachHang ? "Tỷ lệ trạng thái phiếu của bạn" : "Cơ cấu trạng thái phiếu")</span>
                 </div>
                 <div class="card-body d-flex flex-column align-items-center justify-content-center">
                     <div style="position: relative; width: 220px; height: 220px;">
@@ -193,11 +240,11 @@
         <div class="card-header d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-inbox-fill text-primary"></i>
-                <span class="fw-bold">Phiếu sửa chữa mới tiếp nhận gần đây</span>
+                <span class="fw-bold">@(isKhachHang ? "Phiếu sửa chữa gần đây của bạn" : "Phiếu sửa chữa mới tiếp nhận gần đây")</span>
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Mới nhất</span>
             </div>
             <a asp-controller="PhieuSuaChua" asp-action="Index" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
-                <span>Xem tất cả phiếu</span>
+                <span>@(isKhachHang ? "Xem tất cả phiếu của tôi" : "Xem tất cả phiếu")</span>
                 <i class="bi bi-arrow-right"></i>
             </a>
         </div>
@@ -206,7 +253,10 @@
                 <thead>
                     <tr>
                         <th style="width: 90px;">Mã phiếu</th>
-                        <th>Khách hàng</th>
+                        @if (!isKhachHang)
+                        {
+                            <th>Khách hàng</th>
+                        }
                         <th>Thiết bị & Serial</th>
                         <th>Nội dung sự cố</th>
                         <th>Trạng thái</th>
@@ -224,10 +274,13 @@
                                 <td>
                                     <span class="fw-bold text-dark font-monospace">#@p.MaPhieu</span>
                                 </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">@(p.KhachHang?.HoTen ?? "Khách vãng lai")</div>
-                                    <small class="text-muted">@(p.KhachHang?.SoDienThoai ?? "—")</small>
-                                </td>
+                                @if (!isKhachHang)
+                                {
+                                    <td>
+                                        <div class="fw-semibold text-dark">@(p.KhachHang?.HoTen ?? "Khách vãng lai")</div>
+                                        <small class="text-muted">@(p.KhachHang?.SoDienThoai ?? "—")</small>
+                                    </td>
+                                }
                                 <td>
                                     <div class="fw-medium text-dark">@(p.ThietBi?.TenThietBi ?? "Thiết bị #" + p.MaThietBi)</div>
                                     <small class="text-muted font-monospace">S/N: @(p.ThietBi?.SerialNumber ?? "—")</small>
@@ -295,8 +348,8 @@
                     else
                     {
                         <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">
-                                Chưa có phiếu sửa chữa nào trong hệ thống.
+                            <td colspan="@(isKhachHang ? 7 : 8)" class="text-center py-4 text-muted">
+                                @(isKhachHang ? "Bạn chưa có phiếu sửa chữa nào trong hệ thống." : "Chưa có phiếu sửa chữa nào trong hệ thống.")
                             </td>
                         </tr>
                     }
@@ -304,8 +357,6 @@
             </table>
         </div>
     </div>
-
-
 </div>
 
 <!-- Chart.js Script -->
@@ -319,49 +370,54 @@
                 const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ThangLabels));
                 const dataPhieu = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SoPhieuTheoThangData));
                 const dataDoanhThu = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DoanhThuTheoThangData));
+                const isCustomer = @(isKhachHang ? "true" : "false");
+
+                const datasets = [
+                    {
+                        label: isCustomer ? 'Phiếu sửa chữa của bạn' : 'Số phiếu tiếp nhận',
+                        data: dataPhieu,
+                        backgroundColor: 'rgba(59, 130, 246, 0.75)',
+                        borderColor: '#2563eb',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        yAxisID: 'y'
+                    }
+                ];
+
+                if (!isCustomer) {
+                    datasets.push({
+                        label: 'Doanh thu (VNĐ)',
+                        data: dataDoanhThu,
+                        type: 'line',
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                        fill: true,
+                        tension: 0.35,
+                        yAxisID: 'y1'
+                    });
+                }
 
                 new Chart(ctxTrend, {
                     type: 'bar',
                     data: {
                         labels: labels,
-                        datasets: [
-                            {
-                                label: 'Số phiếu tiếp nhận',
-                                data: dataPhieu,
-                                backgroundColor: 'rgba(59, 130, 246, 0.75)',
-                                borderColor: '#2563eb',
-                                borderWidth: 1,
-                                borderRadius: 6,
-                                yAxisID: 'y'
-                            },
-                            {
-                                label: 'Doanh thu (VNĐ)',
-                                data: dataDoanhThu,
-                                type: 'line',
-                                borderColor: '#f59e0b',
-                                backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                                fill: true,
-                                tension: 0.35,
-                                yAxisID: 'y1'
-                            }
-                        ]
+                        datasets: datasets
                     },
                     options: {
                         responsive: true,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false
-                        },
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
                         scales: {
                             y: {
                                 type: 'linear',
                                 display: true,
                                 position: 'left',
-                                title: { display: true, text: 'Số phiếu' }
+                                title: { display: true, text: 'Số lượng phiếu' },
+                                ticks: { stepSize: 1, precision: 0 }
                             },
                             y1: {
                                 type: 'linear',
-                                display: true,
+                                display: !isCustomer,
                                 position: 'right',
                                 grid: { drawOnChartArea: false },
                                 title: { display: true, text: 'Doanh thu (VNĐ)' },
@@ -376,7 +432,7 @@
                 });
             }
 
-            // 2. Biểu đồ Doughnut tỷ lệ trạng thái phiếu
+            // 2. Biểu đồ tròn (Doughnut): Cơ cấu trạng thái phiếu
             const ctxStatus = document.getElementById('chartStatus');
             if (ctxStatus) {
                 new Chart(ctxStatus, {
@@ -398,10 +454,8 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        cutout: '65%'
+                        plugins: { legend: { display: false } },
+                        cutout: '70%'
                     }
                 });
             }
