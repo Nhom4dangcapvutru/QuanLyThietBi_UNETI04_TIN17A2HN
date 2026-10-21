@@ -15,7 +15,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 {
     public class ThietBiController : BaseController
     {
-        private const int PageSize = 6; // Số lượng bản ghi trên 1 trang
+        private const int PageSize = 6; // Số lượng bản ghi trên 1 trang  
         private readonly ApplicationDbContext _context;
 
         public ThietBiController(ApplicationDbContext context)
