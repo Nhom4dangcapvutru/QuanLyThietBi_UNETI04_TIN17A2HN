@@ -1,8 +1,22 @@
-﻿@{
+@{
     ViewData["Title"] = "Từ chối truy cập";
 }
-<div class="container mt-5 text-center">
-    <h1 class="text-danger">🚫 Truy cập bị từ chối</h1>
-    <p class="lead">Bạn không có quyền truy cập chức năng này.</p>
-    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Về trang chủ</a>
+
+<div class="card-enterprise mx-auto mt-5 text-center p-5" style="max-width: 540px;">
+    <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3"
+         style="width: 72px; height: 72px; background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+        <i class="bi bi-shield-lock-fill fs-1"></i>
+    </div>
+    <h3 class="fw-bold text-danger mb-2">Truy cập bị từ chối</h3>
+    <p class="text-muted mb-4">
+        Tài khoản của bạn không được cấp quyền để truy cập phân hệ hoặc thực hiện thao tác này.
+    </p>
+    <div class="d-flex justify-content-center gap-2">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary px-4">
+            <i class="bi bi-house-door me-1"></i> Về trang chủ
+        </a>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary px-4">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại
+        </a>
+    </div>
 </div>

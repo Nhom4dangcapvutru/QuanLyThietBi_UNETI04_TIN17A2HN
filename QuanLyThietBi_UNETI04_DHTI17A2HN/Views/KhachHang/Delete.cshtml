@@ -9,96 +9,111 @@
 @{
     ViewData["Title"] = "Xóa khách hàng";
 
-    // Kiểm tra có thể xóa hay không
     bool coThietBi = Model.ThietBis != null && Model.ThietBis.Any();
     bool coPhieu = Model.PhieuSuaChuas != null && Model.PhieuSuaChuas.Any();
     bool coTheXoa = !coThietBi && !coPhieu;
 }
 
-<h2 class="mb-4 text-danger">🗑️ Xóa khách hàng</h2>
-
-@* ==================== CẢNH BÁO CHUNG ==================== *@
-<div class="alert alert-warning">
-    <strong>⚠️ Cảnh báo:</strong> Bạn có chắc chắn muốn xóa khách hàng này không?
-    Hành động này không thể hoàn tác.
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1 text-danger">
+            <i class="bi bi-trash-fill me-2"></i>Xác nhận xóa khách hàng #@Model.MaKhachHang
+        </h3>
+        <p class="text-muted small mb-0">Kiểm tra ràng buộc dữ liệu trước khi xóa tài khoản khỏi hệ thống</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
 </div>
 
-@* ==================== CẢNH BÁO NGHIỆP VỤ ==================== *@
+<div class="alert alert-warning d-flex align-items-center mb-4">
+    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+    <div>
+        <strong>Cảnh báo:</strong> Thao tác xóa khách hàng không thể hoàn tác nếu không có bản sao lưu.
+    </div>
+</div>
+
 @if (!coTheXoa)
 {
-    <div class="alert alert-danger">
-        <strong>❌ Không thể xóa!</strong>
-        <ul class="mb-0 mt-2">
-            @if (coThietBi)
-            {
-                <li>Khách hàng đang có <strong>@(Model.ThietBis?.Count ?? 0) thiết bị</strong> trong hệ thống.</li>
-            }
-            @if (coPhieu)
-            {
-                <li>Khách hàng đang có <strong>@(Model.PhieuSuaChuas?.Count ?? 0) phiếu sửa chữa</strong> trong hệ thống.</li>
-            }
-        </ul>
-        <p class="mb-0 mt-2">Vui lòng xóa thiết bị và phiếu sửa chữa trước khi xóa khách hàng.</p>
+    <div class="alert alert-danger d-flex align-items-start mb-4">
+        <i class="bi bi-x-circle-fill me-2 fs-5 mt-1"></i>
+        <div>
+            <strong>Không thể xóa khách hàng này:</strong>
+            <ul class="mb-1 mt-1 ps-3">
+                @if (coThietBi)
+                {
+                    <li>Khách hàng đang sở hữu <strong>@(Model.ThietBis?.Count ?? 0) thiết bị</strong> trong hệ thống.</li>
+                }
+                @if (coPhieu)
+                {
+                    <li>Khách hàng đang có <strong>@(Model.PhieuSuaChuas?.Count ?? 0) phiếu sửa chữa</strong> đã lưu.</li>
+                }
+            </ul>
+            <small>Quy tắc toàn vẹn dữ liệu yêu cầu xóa hoặc chuyển giao thiết bị & phiếu trước khi xóa khách hàng.</small>
+        </div>
     </div>
 }
 
-@* ==================== THÔNG TIN KHÁCH HÀNG ==================== *@
-<div class="card mb-4">
-    <div class="card-header bg-danger text-white">
-        <strong>Thông tin khách hàng cần xóa</strong>
-    </div>
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-3">Mã khách hàng</dt>
-            <dd class="col-sm-9">@Model.MaKhachHang</dd>
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card-enterprise mb-4">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <span class="fw-bold text-danger">
+                    <i class="bi bi-person-x me-2"></i>Dữ liệu hồ sơ sẽ bị xóa
+                </span>
+            </div>
+            <div class="card-body p-4">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted small">Mã khách hàng:</dt>
+                    <dd class="col-sm-8"><span class="badge bg-light text-dark border">#@Model.MaKhachHang</span></dd>
 
-            <dt class="col-sm-3">Họ và tên</dt>
-            <dd class="col-sm-9"><strong>@Model.HoTen</strong></dd>
+                    <dt class="col-sm-4 text-muted small">Họ và tên:</dt>
+                    <dd class="col-sm-8 fw-bold text-dark">@Model.HoTen</dd>
 
-            <dt class="col-sm-3">Số điện thoại</dt>
-            <dd class="col-sm-9">@Model.SoDienThoai</dd>
+                    <dt class="col-sm-4 text-muted small">Số điện thoại:</dt>
+                    <dd class="col-sm-8">@Model.SoDienThoai</dd>
 
-            <dt class="col-sm-3">Email</dt>
-            <dd class="col-sm-9">@Model.Email</dd>
+                    <dt class="col-sm-4 text-muted small">Email:</dt>
+                    <dd class="col-sm-8">@Model.Email</dd>
 
-            <dt class="col-sm-3">Địa chỉ</dt>
-            <dd class="col-sm-9">@(Model.DiaChi ?? "Chưa cập nhật")</dd>
+                    <dt class="col-sm-4 text-muted small">Loại khách hàng:</dt>
+                    <dd class="col-sm-8">@Model.LoaiKhachHang</dd>
 
-            <dt class="col-sm-3">Loại khách hàng</dt>
-            <dd class="col-sm-9">@Model.LoaiKhachHang</dd>
+                    <dt class="col-sm-4 text-muted small">Địa chỉ:</dt>
+                    <dd class="col-sm-8">@(Model.DiaChi ?? "Chưa cập nhật")</dd>
 
-            <dt class="col-sm-3">Trạng thái</dt>
-            <dd class="col-sm-9">@Model.TrangThai</dd>
+                    <dt class="col-sm-4 text-muted small">Ngày đăng ký:</dt>
+                    <dd class="col-sm-8">@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</dd>
+                </dl>
+            </div>
+            <div class="card-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center border-top">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+                </a>
 
-            <dt class="col-sm-3">Ngày tạo</dt>
-            <dd class="col-sm-9">@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</dd>
+                <div class="d-flex gap-2">
+                    <a asp-action="Details" asp-route-id="@Model.MaKhachHang" class="btn btn-outline-primary">
+                        <i class="bi bi-eye me-1"></i> Xem chi tiết
+                    </a>
 
-            <dt class="col-sm-3">Số thiết bị</dt>
-            <dd class="col-sm-9">@(Model.ThietBis?.Count ?? 0)</dd>
-
-            <dt class="col-sm-3">Số phiếu sửa chữa</dt>
-            <dd class="col-sm-9">@(Model.PhieuSuaChuas?.Count ?? 0)</dd>
-        </dl>
+                    <form asp-action="Delete" method="post" class="m-0">
+                        <input type="hidden" asp-for="MaKhachHang" />
+                        @if (coTheXoa)
+                        {
+                            <button type="submit" class="btn btn-danger"
+                                    onclick="return confirm('Bạn có chắc chắn muốn xóa khách hàng @Model.HoTen không?');">
+                                <i class="bi bi-trash me-1"></i> Xác nhận xóa
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-danger" disabled title="Bị chặn do ràng buộc dữ liệu">
+                                <i class="bi bi-slash-circle me-1"></i> Bị khóa xóa
+                            </button>
+                        }
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-
-@* ==================== FORM XÁC NHẬN XÓA ==================== *@
-<form asp-action="Delete" method="post" class="mt-4">
-    <input type="hidden" asp-for="MaKhachHang" />
-
-    @if (coTheXoa)
-    {
-        <button type="submit" class="btn btn-danger">
-            🗑️ Xác nhận xóa
-        </button>
-    }
-    else
-    {
-        <button type="button" class="btn btn-danger" disabled>
-            🗑️ Không thể xóa
-        </button>
-    }
-
-    <a asp-action="Index" class="btn btn-secondary">↩ Quay lại danh sách</a>
-    <a asp-action="Details" asp-route-id="@Model.MaKhachHang" class="btn btn-info">👁️ Xem chi tiết</a>
-</form>

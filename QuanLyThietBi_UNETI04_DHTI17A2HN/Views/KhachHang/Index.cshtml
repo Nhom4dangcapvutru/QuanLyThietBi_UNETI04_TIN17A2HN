@@ -10,210 +10,244 @@
     ViewData["Title"] = "Quản lý khách hàng";
 }
 
-<h2 class="mb-4">📋 Danh sách khách hàng</h2>
-
-@* ==================== THÔNG BÁO ==================== *@
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show">
-        @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<div class="container-fluid px-0">
+    <!-- TIÊU ĐỀ & NÚT THÊM MỚI -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 text-dark">Hồ sơ Khách hàng</h3>
+            <p class="text-muted small mb-0">Quản trị danh bạ khách hàng cá nhân, doanh nghiệp và lịch sử thiết bị gửi sửa</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a asp-action="Create" class="btn btn-primary btn-sm d-flex align-items-center gap-2 shadow-sm px-3 py-2">
+                <i class="bi bi-person-plus-fill"></i>
+                <span class="fw-semibold">Thêm khách hàng mới</span>
+            </a>
+        </div>
     </div>
-}
 
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show">
-        @TempData["ErrorMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-@* ==================== FORM TÌM KIẾM / LỌC / SẮP XẾP ==================== *@
-<div class="card mb-4">
-    <div class="card-body">
-        <form method="get" asp-action="Index">
-            <div class="row g-3">
-                @* Từ khóa *@
-                <div class="col-md-4">
-                    <label class="form-label">Từ khóa</label>
-                    <input type="text" name="tuKhoa" value="@Model.TuKhoa"
-                           class="form-control" placeholder="Tên, SĐT, Email, CCCD..." />
-                </div>
-
-                @* Loại khách hàng *@
-                <div class="col-md-2">
-                    <label class="form-label">Loại KH</label>
-                    <select name="loaiKhachHang" class="form-select">
-                        <option value="">-- Tất cả --</option>
-                        @foreach (var loai in Model.DanhSachLoaiKhachHang)
-                        {
-                            <option value="@loai" selected="@(Model.LoaiKhachHang == loai)">
-                                @loai
-                            </option>
-                        }
-                    </select>
-                </div>
-
-                @* Trạng thái *@
-                <div class="col-md-2">
-                    <label class="form-label">Trạng thái</label>
-                    <select name="trangThai" class="form-select">
-                        <option value="">-- Tất cả --</option>
-                        @foreach (var tt in Model.DanhSachTrangThai)
-                        {
-                            <option value="@tt" selected="@(Model.TrangThai == tt)">
-                                @tt
-                            </option>
-                        }
-                    </select>
-                </div>
-
-                @* Sắp xếp *@
-                <div class="col-md-2">
-                    <label class="form-label">Sắp xếp</label>
-                    <select name="sapXep" class="form-select">
-                        <option value="">Mã KH ↑ (mặc định)</option>
-                        <option value="ten_asc" selected="@(Model.SapXep == "ten_asc")">Tên A→Z</option>
-                        <option value="ten_desc" selected="@(Model.SapXep == "ten_desc")">Tên Z→A</option>
-                        <option value="ngaytao_asc" selected="@(Model.SapXep == "ngaytao_asc")">Ngày tạo ↑</option>
-                        <option value="ngaytao_desc" selected="@(Model.SapXep == "ngaytao_desc")">Ngày tạo ↓</option>
-                    </select>
-                </div>
-
-                @* Nút *@
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">🔍 Tìm</button>
-                    <a asp-action="Index" class="btn btn-secondary">↺ Reset</a>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-@* ==================== NÚT THÊM MỚI + TỔNG SỐ ==================== *@
-<div class="d-flex justify-content-between mb-3">
-    <a asp-action="Create" class="btn btn-success">➕ Thêm khách hàng</a>
-    <div class="text-muted align-self-center">
-        Tổng: <strong>@Model.TongSoBanGhi</strong> khách hàng
-    </div>
-</div>
-
-@* ==================== BẢNG DANH SÁCH ==================== *@
-@if (Model.KhachHangs.Any())
-{
-    <table class="table table-striped table-hover table-bordered">
-        <thead class="table-dark">
-            <tr>
-                <th>Mã</th>
-                <th>Họ tên</th>
-                <th>Số điện thoại</th>
-                <th>Email</th>
-                <th>Loại KH</th>
-                <th>Trạng thái</th>
-                <th>Ngày tạo</th>
-                <th width="220">Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var kh in Model.KhachHangs)
-            {
-                <tr>
-                    <td>@kh.MaKhachHang</td>
-                    <td>@kh.HoTen</td>
-                    <td>@kh.SoDienThoai</td>
-                    <td>@kh.Email</td>
-                    <td>
-                        @if (kh.LoaiKhachHang == "Doanh nghiệp")
-                        {
-                            <span class="badge bg-info">@kh.LoaiKhachHang</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">@kh.LoaiKhachHang</span>
-                        }
-                    </td>
-                    <td>
-                        @if (kh.TrangThai == "Hoạt động")
-                        {
-                            <span class="badge bg-success">@kh.TrangThai</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-danger">@kh.TrangThai</span>
-                        }
-                    </td>
-                    <td>@kh.NgayTao.ToString("dd/MM/yyyy")</td>
-                    <td>
-                        <a asp-action="Details" asp-route-id="@kh.MaKhachHang"
-                           class="btn btn-sm btn-info">Chi tiết</a>
-                        <a asp-action="Edit" asp-route-id="@kh.MaKhachHang"
-                           class="btn btn-sm btn-warning">Sửa</a>
-                        <a asp-action="Delete" asp-route-id="@kh.MaKhachHang"
-                           class="btn btn-sm btn-danger">Xóa</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-
-    @* ==================== PHÂN TRANG ==================== *@
-    @if (Model.TongSoTrang > 1)
+    <!-- THÔNG BÁO -->
+    @if (TempData["SuccessMessage"] != null)
     {
-        <nav>
-            <ul class="pagination justify-content-center">
-                @* Trang trước *@
-                <li class="page-item @(Model.CoTrangTruoc ? "" : "disabled")">
-                    <a class="page-link"
-                       asp-action="Index"
-                       asp-route-tuKhoa="@Model.TuKhoa"
-                       asp-route-loaiKhachHang="@Model.LoaiKhachHang"
-                       asp-route-trangThai="@Model.TrangThai"
-                       asp-route-sapXep="@Model.SapXep"
-                       asp-route-trang="@(Model.TrangHienTai - 1)">
-                        « Trước
-                    </a>
-                </li>
-
-                @* Số trang *@
-                @for (int i = 1; i <= Model.TongSoTrang; i++)
-                {
-                    <li class="page-item @(i == Model.TrangHienTai ? "active" : "")">
-                        <a class="page-link"
-                           asp-action="Index"
-                           asp-route-tuKhoa="@Model.TuKhoa"
-                           asp-route-loaiKhachHang="@Model.LoaiKhachHang"
-                           asp-route-trangThai="@Model.TrangThai"
-                           asp-route-sapXep="@Model.SapXep"
-                           asp-route-trang="@i">
-                            @i
-                        </a>
-                    </li>
-                }
-
-                @* Trang sau *@
-                <li class="page-item @(Model.CoTrangSau ? "" : "disabled")">
-                    <a class="page-link"
-                       asp-action="Index"
-                       asp-route-tuKhoa="@Model.TuKhoa"
-                       asp-route-loaiKhachHang="@Model.LoaiKhachHang"
-                       asp-route-trangThai="@Model.TrangThai"
-                       asp-route-sapXep="@Model.SapXep"
-                       asp-route-trang="@(Model.TrangHienTai + 1)">
-                        Sau »
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
-        <div class="text-center text-muted">
-            Trang @Model.TrangHienTai / @Model.TongSoTrang
+        <div class="alert alert-success alert-dismissible fade show rounded-3 d-flex align-items-center gap-2 mb-3">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>@TempData["SuccessMessage"]</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
-}
-else
-{
-    <div class="alert alert-info text-center">
-        Không tìm thấy khách hàng nào phù hợp.
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 d-flex align-items-center gap-2 mb-3">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>@TempData["ErrorMessage"]</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- FORM TÌM KIẾM / LỌC / SẮP XẾP -->
+    <div class="card card-enterprise mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="Index">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary">Từ khóa tìm kiếm</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" name="tuKhoa" value="@Model.TuKhoa"
+                                   class="form-control border-start-0 ps-0" placeholder="Tên, SĐT, Email, CCCD..." />
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold text-secondary">Phân loại KH</label>
+                        <select name="loaiKhachHang" class="form-select">
+                            <option value="">-- Tất cả loại --</option>
+                            @foreach (var loai in Model.DanhSachLoaiKhachHang)
+                            {
+                                <option value="@loai" selected="@(Model.LoaiKhachHang == loai)">
+                                    @loai
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold text-secondary">Trạng thái hồ sơ</label>
+                        <select name="trangThai" class="form-select">
+                            <option value="">-- Tất cả trạng thái --</option>
+                            @foreach (var tt in Model.DanhSachTrangThai)
+                            {
+                                <option value="@tt" selected="@(Model.TrangThai == tt)">
+                                    @tt
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold text-secondary">Tiêu chí sắp xếp</label>
+                        <select name="sapXep" class="form-select">
+                            <option value="">Mã KH ↑ (mặc định)</option>
+                            <option value="ten_asc" selected="@(Model.SapXep == "ten_asc")">Tên A→Z</option>
+                            <option value="ten_desc" selected="@(Model.SapXep == "ten_desc")">Tên Z→A</option>
+                            <option value="ngaytao_asc" selected="@(Model.SapXep == "ngaytao_asc")">Ngày tạo ↑</option>
+                            <option value="ngaytao_desc" selected="@(Model.SapXep == "ngaytao_desc")">Ngày tạo ↓</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-1">
+                            <i class="bi bi-funnel"></i>
+                            <span>Lọc</span>
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" title="Làm mới">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
-}
+
+    <!-- BẢNG DANH SÁCH KHÁCH HÀNG -->
+    <div class="card card-enterprise">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="fw-bold">Danh sách khách hàng</span>
+            <span class="badge bg-light text-dark border">Tổng số: <strong>@Model.TongSoBanGhi</strong> khách hàng</span>
+        </div>
+
+        @if (Model.KhachHangs.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-enterprise mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">Mã KH</th>
+                            <th>Họ và tên</th>
+                            <th>Số điện thoại</th>
+                            <th>Email liên hệ</th>
+                            <th>Loại KH</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th class="text-center" style="width: 120px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var kh in Model.KhachHangs)
+                        {
+                            <tr>
+                                <td><span class="fw-bold font-monospace">#@kh.MaKhachHang</span></td>
+                                <td class="fw-semibold text-dark">@kh.HoTen</td>
+                                <td><span class="font-monospace">@kh.SoDienThoai</span></td>
+                                <td>@(string.IsNullOrEmpty(kh.Email) ? "—" : kh.Email)</td>
+                                <td>
+                                    @if (kh.LoaiKhachHang == "Doanh nghiệp")
+                                    {
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Doanh nghiệp</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-secondary border">@kh.LoaiKhachHang</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (kh.TrangThai == "Hoạt động")
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">@kh.TrangThai</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="text-secondary small">@kh.NgayTao.ToString("dd/MM/yyyy")</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-action-group justify-content-center">
+                                        <a asp-action="Details" asp-route-id="@kh.MaKhachHang"
+                                           class="btn-action btn-action-view" title="Xem hồ sơ">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@kh.MaKhachHang"
+                                           class="btn-action btn-action-edit" title="Chỉnh sửa thông tin">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@kh.MaKhachHang"
+                                           class="btn-action btn-action-delete" title="Xóa hồ sơ">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PHÂN TRANG -->
+            @if (Model.TongSoTrang > 1)
+            {
+                <div class="card-footer bg-white d-flex flex-column flex-sm-row justify-content-between align-items-center py-3">
+                    <span class="small text-muted mb-2 mb-sm-0">
+                        Hiển thị trang <strong>@Model.TrangHienTai</strong> / <strong>@Model.TongSoTrang</strong> (Tổng @Model.TongSoBanGhi khách hàng)
+                    </span>
+                    <nav>
+                        <ul class="pagination pagination-enterprise mb-0 justify-content-center">
+                            <li class="page-item @(Model.CoTrangTruoc ? "" : "disabled")">
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-tuKhoa="@Model.TuKhoa"
+                                   asp-route-loaiKhachHang="@Model.LoaiKhachHang"
+                                   asp-route-trangThai="@Model.TrangThai"
+                                   asp-route-sapXep="@Model.SapXep"
+                                   asp-route-trang="@(Model.TrangHienTai - 1)">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            @for (int i = 1; i <= Model.TongSoTrang; i++)
+                            {
+                                <li class="page-item @(i == Model.TrangHienTai ? "active" : "")">
+                                    <a class="page-link"
+                                       asp-action="Index"
+                                       asp-route-tuKhoa="@Model.TuKhoa"
+                                       asp-route-loaiKhachHang="@Model.LoaiKhachHang"
+                                       asp-route-trangThai="@Model.TrangThai"
+                                       asp-route-sapXep="@Model.SapXep"
+                                       asp-route-trang="@i">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+
+                            <li class="page-item @(Model.CoTrangSau ? "" : "disabled")">
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-tuKhoa="@Model.TuKhoa"
+                                   asp-route-loaiKhachHang="@Model.LoaiKhachHang"
+                                   asp-route-trangThai="@Model.TrangThai"
+                                   asp-route-sapXep="@Model.SapXep"
+                                   asp-route-trang="@(Model.TrangHienTai + 1)">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="card-body text-center py-5">
+                <i class="bi bi-people text-muted fs-1 mb-2 d-block"></i>
+                <p class="text-muted fw-medium mb-3">Không tìm thấy khách hàng nào phù hợp với điều kiện tìm kiếm.</p>
+                <a asp-action="Create" class="btn btn-primary btn-sm">
+                    <i class="bi bi-person-plus-fill me-1"></i>Thêm khách hàng mới
+                </a>
+            </div>
+        }
+    </div>
+</div>

@@ -1,4 +1,4 @@
-﻿// Họ và tên: Nguyễn Thị Thảo
+// Họ và tên: Nguyễn Thị Thảo
 // Mã sinh viên: 23103100092
 // Nội dung thực hiện: Hồ sơ cá nhân - Khách hàng xem và cập nhật thông tin của mình
 // Bảo mật: Chỉ cho phép sửa hồ sơ của chính mình (kiểm tra qua Session)
@@ -45,7 +45,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             if (!SessionHelper.IsLoggedIn(HttpContext.Session))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập để xem hồ sơ cá nhân.";
-                return RedirectToAction("DangNhap", "TaiKhoan");
+                return RedirectToAction("Login", "Account");
             }
 
             // Lấy mã khách hàng từ Session
@@ -102,7 +102,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             if (!SessionHelper.IsLoggedIn(HttpContext.Session))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập để sửa hồ sơ.";
-                return RedirectToAction("DangNhap", "TaiKhoan");
+                return RedirectToAction("Login", "Account");
             }
 
             var maKhachHang = await GetCurrentMaKhachHangAsync();
@@ -147,7 +147,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             if (!SessionHelper.IsLoggedIn(HttpContext.Session))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập để sửa hồ sơ.";
-                return RedirectToAction("DangNhap", "TaiKhoan");
+                return RedirectToAction("Login", "Account");
             }
 
             // Lấy mã khách hàng từ Session (KHÔNG tin tưởng dữ liệu từ form)

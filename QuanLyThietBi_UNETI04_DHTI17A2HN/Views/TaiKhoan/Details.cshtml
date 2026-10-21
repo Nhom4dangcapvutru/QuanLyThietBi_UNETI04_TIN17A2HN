@@ -1,32 +1,92 @@
-﻿@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.TaiKhoan
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.TaiKhoan
 @{
     ViewData["Title"] = "Chi tiết tài khoản";
 }
-<h2>🔍 Chi tiết tài khoản</h2>
-<dl class="row">
-    <dt class="col-sm-3">Mã tài khoản</dt>
-    <dd class="col-sm-9">@Model.MaTaiKhoan</dd>
 
-    <dt class="col-sm-3">Tên đăng nhập</dt>
-    <dd class="col-sm-9">@Model.TenDangNhap</dd>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: #0f172a;">
+            <i class="bi bi-person-fill text-primary me-2"></i>Tài khoản: @Model.TenDangNhap
+        </h3>
+        <p class="text-muted small mb-0">Hồ sơ thông tin tài khoản và đối tượng liên kết</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại
+        </a>
+        <a asp-action="Edit" asp-route-id="@Model.MaTaiKhoan" class="btn btn-primary">
+            <i class="bi bi-pencil me-1"></i> Sửa tài khoản
+        </a>
+    </div>
+</div>
 
-    <dt class="col-sm-3">Họ tên</dt>
-    <dd class="col-sm-9">@Model.HoTen</dd>
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card-enterprise mb-4">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <span class="fw-bold" style="color: #0f172a;">
+                    <i class="bi bi-person-badge text-primary me-2"></i>Chi tiết thông tin
+                </span>
+            </div>
+            <div class="card-body p-4">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted small">Mã tài khoản:</dt>
+                    <dd class="col-sm-8"><span class="badge bg-light text-dark border">#@Model.MaTaiKhoan</span></dd>
 
-    <dt class="col-sm-3">Email</dt>
-    <dd class="col-sm-9">@Model.Email</dd>
+                    <dt class="col-sm-4 text-muted small">Tên đăng nhập:</dt>
+                    <dd class="col-sm-8 fw-bold text-dark">@Model.TenDangNhap</dd>
 
-    <dt class="col-sm-3">Vai trò</dt>
-    <dd class="col-sm-9">@Model.VaiTro</dd>
+                    <dt class="col-sm-4 text-muted small">Họ và tên:</dt>
+                    <dd class="col-sm-8">@Model.HoTen</dd>
 
-    <dt class="col-sm-3">Trạng thái</dt>
-    <dd class="col-sm-9">@Model.TrangThai</dd>
+                    <dt class="col-sm-4 text-muted small">Email:</dt>
+                    <dd class="col-sm-8">@Model.Email</dd>
 
-    @if (Model.KhachHang != null)
-    {
-        <dt class="col-sm-3">Khách hàng liên kết</dt>
-        <dd class="col-sm-9">@Model.KhachHang.HoTen - @Model.KhachHang.SoDienThoai</dd>
-    }
-</dl>
-<a asp-action="Edit" asp-route-id="@Model.MaTaiKhoan" class="btn btn-warning">Sửa</a>
-<a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                    <dt class="col-sm-4 text-muted small">Vai trò:</dt>
+                    <dd class="col-sm-8">
+                        @switch (Model.VaiTro)
+                        {
+                            case "Admin":
+                                <span class="badge" style="background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca;">
+                                    <i class="bi bi-shield-lock-fill me-1"></i>Admin
+                                </span>
+                                break;
+                            case "KyThuatVien":
+                                <span class="badge" style="background-color: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;">
+                                    <i class="bi bi-tools me-1"></i>Kỹ thuật viên
+                                </span>
+                                break;
+                            default:
+                                <span class="badge" style="background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">
+                                    <i class="bi bi-person me-1"></i>Khách hàng
+                                </span>
+                                break;
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted small">Trạng thái:</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.TrangThai == "Hoạt động")
+                        {
+                            <span class="badge-status badge-status-hoanthanh">Hoạt động</span>
+                        }
+                        else
+                        {
+                            <span class="badge-status badge-status-dahuy">Bị khóa</span>
+                        }
+                    </dd>
+
+                    @if (Model.KhachHang != null)
+                    {
+                        <dt class="col-sm-4 text-muted small">Hồ sơ khách hàng:</dt>
+                        <dd class="col-sm-8">
+                            <a asp-controller="KhachHang" asp-action="Details" asp-route-id="@Model.KhachHang.MaKhachHang" class="text-primary fw-medium">
+                                @Model.KhachHang.HoTen (SĐT: @Model.KhachHang.SoDienThoai)
+                            </a>
+                        </dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>

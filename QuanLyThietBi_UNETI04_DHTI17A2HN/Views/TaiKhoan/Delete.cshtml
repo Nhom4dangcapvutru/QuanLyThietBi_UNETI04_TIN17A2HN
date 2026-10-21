@@ -1,21 +1,58 @@
-﻿@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.TaiKhoan
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.TaiKhoan
 @{
     ViewData["Title"] = "Xóa tài khoản";
 }
-<h2 class="text-danger">⚠️ Xóa tài khoản</h2>
-<h4>Bạn có chắc chắn muốn xóa tài khoản này?</h4>
-<dl class="row">
-    <dt class="col-sm-3">Tên đăng nhập</dt>
-    <dd class="col-sm-9">@Model.TenDangNhap</dd>
 
-    <dt class="col-sm-3">Họ tên</dt>
-    <dd class="col-sm-9">@Model.HoTen</dd>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1 text-danger">
+            <i class="bi bi-trash-fill me-2"></i>Xác nhận xóa tài khoản #@Model.MaTaiKhoan
+        </h3>
+        <p class="text-muted small mb-0">Hủy quyền đăng nhập và loại bỏ tài khoản khỏi hệ thống</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
+</div>
 
-    <dt class="col-sm-3">Vai trò</dt>
-    <dd class="col-sm-9">@Model.VaiTro</dd>
-</dl>
-<form asp-action="Delete" method="post">
-    <input type="hidden" asp-for="MaTaiKhoan" />
-    <button type="submit" class="btn btn-danger">🗑️ Xóa</button>
-    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
-</form>
+<div class="alert alert-warning d-flex align-items-center mb-4">
+    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+    <div>
+        <strong>Cảnh báo:</strong> Bạn có chắc chắn muốn xóa tài khoản <strong>@Model.TenDangNhap</strong> không? Thao tác này không thể hoàn tác.
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card-enterprise mb-4">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <span class="fw-bold text-danger">
+                    <i class="bi bi-person-x me-2"></i>Thông tin tài khoản cần xóa
+                </span>
+            </div>
+            <div class="card-body p-4">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted small">Tên đăng nhập:</dt>
+                    <dd class="col-sm-8 fw-bold text-dark">@Model.TenDangNhap</dd>
+
+                    <dt class="col-sm-4 text-muted small">Họ và tên:</dt>
+                    <dd class="col-sm-8">@Model.HoTen</dd>
+
+                    <dt class="col-sm-4 text-muted small">Vai trò:</dt>
+                    <dd class="col-sm-8"><span class="badge bg-secondary">@Model.VaiTro</span></dd>
+                </dl>
+            </div>
+            <div class="card-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center border-top">
+                <a asp-action="Index" class="btn btn-outline-secondary">Hủy bỏ</a>
+
+                <form asp-action="Delete" method="post" class="m-0">
+                    <input type="hidden" asp-for="MaTaiKhoan" />
+                    <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản @Model.TenDangNhap?');">
+                        <i class="bi bi-trash me-1"></i> Xác nhận xóa
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

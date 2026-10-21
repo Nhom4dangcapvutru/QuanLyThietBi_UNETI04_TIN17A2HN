@@ -1,4 +1,4 @@
-// Họ và tên: DINH THI THUY LINH
+﻿// Họ và tên: DINH THI THUY LINH
 // Nội dung thực hiện: - Tiếp nhận, Chẩn đoán, Sửa chữa,
 // Cập nhật trạng thái và chi phí phiếu sửa chữa
 
@@ -31,6 +31,28 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             _logger = logger;
         }
 
+        public override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context)
+        {
+            // Kiểm tra đăng nhập
+            if (!SessionHelper.IsLoggedIn(context.HttpContext.Session))
+            {
+                var returnUrl = context.HttpContext.Request.Path + context.HttpContext.Request.QueryString;
+                TempData["ErrorMessage"] = "Vui lòng đăng nhập để truy cập quy trình Xử lý sửa chữa.";
+                context.Result = new RedirectToActionResult("Login", "Account", new { returnUrl });
+                return;
+            }
+
+            // Kiểm tra phân quyền: Chỉ Admin và Kỹ thuật viên mới được vào phân hệ kỹ thuật
+            if (!SessionHelper.IsAdminOrKyThuatVien(context.HttpContext.Session))
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền truy cập vào phân hệ Xử lý kỹ thuật.";
+                context.Result = new RedirectToActionResult("AccessDenied", "Account", null);
+                return;
+            }
+
+            base.OnActionExecuting(context);
+        }
+
         // ============================================================
         // 1. DANH SÁCH CẦN XỬ LÝ (Tìm kiếm + Lọc + Sắp xếp + Phân trang)
         // ============================================================
@@ -39,15 +61,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             int? maLoaiThietBi, DateTime? tuNgay, DateTime? denNgay,
             string? sortOrder, int pageIndex = 1)
         {
-            // Hỗ trợ kiểm thử khi Module Đăng nhập chưa được tích hợp
-            if (SessionHelper.GetMaTaiKhoan(HttpContext.Session) == null)
-            {
-                var defaultKtv = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.VaiTro == VaiTroConstant.KyThuatVien);
-                if (defaultKtv != null)
-                {
-                    SessionHelper.SetUser(HttpContext.Session, defaultKtv.MaTaiKhoan, defaultKtv.VaiTro, defaultKtv.HoTen);
-                }
-            }
+
 
             var query = _context.PhieuSuaChuas
                 .Include(p => p.ThietBi).ThenInclude(t => t!.LoaiThietBi)
@@ -227,17 +241,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             var maTaiKhoan = SessionHelper.GetMaTaiKhoan(HttpContext.Session);
             if (maTaiKhoan == null)
             {
-                var defaultKtv = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.VaiTro == VaiTroConstant.KyThuatVien);
-                if (defaultKtv != null)
-                {
-                    maTaiKhoan = defaultKtv.MaTaiKhoan;
-                    SessionHelper.SetUser(HttpContext.Session, defaultKtv.MaTaiKhoan, defaultKtv.VaiTro, defaultKtv.HoTen);
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "Vui lòng đăng nhập tài khoản Kỹ thuật viên để tiếp nhận phiếu.";
-                    return RedirectToAction(nameof(Details), new { id = vm.MaPhieu });
-                }
+                TempData["ErrorMessage"] = "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.";
+                return RedirectToAction("Login", "Account");
             }
 
             phieu.TrangThai = TrangThaiPhieu.DangXuLy;
@@ -409,17 +414,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             var maTaiKhoan = SessionHelper.GetMaTaiKhoan(HttpContext.Session);
             if (maTaiKhoan == null)
             {
-                var defaultKtv = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.VaiTro == VaiTroConstant.KyThuatVien);
-                if (defaultKtv != null)
-                {
-                    maTaiKhoan = defaultKtv.MaTaiKhoan;
-                    SessionHelper.SetUser(HttpContext.Session, defaultKtv.MaTaiKhoan, defaultKtv.VaiTro, defaultKtv.HoTen);
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "Vui lòng đăng nhập tài khoản Kỹ thuật viên.";
-                    return RedirectToAction(nameof(SuaChua), new { id = vm.MaPhieu });
-                }
+                TempData["ErrorMessage"] = "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.";
+                return RedirectToAction("Login", "Account");
             }
 
             var chiTiet = new ChiTietSuaChua

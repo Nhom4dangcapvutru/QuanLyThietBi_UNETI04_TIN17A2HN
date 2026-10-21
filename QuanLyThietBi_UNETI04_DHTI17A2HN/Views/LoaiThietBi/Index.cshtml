@@ -1,86 +1,133 @@
-﻿@model IEnumerable<QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.LoaiThietBi>
+@model IEnumerable<QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.LoaiThietBi>
 @{
     ViewData["Title"] = "Quản lý loại thiết bị";
 }
 
-<h2>📦 Quản lý loại thiết bị</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: #0f172a;">
+            <i class="bi bi-tags-fill text-primary me-2"></i>Quản lý Loại thiết bị
+        </h3>
+        <p class="text-muted small mb-0">Danh mục phân loại và quy chuẩn thời hạn bảo hành thiết bị</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Thêm loại mới
+    </a>
+</div>
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show">
-        @TempData["Success"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4">
+        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+        <div>@TempData["Success"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
     </div>
 }
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger alert-dismissible fade show">
-        @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-4">
+        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+        <div>@TempData["Error"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
     </div>
 }
 
-<form asp-action="Index" method="get" class="row g-2 mb-3">
-    <div class="col-md-5">
-        <input type="text" name="searchString" value="@ViewBag.SearchString"
-               class="form-control" placeholder="Tìm theo tên loại / hãng sản xuất..." />
+<div class="card-enterprise mb-4">
+    <div class="p-3 border-bottom bg-white">
+        <form asp-action="Index" method="get" class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="searchString" value="@ViewBag.SearchString"
+                           class="form-control border-start-0 ps-0" placeholder="Tìm theo tên loại / hãng sản xuất..." />
+                </div>
+            </div>
+            <div class="col-md-6 d-flex gap-2 justify-content-md-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel me-1"></i> Lọc
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Đặt lại
+                </a>
+            </div>
+        </form>
     </div>
-    <div class="col-md-3">
-        <button type="submit" class="btn btn-primary">🔍 Tìm</button>
-        <a asp-action="Index" class="btn btn-secondary">Reset</a>
-    </div>
-    <div class="col-md-4 text-end">
-        <a asp-action="Create" class="btn btn-success">➕ Thêm loại mới</a>
-    </div>
-</form>
 
-<table class="table table-bordered table-hover">
-    <thead class="table-dark">
-        <tr>
-            <th>Mã loại</th>
-            <th>Tên loại thiết bị</th>
-            <th>Hãng sản xuất</th>
-            <th>Bảo hành (tháng)</th>
-            <th>Mô tả</th>
-            <th style="width: 240px;">Thao tác</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (!Model.Any())
-        {
-            <tr>
-                <td colspan="6" class="text-center text-muted">Không có dữ liệu.</td>
-            </tr>
-        }
-        else
-        {
-            @foreach (var item in Model)
-            {
+    <div class="table-responsive">
+        <table class="table-enterprise align-middle mb-0">
+            <thead>
                 <tr>
-                    <td>@item.MaLoai</td>
-                    <td><strong>@item.TenLoai</strong></td>
-                    <td>@item.HangSanXuat</td>
-                    <td>@item.ThoiHanBaoHanhMacDinh tháng</td>
-                    <td>@(item.MoTa ?? "—")</td>
-                    <td>
-                        <a asp-action="Details" asp-route-id="@item.MaLoai" class="btn btn-sm btn-info">Chi tiết</a>
-                        <a asp-action="Edit" asp-route-id="@item.MaLoai" class="btn btn-sm btn-warning">Sửa</a>
-                        <a asp-action="Delete" asp-route-id="@item.MaLoai" class="btn btn-sm btn-danger">Xóa</a>
-                    </td>
+                    <th style="width: 100px;">Mã loại</th>
+                    <th>Tên loại thiết bị</th>
+                    <th>Hãng sản xuất</th>
+                    <th>Bảo hành mặc định</th>
+                    <th>Mô tả</th>
+                    <th style="width: 140px;" class="text-end pe-3">Thao tác</th>
                 </tr>
-            }
-        }
-    </tbody>
-</table>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            Không có loại thiết bị nào phù hợp với tìm kiếm.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="badge bg-light text-dark border">#@item.MaLoai</span></td>
+                            <td>
+                                <span class="fw-semibold text-dark">@item.TenLoai</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-secondary border">@item.HangSanXuat</span>
+                            </td>
+                            <td>
+                                <span class="text-muted"><i class="bi bi-shield-check text-success me-1"></i>@(item.ThoiHanBaoHanhMacDinh) tháng</span>
+                            </td>
+                            <td>
+                                <span class="text-muted small">@(item.MoTa ?? "—")</span>
+                            </td>
+                            <td class="text-end pe-3">
+                                <div class="d-inline-flex gap-1">
+                                    <a asp-action="Details" asp-route-id="@item.MaLoai" class="btn-action btn-action-view" title="Chi tiết">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.MaLoai" class="btn-action btn-action-edit" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.MaLoai" class="btn-action btn-action-delete" title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
 
-<nav>
-    <ul class="pagination">
-        @for (int i = 1; i <= ViewBag.TotalPages; i++)
-        {
-            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                <a class="page-link" asp-action="Index" asp-route-page="@i"
-                   asp-route-searchString="@ViewBag.SearchString">@i</a>
-            </li>
-        }
-    </ul>
-</nav>
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="p-3 border-top bg-white d-flex justify-content-between align-items-center">
+            <small class="text-muted">Trang @ViewBag.CurrentPage / @ViewBag.TotalPages</small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@i"
+                               asp-route-searchString="@ViewBag.SearchString">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

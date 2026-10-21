@@ -7,54 +7,87 @@
     ViewData["Title"] = "Sửa chữa phiếu #" + Model.MaPhieu;
 }
 
-<h2>🔧 Sửa chữa phiếu #@Model.MaPhieu</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: #0f172a;">
+            <i class="bi bi-tools text-primary me-2"></i>Quy trình sửa chữa & Linh kiện - Phiếu #@Model.MaPhieu
+        </h3>
+        <p class="text-muted small mb-0">Xuất kho linh kiện và ghi nhận các hạng mục thay thế cho thiết bị</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại chi tiết
+        </a>
+        <a asp-action="CapNhatTrangThai" asp-route-id="@Model.MaPhieu" class="btn btn-success">
+            <i class="bi bi-check2-circle me-1"></i> Nghiệm thu hoàn thành
+        </a>
+    </div>
+</div>
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4">
+        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+        <div>@TempData["SuccessMessage"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
 }
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-4">
+        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+        <div>@TempData["ErrorMessage"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
 }
 
-<div class="card mb-3">
-    <div class="card-body">
-        <p><strong>Khách hàng:</strong> @Model.TenKhachHang</p>
-        <p><strong>Thiết bị:</strong> @Model.TenThietBi</p>
-        <p>
-            <strong>Chi phí dự kiến:</strong>
-            @(Model.ChiPhiDuKien.HasValue ? Model.ChiPhiDuKien.Value.ToString("N0") + " VNĐ" : "Chưa báo")
-        </p>
+<div class="card-enterprise mb-4">
+    <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <span class="text-muted small">Khách hàng:</span> <strong class="text-dark me-3">@Model.TenKhachHang</strong>
+            <span class="text-muted small">Thiết bị:</span> <strong class="text-dark me-3">@Model.TenThietBi</strong>
+        </div>
+        <div>
+            <span class="text-muted small">Chi phí dự kiến đã báo:</span>
+            <span class="badge bg-warning text-dark fs-6 px-3 py-1">
+                @(Model.ChiPhiDuKien.HasValue ? Model.ChiPhiDuKien.Value.ToString("N0") + " VNĐ" : "Chưa báo")
+            </span>
+        </div>
     </div>
 </div>
 
 @* ===== FORM THÊM LINH KIỆN ===== *@
-<div class="card mb-3">
-    <div class="card-header bg-primary text-white">➕ Thêm linh kiện thay thế</div>
-    <div class="card-body">
+<div class="card-enterprise mb-4">
+    <div class="card-header bg-white py-3 px-4 border-bottom">
+        <span class="fw-bold" style="color: #0f172a;">
+            <i class="bi bi-plus-circle text-primary me-2"></i>Thêm linh kiện / dịch vụ thay thế
+        </span>
+    </div>
+    <div class="card-body p-4">
         <form asp-action="ThemLinhKien" method="post">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="MaPhieu" />
-            <div class="row g-2">
+            <div class="row g-3 align-items-end">
                 <div class="col-md-5">
-                    <label asp-for="MaLinhKien" class="form-label">Linh kiện</label>
+                    <label asp-for="MaLinhKien" class="form-label fw-semibold">Linh kiện thay thế <span class="text-danger">*</span></label>
                     <select asp-for="MaLinhKien" asp-items="Model.LinhKienList" class="form-select">
-                        <option value="">-- Chọn linh kiện --</option>
+                        <option value="">-- Chọn linh kiện trong kho --</option>
                     </select>
-                    <span asp-validation-for="MaLinhKien" class="text-danger"></span>
+                    <span asp-validation-for="MaLinhKien" class="text-danger small"></span>
                 </div>
                 <div class="col-md-2">
-                    <label asp-for="SoLuong" class="form-label"></label>
+                    <label asp-for="SoLuong" class="form-label fw-semibold">Số lượng</label>
                     <input asp-for="SoLuong" type="number" min="1" value="1" class="form-control" />
-                    <span asp-validation-for="SoLuong" class="text-danger"></span>
+                    <span asp-validation-for="SoLuong" class="text-danger small"></span>
                 </div>
                 <div class="col-md-3">
-                    <label asp-for="GhiChu" class="form-label"></label>
-                    <input asp-for="GhiChu" class="form-control" />
+                    <label asp-for="GhiChu" class="form-label fw-semibold">Ghi chú lắp đặt</label>
+                    <input asp-for="GhiChu" class="form-control" placeholder="Số serial linh kiện mới..." />
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">Thêm</button>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-lg me-1"></i> Thêm vào phiếu
+                    </button>
                 </div>
             </div>
         </form>
@@ -62,65 +95,70 @@
 </div>
 
 @* ===== DANH SÁCH LINH KIỆN ĐÃ DÙNG ===== *@
-<div class="card mb-3">
-    <div class="card-header bg-secondary text-white">
-        Danh sách linh kiện đã dùng (@Model.DanhSachChiTiet.Count)
+<div class="card-enterprise mb-4">
+    <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+        <span class="fw-bold" style="color: #0f172a;">
+            <i class="bi bi-cpu text-primary me-2"></i>Linh kiện & vật tư đã sử dụng (@Model.DanhSachChiTiet.Count)
+        </span>
+        @if (Model.DanhSachChiTiet.Any())
+        {
+            decimal tongTien = Model.DanhSachChiTiet.Sum(x => x.ThanhTien);
+            <span class="fw-bold text-danger">Tổng tiền vật tư: @tongTien.ToString("N0") VNĐ</span>
+        }
     </div>
     <div class="card-body p-0">
         @if (Model.DanhSachChiTiet.Count == 0)
         {
-            <p class="text-muted text-center p-3 mb-0">Chưa có linh kiện nào.</p>
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-box-seam fs-1 d-block mb-2"></i>
+                Chưa có linh kiện nào được thêm vào phiếu sửa chữa này.
+            </div>
         }
         else
         {
-            <table class="table table-sm mb-0">
-                <thead>
-                    <tr>
-                        <th>Linh kiện</th>
-                        <th>SL</th>
-                        <th>Đơn giá</th>
-                        <th>Thành tiền</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var ct in Model.DanhSachChiTiet)
-                    {
+            <div class="table-responsive">
+                <table class="table-enterprise align-middle mb-0">
+                    <thead>
                         <tr>
-                            <td>@ct.LinhKien?.TenLinhKien</td>
-                            <td>@ct.SoLuong</td>
-                            <td>@ct.DonGia.ToString("N0")</td>
-                            <td>@ct.ThanhTien.ToString("N0")</td>
-                            <td>
-                                <form asp-action="XoaLinhKien" method="post" class="d-inline"
-                                      onsubmit="return confirm('Xóa linh kiện này?');">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="maChiTiet" value="@ct.MaChiTiet" />
-                                    <input type="hidden" name="maPhieu" value="@Model.MaPhieu" />
-                                    <button type="submit" class="btn btn-sm btn-danger">🗑 Xóa</button>
-                                </form>
-                            </td>
+                            <th>Tên linh kiện</th>
+                            <th class="text-center" style="width: 100px;">Số lượng</th>
+                            <th class="text-end" style="width: 140px;">Đơn giá</th>
+                            <th class="text-end" style="width: 150px;">Thành tiền</th>
+                            <th>Ghi chú</th>
+                            <th style="width: 90px;" class="text-end pe-3">Xóa</th>
                         </tr>
-                    }
-                </tbody>
-                <tfoot>
-                    <tr class="fw-bold">
-                        <td colspan="3" class="text-end">Tổng tiền linh kiện:</td>
-                        <td colspan="2" class="text-danger">@Model.TongTienLinhKien.ToString("N0") VNĐ</td>
-                    </tr>
-                </tfoot>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var ct in Model.DanhSachChiTiet)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold text-dark">@ct.LinhKien?.TenLinhKien</div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border">@ct.SoLuong</span>
+                                </td>
+                                <td class="text-end text-muted">@ct.DonGia.ToString("N0") đ</td>
+                                <td class="text-end">
+                                    <strong class="text-dark">@ct.ThanhTien.ToString("N0") đ</strong>
+                                </td>
+                                <td class="text-muted small">@(string.IsNullOrEmpty(ct.GhiChu) ? "—" : ct.GhiChu)</td>
+                                <td class="text-end pe-3">
+                                    <form asp-action="XoaLinhKien" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bạn có chắc chắn muốn bỏ linh kiện này khỏi phiếu?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="maChiTiet" value="@ct.MaChiTiet" />
+                                        <input type="hidden" name="maPhieu" value="@Model.MaPhieu" />
+                                        <button type="submit" class="btn-action btn-action-delete" title="Xóa linh kiện">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         }
     </div>
 </div>
-
-<div class="mt-3">
-    <a asp-action="CapNhatTrangThai" asp-route-id="@Model.MaPhieu" class="btn btn-success">
-        ✅ Hoàn tất & cập nhật trạng thái
-    </a>
-    <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-secondary">← Quay lại</a>
-</div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

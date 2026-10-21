@@ -1,4 +1,4 @@
-﻿@* 
+@* 
 // Họ và tên: Nguyễn Văn Tú
 // Mã sinh viên: 23103100077
 Nội dung thực hiện: Module 2 - Giao diện Quản lý thiết bị: Tìm kiếm, Lọc kết hợp, Sắp xếp, Phân trang 
@@ -8,91 +8,101 @@ Nội dung thực hiện: Module 2 - Giao diện Quản lý thiết bị: Tìm k
 
 @{
     ViewData["Title"] = "Quản lý thiết bị";
+    var vaiTro = Context.Session.GetString("VaiTro");
+    var isKhachHang = vaiTro == QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants.VaiTroConstant.KhachHang;
 }
 
-<div class="container-fluid py-3">
-    <!-- Tiêu đề & Nút thêm mới -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
+<div class="container-fluid px-0">
+    <!-- TIÊU ĐỀ & NÚT THÊM MỚI -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-            <h2 class="text-primary fw-bold mb-0">Quản lý danh sách thiết bị</h2>
-            <p class="text-muted small mb-0">Tìm kiếm, lọc nâng cao, sắp xếp và phân trang trực tiếp từ CSDL</p>
+            <h3 class="fw-bold mb-1 text-dark">Danh mục Thiết bị</h3>
+            <p class="text-muted small mb-0">Quản lý cơ sở dữ liệu thiết bị, thông tin bảo hành, kiểm tra serial và phân loại linh kiện</p>
         </div>
-        <a asp-action="Create" class="btn btn-success">
-            <i class="bi bi-plus-circle"></i> + Thêm thiết bị mới
-        </a>
+        <div class="d-flex align-items-center gap-2">
+            @if (!isKhachHang)
+            {
+                <a asp-action="Create" class="btn btn-primary btn-sm d-flex align-items-center gap-2 shadow-sm px-3 py-2">
+                    <i class="bi bi-plus-lg"></i>
+                    <span class="fw-semibold">Thêm thiết bị mới</span>
+                </a>
+            }
+        </div>
     </div>
 
-    <!-- Thông báo kết quả thao tác -->
+    <!-- THÔNG BÁO -->
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
+        <div class="alert alert-success alert-dismissible fade show rounded-3 d-flex align-items-center gap-2 mb-3">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>@TempData["SuccessMessage"]</span>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["ErrorMessage"]
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 d-flex align-items-center gap-2 mb-3">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>@TempData["ErrorMessage"]</span>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
-    <!-- KHUNG TÌM KIẾM & BỘ LỌC KẾT HỢP -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light py-2">
-            <h6 class="mb-0 fw-bold text-secondary">
-                <i class="bi bi-funnel"></i> Bộ lọc & Tìm kiếm nâng cao
-            </h6>
-        </div>
+    <!-- BỘ LỌC VÀ TÌM KIẾM NÂNG CAO -->
+    <div class="card card-enterprise mb-4">
         <div class="card-body">
             <form method="get" asp-action="Index" id="filterForm">
                 <input type="hidden" name="sortOrder" value="@ViewData["CurrentSort"]" />
 
                 <div class="row g-3">
-                    <!-- Tìm kiếm từ khóa -->
+                    <!-- Từ khóa -->
                     <div class="col-md-4">
-                        <label class="form-label small fw-bold">Từ khóa tìm kiếm:</label>
-                        <input type="text" name="searchString" value="@Model.SearchString" class="form-control form-control-sm" placeholder="Nhập tên máy, SerialNumber, chủ sở hữu..." />
+                        <label class="form-label small fw-semibold text-secondary">Từ khóa tìm kiếm</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" name="searchString" value="@Model.SearchString" class="form-control border-start-0 ps-0" placeholder="Tên máy, SerialNumber, chủ sở hữu..." />
+                        </div>
                     </div>
 
-                    <!-- Lọc Loại thiết bị -->
+                    <!-- Loại thiết bị -->
                     <div class="col-md-2">
-                        <label class="form-label small fw-bold">Loại thiết bị:</label>
-                        <select name="maLoai" asp-items="Model.LoaiThietBiList" class="form-select form-select-sm">
+                        <label class="form-label small fw-semibold text-secondary">Loại thiết bị</label>
+                        <select name="maLoai" asp-items="Model.LoaiThietBiList" class="form-select">
                             <option value="">-- Tất cả loại --</option>
                         </select>
                     </div>
 
-                    <!-- Lọc Hãng sản xuất -->
+                    <!-- Hãng sản xuất -->
                     <div class="col-md-2">
-                        <label class="form-label small fw-bold">Hãng sản xuất:</label>
-                        <select name="hangSanXuat" asp-items="Model.HangSanXuatList" class="form-select form-select-sm">
+                        <label class="form-label small fw-semibold text-secondary">Hãng sản xuất</label>
+                        <select name="hangSanXuat" asp-items="Model.HangSanXuatList" class="form-select">
                             <option value="">-- Tất cả hãng --</option>
                         </select>
                     </div>
 
-                    <!-- Lọc Trạng thái bảo hành -->
+                    <!-- Hạn bảo hành -->
                     <div class="col-md-2">
-                        <label class="form-label small fw-bold">Hạn bảo hành:</label>
-                        <select name="trangThaiBaoHanh" class="form-select form-select-sm">
+                        <label class="form-label small fw-semibold text-secondary">Hạn bảo hành</label>
+                        <select name="trangThaiBaoHanh" class="form-select">
                             <option value="">-- Tất cả --</option>
                             <option value="con" selected="@(Model.TrangThaiBaoHanh == "con")">Còn bảo hành</option>
                             <option value="het" selected="@(Model.TrangThaiBaoHanh == "het")">Hết bảo hành</option>
                         </select>
                     </div>
 
-                    <!-- Lọc Trạng thái thiết bị -->
+                    <!-- Trạng thái máy -->
                     <div class="col-md-2">
-                        <label class="form-label small fw-bold">Trạng thái:</label>
-                        <select name="trangThaiThietBi" asp-items="Model.TrangThaiList" class="form-select form-select-sm">
+                        <label class="form-label small fw-semibold text-secondary">Trạng thái máy</label>
+                        <select name="trangThaiThietBi" asp-items="Model.TrangThaiList" class="form-select">
                             <option value="">-- Tất cả trạng thái --</option>
                         </select>
                     </div>
 
-                    <!-- Khoảng giá -->
+                    <!-- Khoảng giá trị -->
                     <div class="col-md-4">
-                        <label class="form-label small fw-bold">Khoảng giá trị (VNĐ):</label>
+                        <label class="form-label small fw-semibold text-secondary">Khoảng giá trị (VNĐ)</label>
                         <div class="input-group input-group-sm">
                             <input type="number" name="giaTu" value="@Model.GiaTu" class="form-control" placeholder="Từ..." />
                             <span class="input-group-text">-</span>
@@ -100,14 +110,16 @@ Nội dung thực hiện: Module 2 - Giao diện Quản lý thiết bị: Tìm k
                         </div>
                     </div>
 
-                    <!-- Nút thao tác -->
-                    <div class="col-md-4 d-flex align-items-end gap-2">
-                        <button type="submit" class="btn btn-primary btn-sm px-4">
-                            Lọc & Tìm kiếm
-                        </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
-                            Đặt lại bộ lọc
+                    <!-- Nút thao tác lọc -->
+                    <div class="col-md-8 d-flex justify-content-end align-items-end gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-sm px-3 d-flex align-items-center gap-1">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            <span>Làm mới bộ lọc</span>
                         </a>
+                        <button type="submit" class="btn btn-primary btn-sm px-4 d-flex align-items-center gap-1">
+                            <i class="bi bi-funnel"></i>
+                            <span>Áp dụng lọc</span>
+                        </button>
                     </div>
                 </div>
             </form>
@@ -115,149 +127,148 @@ Nội dung thực hiện: Module 2 - Giao diện Quản lý thiết bị: Tìm k
     </div>
 
     <!-- BẢNG DỮ LIỆU THIẾT BỊ -->
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover table-striped align-middle mb-0">
-                    <thead class="table-primary small text-nowrap">
+    <div class="card card-enterprise">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="fw-bold">Danh sách thiết bị trong hệ thống</span>
+            <span class="badge bg-light text-dark border">
+                Tổng số: <strong>@Model.DanhSachThietBi.TotalItems</strong> thiết bị
+            </span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-enterprise mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>
+                            <a class="text-decoration-none text-secondary" asp-action="Index"
+                               asp-route-sortOrder="@ViewData["NameSortParam"]"
+                               asp-route-searchString="@Model.SearchString"
+                               asp-route-maLoai="@Model.MaLoai"
+                               asp-route-hangSanXuat="@Model.HangSanXuat"
+                               asp-route-trangThaiBaoHanh="@Model.TrangThaiBaoHanh"
+                               asp-route-trangThaiThietBi="@Model.TrangThaiThietBi"
+                               asp-route-giaTu="@Model.GiaTu"
+                               asp-route-giaDen="@Model.GiaDen">
+                                Tên thiết bị <i class="bi bi-arrow-down-up small"></i>
+                            </a>
+                        </th>
+                        <th>Số Serial</th>
+                        <th>Loại máy</th>
+                        <th>Chủ sở hữu</th>
+                        <th>
+                            <a class="text-decoration-none text-secondary" asp-action="Index"
+                               asp-route-sortOrder="@ViewData["DateSortParam"]"
+                               asp-route-searchString="@Model.SearchString"
+                               asp-route-maLoai="@Model.MaLoai"
+                               asp-route-hangSanXuat="@Model.HangSanXuat"
+                               asp-route-trangThaiBaoHanh="@Model.TrangThaiBaoHanh"
+                               asp-route-trangThaiThietBi="@Model.TrangThaiThietBi"
+                               asp-route-giaTu="@Model.GiaTu"
+                               asp-route-giaDen="@Model.GiaDen">
+                                Ngày mua <i class="bi bi-arrow-down-up small"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="text-decoration-none text-secondary" asp-action="Index"
+                               asp-route-sortOrder="@ViewData["WarrantySortParam"]"
+                               asp-route-searchString="@Model.SearchString"
+                               asp-route-maLoai="@Model.MaLoai"
+                               asp-route-hangSanXuat="@Model.HangSanXuat"
+                               asp-route-trangThaiBaoHanh="@Model.TrangThaiBaoHanh"
+                               asp-route-trangThaiThietBi="@Model.TrangThaiThietBi"
+                               asp-route-giaTu="@Model.GiaTu"
+                               asp-route-giaDen="@Model.GiaDen">
+                                Hạn bảo hành <i class="bi bi-arrow-down-up small"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="text-decoration-none text-secondary" asp-action="Index"
+                               asp-route-sortOrder="@ViewData["PriceSortParam"]"
+                               asp-route-searchString="@Model.SearchString"
+                               asp-route-maLoai="@Model.MaLoai"
+                               asp-route-hangSanXuat="@Model.HangSanXuat"
+                               asp-route-trangThaiBaoHanh="@Model.TrangThaiBaoHanh"
+                               asp-route-trangThaiThietBi="@Model.TrangThaiThietBi"
+                               asp-route-giaTu="@Model.GiaTu"
+                               asp-route-giaDen="@Model.GiaDen">
+                                Giá trị <i class="bi bi-arrow-down-up small"></i>
+                            </a>
+                        </th>
+                        <th>Bảo hành</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center" style="width: 120px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.DanhSachThietBi.Any())
+                    {
                         <tr>
-                            <th>
-                                <a class="text-decoration-none text-dark fw-bold" asp-action="Index"
-                                   asp-route-sortOrder="@ViewData["NameSortParam"]"
-                                   asp-route-searchString="@Model.SearchString"
-                                   asp-route-maLoai="@Model.MaLoai"
-                                   asp-route-hangSanXuat="@Model.HangSanXuat"
-                                   asp-route-trangThaiBaoHanh="@Model.TrangThaiBaoHanh"
-                                   asp-route-trangThaiThietBi="@Model.TrangThaiThietBi"
-                                   asp-route-giaTu="@Model.GiaTu"
-                                   asp-route-giaDen="@Model.GiaDen">
-                                    Tên thiết bị ⬍
-                                </a>
-                            </th>
-                            <th>Số Serial (S/N)</th>
-                            <th>Loại thiết bị</th>
-                            <th>Chủ sở hữu</th>
-                            <th>
-                                <a class="text-decoration-none text-dark fw-bold" asp-action="Index"
-                                   asp-route-sortOrder="@ViewData["BuyDateSortParam"]"
-                                   asp-route-searchString="@Model.SearchString"
-                                   asp-route-maLoai="@Model.MaLoai"
-                                   asp-route-hangSanXuat="@Model.HangSanXuat"
-                                   asp-route-trangThaiBaoHanh="@Model.TrangThaiBaoHanh"
-                                   asp-route-trangThaiThietBi="@Model.TrangThaiThietBi"
-                                   asp-route-giaTu="@Model.GiaTu"
-                                   asp-route-giaDen="@Model.GiaDen">
-                                    Ngày mua ⬍
-                                </a>
-                            </th>
-                            <th>
-                                <a class="text-decoration-none text-dark fw-bold" asp-action="Index"
-                                   asp-route-sortOrder="@ViewData["WarrantySortParam"]"
-                                   asp-route-searchString="@Model.SearchString"
-                                   asp-route-maLoai="@Model.MaLoai"
-                                   asp-route-hangSanXuat="@Model.HangSanXuat"
-                                   asp-route-trangThaiBaoHanh="@Model.TrangThaiBaoHanh"
-                                   asp-route-trangThaiThietBi="@Model.TrangThaiThietBi"
-                                   asp-route-giaTu="@Model.GiaTu"
-                                   asp-route-giaDen="@Model.GiaDen">
-                                    Hạn bảo hành ⬍
-                                </a>
-                            </th>
-                            <th>
-                                <a class="text-decoration-none text-dark fw-bold" asp-action="Index"
-                                   asp-route-sortOrder="@ViewData["PriceSortParam"]"
-                                   asp-route-searchString="@Model.SearchString"
-                                   asp-route-maLoai="@Model.MaLoai"
-                                   asp-route-hangSanXuat="@Model.HangSanXuat"
-                                   asp-route-trangThaiBaoHanh="@Model.TrangThaiBaoHanh"
-                                   asp-route-trangThaiThietBi="@Model.TrangThaiThietBi"
-                                   asp-route-giaTu="@Model.GiaTu"
-                                   asp-route-giaDen="@Model.GiaDen">
-                                    Giá trị (VNĐ) ⬍
-                                </a>
-                            </th>
-                            <th>Tình trạng BH</th>
-                            <th>Trạng thái máy</th>
-                            <th class="text-center">Thao tác</th>
+                            <td colspan="10" class="text-center py-5 text-muted">
+                                <i class="bi bi-laptop text-muted fs-1 mb-2 d-block"></i>
+                                Không tìm thấy thiết bị nào phù hợp với điều kiện tìm kiếm.
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @if (!Model.DanhSachThietBi.Any())
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.DanhSachThietBi)
                         {
                             <tr>
-                                <td colspan="10" class="text-center py-4 text-muted">
-                                    Không tìm thấy thiết bị nào phù hợp với điều kiện tìm kiếm.
+                                <td class="fw-semibold text-dark">@item.TenThietBi</td>
+                                <td><span class="badge bg-light text-dark border font-monospace">@item.SerialNumber</span></td>
+                                <td>@(item.LoaiThietBi?.TenLoai ?? "—")</td>
+                                <td>@(item.KhachHang?.HoTen ?? "—")</td>
+                                <td>@item.NgayMua.ToString("dd/MM/yyyy")</td>
+                                <td>@item.HanBaoHanh.ToString("dd/MM/yyyy")</td>
+                                <td class="text-end fw-semibold">@item.GiaTri.ToString("N0") đ</td>
+                                <td>
+                                    @if (item.ConBaoHanh)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Còn BH</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Hết BH</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">@item.TrangThai</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-action-group justify-content-center">
+                                        <a asp-action="Details" asp-route-id="@item.MaThietBi" class="btn-action btn-action-view" title="Xem chi tiết">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        @if (!isKhachHang)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.MaThietBi" class="btn-action btn-action-edit" title="Chỉnh sửa">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.MaThietBi" class="btn-action btn-action-delete" title="Xóa thiết bị">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        }
+                                    </div>
                                 </td>
                             </tr>
                         }
-                        else
-                        {
-                            @foreach (var item in Model.DanhSachThietBi)
-                            {
-                                <tr>
-                                    <td class="fw-bold">@item.TenThietBi</td>
-                                    <td><span class="badge bg-secondary font-monospace">@item.SerialNumber</span></td>
-                                    <td>@item.LoaiThietBi?.TenLoai</td>
-                                    <td>@item.KhachHang?.HoTen</td>
-                                    <td>@item.NgayMua.ToString("dd/MM/yyyy")</td>
-                                    <td>@item.HanBaoHanh.ToString("dd/MM/yyyy")</td>
-                                    <td class="text-end fw-semibold">@item.GiaTri.ToString("N0") đ</td>
-                                    <td>
-                                        @if (item.ConBaoHanh)
-                                        {
-                                            <span class="badge bg-success">Còn BH</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-danger">Hết BH</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info text-dark">@item.TrangThai</span>
-                                    </td>
-                                    <td class="text-center text-nowrap">
-                                        <a asp-action="Edit" asp-route-id="@item.MaThietBi" class="btn btn-sm btn-outline-primary" title="Sửa">Sửa</a>
-                                        <a asp-action="Details" asp-route-id="@item.MaThietBi" class="btn btn-sm btn-outline-info" title="Chi tiết">Xem</a>
-                                        <a asp-action="Delete" asp-route-id="@item.MaThietBi" class="btn btn-sm btn-outline-danger" title="Xóa">Xóa</a>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
+                    }
+                </tbody>
+            </table>
         </div>
 
-        <!-- PHÂN TRANG (Giữ nguyên toàn bộ điều kiện lọc khi chuyển trang) -->
-        <div class="card-footer bg-white d-flex justify-content-between align-items-center py-2">
-            <span class="small text-muted">
-                Hiển thị trang <strong>@Model.DanhSachThietBi.PageIndex</strong> / <strong>@Model.DanhSachThietBi.TotalPages</strong> (Tổng số: @Model.DanhSachThietBi.TotalItems thiết bị)
-            </span>
+        <!-- PHÂN TRANG -->
+        @if (Model.DanhSachThietBi.TotalPages > 1)
+        {
+            <div class="card-footer bg-white d-flex flex-column flex-sm-row justify-content-between align-items-center py-3">
+                <span class="small text-muted mb-2 mb-sm-0">
+                    Trang <strong>@Model.DanhSachThietBi.PageIndex</strong> / <strong>@Model.DanhSachThietBi.TotalPages</strong> (Tổng @Model.DanhSachThietBi.TotalItems thiết bị)
+                </span>
 
-            <nav>
-                <ul class="pagination pagination-sm mb-0">
-                    <!-- Nút Trang trước -->
-                    <li class="page-item @(!Model.DanhSachThietBi.HasPreviousPage ? "disabled" : "")">
-                        <a class="page-link" asp-action="Index"
-                           asp-route-pageIndex="@(Model.DanhSachThietBi.PageIndex - 1)"
-                           asp-route-sortOrder="@Model.SortOrder"
-                           asp-route-searchString="@Model.SearchString"
-                           asp-route-maLoai="@Model.MaLoai"
-                           asp-route-hangSanXuat="@Model.HangSanXuat"
-                           asp-route-trangThaiBaoHanh="@Model.TrangThaiBaoHanh"
-                           asp-route-trangThaiThietBi="@Model.TrangThaiThietBi"
-                           asp-route-giaTu="@Model.GiaTu"
-                           asp-route-giaDen="@Model.GiaDen">
-                            &laquo; Trước
-                        </a>
-                    </li>
-
-                    <!-- Các số trang -->
-                    @for (int i = 1; i <= Model.DanhSachThietBi.TotalPages; i++)
-                    {
-                        <li class="page-item @(i == Model.DanhSachThietBi.PageIndex ? "active" : "")">
+                <nav>
+                    <ul class="pagination pagination-enterprise mb-0 justify-content-center">
+                        <li class="page-item @(!Model.DanhSachThietBi.HasPreviousPage ? "disabled" : "")">
                             <a class="page-link" asp-action="Index"
-                               asp-route-pageIndex="@i"
+                               asp-route-pageIndex="@(Model.DanhSachThietBi.PageIndex - 1)"
                                asp-route-sortOrder="@Model.SortOrder"
                                asp-route-searchString="@Model.SearchString"
                                asp-route-maLoai="@Model.MaLoai"
@@ -266,28 +277,45 @@ Nội dung thực hiện: Module 2 - Giao diện Quản lý thiết bị: Tìm k
                                asp-route-trangThaiThietBi="@Model.TrangThaiThietBi"
                                asp-route-giaTu="@Model.GiaTu"
                                asp-route-giaDen="@Model.GiaDen">
-                                @i
+                                <i class="bi bi-chevron-left"></i>
                             </a>
                         </li>
-                    }
 
-                    <!-- Nút Trang sau -->
-                    <li class="page-item @(!Model.DanhSachThietBi.HasNextPage ? "disabled" : "")">
-                        <a class="page-link" asp-action="Index"
-                           asp-route-pageIndex="@(Model.DanhSachThietBi.PageIndex + 1)"
-                           asp-route-sortOrder="@Model.SortOrder"
-                           asp-route-searchString="@Model.SearchString"
-                           asp-route-maLoai="@Model.MaLoai"
-                           asp-route-hangSanXuat="@Model.HangSanXuat"
-                           asp-route-trangThaiBaoHanh="@Model.TrangThaiBaoHanh"
-                           asp-route-trangThaiThietBi="@Model.TrangThaiThietBi"
-                           asp-route-giaTu="@Model.GiaTu"
-                           asp-route-giaDen="@Model.GiaDen">
-                            Sau &raquo;
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
+                        @for (int i = 1; i <= Model.DanhSachThietBi.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.DanhSachThietBi.PageIndex ? "active" : "")">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-pageIndex="@i"
+                                   asp-route-sortOrder="@Model.SortOrder"
+                                   asp-route-searchString="@Model.SearchString"
+                                   asp-route-maLoai="@Model.MaLoai"
+                                   asp-route-hangSanXuat="@Model.HangSanXuat"
+                                   asp-route-trangThaiBaoHanh="@Model.TrangThaiBaoHanh"
+                                   asp-route-trangThaiThietBi="@Model.TrangThaiThietBi"
+                                   asp-route-giaTu="@Model.GiaTu"
+                                   asp-route-giaDen="@Model.GiaDen">
+                                    @i
+                                </a>
+                            </li>
+                        }
+
+                        <li class="page-item @(!Model.DanhSachThietBi.HasNextPage ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageIndex="@(Model.DanhSachThietBi.PageIndex + 1)"
+                               asp-route-sortOrder="@Model.SortOrder"
+                               asp-route-searchString="@Model.SearchString"
+                               asp-route-maLoai="@Model.MaLoai"
+                               asp-route-hangSanXuat="@Model.HangSanXuat"
+                               asp-route-trangThaiBaoHanh="@Model.TrangThaiBaoHanh"
+                               asp-route-trangThaiThietBi="@Model.TrangThaiThietBi"
+                               asp-route-giaTu="@Model.GiaTu"
+                               asp-route-giaDen="@Model.GiaDen">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
     </div>
 </div>

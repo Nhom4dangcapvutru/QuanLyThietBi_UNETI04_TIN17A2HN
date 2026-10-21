@@ -1,4 +1,4 @@
-﻿@* 
+@* 
     Họ và tên: Nguyễn Thị Thảo
     Mã sinh viên: 23103100092
     Nội dung thực hiện: View xác nhận hủy phiếu sửa chữa
@@ -10,81 +10,83 @@
     ViewData["Title"] = "Hủy phiếu sửa chữa #" + Model.MaPhieu;
 }
 
-<h2 class="mb-4 text-danger">🗑️ Hủy phiếu sửa chữa</h2>
-
-@* ==================== CẢNH BÁO ==================== *@
-<div class="alert alert-warning">
-    <h5 class="alert-heading">⚠️ Bạn có chắc chắn muốn hủy phiếu này?</h5>
-    <p class="mb-0">
-        Hành động này <strong>không thể hoàn tác</strong>. Phiếu sẽ bị đánh dấu là
-        <strong>"Đã hủy"</strong> và không thể tiếp tục xử lý.
-    </p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1 text-danger">
+            <i class="bi bi-x-octagon-fill me-2"></i>Hủy phiếu sửa chữa #@Model.MaPhieu
+        </h3>
+        <p class="text-muted small mb-0">Xác nhận yêu cầu hủy phiếu tiếp nhận thiết bị</p>
+    </div>
+    <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại chi tiết
+    </a>
 </div>
 
-@* ==================== THÔNG TIN PHIẾU ==================== *@
-<div class="card mb-4">
-    <div class="card-header bg-danger text-white">
-        <strong>Thông tin phiếu sẽ bị hủy</strong>
-    </div>
-    <div class="card-body">
-        <dl class="row mb-0">
-            <dt class="col-sm-3">Mã phiếu</dt>
-            <dd class="col-sm-9"><strong>#@Model.MaPhieu</strong></dd>
-
-            <dt class="col-sm-3">Ngày tiếp nhận</dt>
-            <dd class="col-sm-9">@Model.NgayTiepNhan.ToString("dd/MM/yyyy HH:mm")</dd>
-
-            <dt class="col-sm-3">Trạng thái hiện tại</dt>
-            <dd class="col-sm-9">
-                <span class="badge bg-info">@Model.TrangThai</span>
-            </dd>
-
-            <dt class="col-sm-3">Mức độ ưu tiên</dt>
-            <dd class="col-sm-9">@Model.MucDo</dd>
-
-            @if (Model.ThietBi != null)
-            {
-                <dt class="col-sm-3">Thiết bị</dt>
-                <dd class="col-sm-9">
-                    <strong>@Model.ThietBi.TenThietBi</strong>
-                    <br />
-                    <small class="text-muted">S/N: @Model.ThietBi.SerialNumber</small>
-                </dd>
-            }
-
-            <dt class="col-sm-3">Nội dung lỗi</dt>
-            <dd class="col-sm-9" style="white-space: pre-line;">@Model.NoiDungLoi</dd>
-        </dl>
+<div class="alert alert-warning d-flex align-items-center mb-4">
+    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+    <div>
+        <strong>Cảnh báo quan trọng:</strong> Hành động này <strong>không thể hoàn tác</strong>.
+        Sau khi hủy, phiếu sẽ chuyển sang trạng thái <strong>"Đã hủy"</strong> và không thể tiếp tục thực hiện dịch vụ.
     </div>
 </div>
 
-@* ==================== LƯU Ý ==================== *@
-<div class="alert alert-info">
-    <strong>ℹ️ Lưu ý:</strong>
-    <ul class="mb-0 mt-2">
-        <li>Chỉ có thể hủy phiếu khi đang ở trạng thái <strong>"Chờ tiếp nhận"</strong>.</li>
-        <li>Sau khi hủy, bạn có thể tạo phiếu sửa chữa mới cho thiết bị này.</li>
-        <li>Nếu thiết bị đang được kỹ thuật viên xử lý, không thể hủy.</li>
-    </ul>
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card-enterprise mb-4">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <span class="fw-bold" style="color: #0f172a;">
+                    <i class="bi bi-info-circle text-primary me-2"></i>Thông tin phiếu sửa chữa
+                </span>
+            </div>
+            <div class="card-body p-4">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted small">Mã phiếu tiếp nhận:</dt>
+                    <dd class="col-sm-8"><span class="badge bg-light text-dark border">#@Model.MaPhieu</span></dd>
+
+                    <dt class="col-sm-4 text-muted small">Ngày gửi phiếu:</dt>
+                    <dd class="col-sm-8">@Model.NgayTiepNhan.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                    <dt class="col-sm-4 text-muted small">Trạng thái hiện tại:</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge-status badge-status-tiepnhan">@Model.TrangThai</span>
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted small">Mức độ ưu tiên:</dt>
+                    <dd class="col-sm-8">@Model.MucDo</dd>
+
+                    @if (Model.ThietBi != null)
+                    {
+                        <dt class="col-sm-4 text-muted small">Thiết bị:</dt>
+                        <dd class="col-sm-8">
+                            <strong class="text-dark">@Model.ThietBi.TenThietBi</strong>
+                            <div class="text-muted small">S/N: @Model.ThietBi.SerialNumber</div>
+                        </dd>
+                    }
+
+                    <dt class="col-sm-4 text-muted small">Nội dung sự cố:</dt>
+                    <dd class="col-sm-8">
+                        <div class="p-3 rounded-2 bg-light border small" style="white-space: pre-line;">
+                            @Model.NoiDungLoi
+                        </div>
+                    </dd>
+                </dl>
+            </div>
+            <div class="card-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center border-top">
+                <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Không hủy, quay lại
+                </a>
+
+                <form asp-action="Huy" method="post" class="m-0">
+                    <input type="hidden" name="id" value="@Model.MaPhieu" />
+                    <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('Bạn có chắc chắn muốn hủy phiếu #@Model.MaPhieu không?');">
+                        <i class="bi bi-trash me-1"></i> Xác nhận hủy phiếu
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
-
-@* ==================== FORM XÁC NHẬN HỦY ==================== *@
-<form asp-action="Huy" method="post" class="mt-4">
-    <input type="hidden" name="id" value="@Model.MaPhieu" />
-
-    <button type="submit" class="btn btn-danger"
-            onclick="return confirm('Bạn chắc chắn muốn hủy phiếu #@Model.MaPhieu?');">
-        🗑️ Xác nhận hủy phiếu
-    </button>
-
-    <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-secondary">
-        ↩ Không hủy, quay lại chi tiết
-    </a>
-
-    <a asp-action="Index" class="btn btn-outline-secondary">
-        📋 Về danh sách phiếu
-    </a>
-</form>
 
 @section Scripts {
     @{

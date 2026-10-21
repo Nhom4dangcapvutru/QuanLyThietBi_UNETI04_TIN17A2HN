@@ -1,42 +1,75 @@
-﻿@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.LoaiThietBi
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.LoaiThietBi
 @{
     ViewData["Title"] = "Sửa loại thiết bị";
 }
 
-<h2>✏️ Sửa loại thiết bị</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: #0f172a;">
+            <i class="bi bi-pencil-square text-primary me-2"></i>Cập nhật Loại thiết bị #@Model.MaLoai
+        </h3>
+        <p class="text-muted small mb-0">Chỉnh sửa thông số phân loại và chính sách bảo hành mặc định</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại
+        </a>
+        <a asp-action="Details" asp-route-id="@Model.MaLoai" class="btn btn-outline-primary">
+            <i class="bi bi-eye me-1"></i> Xem chi tiết
+        </a>
+    </div>
+</div>
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-lg-7">
         <form asp-action="Edit" method="post">
             <input type="hidden" asp-for="MaLoai" />
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
 
-            <div class="mb-3">
-                <label asp-for="TenLoai" class="form-label"></label>
-                <input asp-for="TenLoai" class="form-control" />
-                <span asp-validation-for="TenLoai" class="text-danger"></span>
+            <div class="card-enterprise mb-4">
+                <div class="card-header bg-white py-3 px-4 border-bottom">
+                    <span class="fw-bold" style="color: #0f172a;">
+                        <i class="bi bi-tag text-primary me-2"></i>Thông tin loại thiết bị
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="TenLoai" class="form-label fw-semibold">Tên loại thiết bị <span class="text-danger">*</span></label>
+                            <input asp-for="TenLoai" class="form-control" />
+                            <span asp-validation-for="TenLoai" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="HangSanXuat" class="form-label fw-semibold">Hãng sản xuất <span class="text-danger">*</span></label>
+                            <input asp-for="HangSanXuat" class="form-control" />
+                            <span asp-validation-for="HangSanXuat" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ThoiHanBaoHanhMacDinh" class="form-label fw-semibold">Bảo hành mặc định (tháng) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input asp-for="ThoiHanBaoHanhMacDinh" class="form-control" type="number" min="1" max="120" />
+                                <span class="input-group-text">tháng</span>
+                            </div>
+                            <span asp-validation-for="ThoiHanBaoHanhMacDinh" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="MoTa" class="form-label fw-semibold">Mô tả chi tiết</label>
+                            <textarea asp-for="MoTa" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="MoTa" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light px-4 py-3 d-flex justify-content-end gap-2 border-top">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check2-circle me-1"></i> Lưu thay đổi
+                    </button>
+                </div>
             </div>
-
-            <div class="mb-3">
-                <label asp-for="HangSanXuat" class="form-label"></label>
-                <input asp-for="HangSanXuat" class="form-control" />
-                <span asp-validation-for="HangSanXuat" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="ThoiHanBaoHanhMacDinh" class="form-label"></label>
-                <input asp-for="ThoiHanBaoHanhMacDinh" class="form-control" type="number" min="1" max="120" />
-                <span asp-validation-for="ThoiHanBaoHanhMacDinh" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="MoTa" class="form-label"></label>
-                <textarea asp-for="MoTa" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="MoTa" class="text-danger"></span>
-            </div>
-
-            <button type="submit" class="btn btn-primary">💾 Cập nhật</button>
-            <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
         </form>
     </div>
 </div>

@@ -4,40 +4,85 @@
 
 @model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModels.TiepNhanViewModel
 @{
-    ViewData["Title"] = "Tiếp nhận phiếu";
+    ViewData["Title"] = "Tiếp nhận phiếu #" + Model.MaPhieu;
 }
 
-<h2>✅ Tiếp nhận phiếu #@Model.MaPhieu</h2>
-
-<div class="card mb-3">
-    <div class="card-body">
-        <p><strong>Khách hàng:</strong> @ViewBag.TenKhachHang</p>
-        <p><strong>Thiết bị:</strong> @ViewBag.TenThietBi</p>
-        <p><strong>Serial:</strong> @ViewBag.SerialNumber</p>
-        <p><strong>Nội dung lỗi:</strong> @ViewBag.NoiDungLoi</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: #0f172a;">
+            <i class="bi bi-box-arrow-in-down-right text-primary me-2"></i>Tiếp nhận phiếu sửa chữa #@Model.MaPhieu
+        </h3>
+        <p class="text-muted small mb-0">Xác nhận tiếp nhận thiết bị từ khách hàng vào quy trình bảo trì</p>
     </div>
+    <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại chi tiết
+    </a>
 </div>
 
-<form asp-action="TiepNhan" method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="MaPhieu" />
+<div class="row g-4">
+    <div class="col-lg-7">
+        <form asp-action="TiepNhan" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="MaPhieu" />
 
-    <div class="mb-3">
-        <label asp-for="MucDo" class="form-label"></label>
-        <select asp-for="MucDo" asp-items="Model.DanhSachMucDo" class="form-select"></select>
-        <span asp-validation-for="MucDo" class="text-danger"></span>
+            <div class="card-enterprise mb-4">
+                <div class="card-header bg-white py-3 px-4 border-bottom">
+                    <span class="fw-bold" style="color: #0f172a;">
+                        <i class="bi bi-check2-square text-primary me-2"></i>Xác nhận thông số tiếp nhận
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <label asp-for="MucDo" class="form-label fw-semibold">Mức độ ưu tiên xử lý</label>
+                        <select asp-for="MucDo" asp-items="Model.DanhSachMucDo" class="form-select"></select>
+                        <span asp-validation-for="MucDo" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="GhiChu" class="form-label fw-semibold">Ghi chú ngoại quan & tình trạng thực tế khi nhận</label>
+                        <textarea asp-for="GhiChu" class="form-control" rows="4"
+                                  placeholder="Mô tả phụ kiện đi kèm (sạc, túi...), tình trạng trầy xước, tem niêm phong..."></textarea>
+                        <span asp-validation-for="GhiChu" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light px-4 py-3 d-flex justify-content-end gap-2 border-top">
+                    <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-outline-secondary">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="bi bi-check-circle me-1"></i> Xác nhận tiếp nhận máy
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="GhiChu" class="form-label"></label>
-        <textarea asp-for="GhiChu" class="form-control" rows="3"
-                  placeholder="Ghi chú thêm về tình trạng khi nhận máy..."></textarea>
-        <span asp-validation-for="GhiChu" class="text-danger"></span>
-    </div>
+    <div class="col-lg-5">
+        <div class="card-enterprise h-100">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <span class="fw-bold" style="color: #0f172a;">
+                    <i class="bi bi-info-circle text-primary me-2"></i>Thông tin phiếu & Khách hàng
+                </span>
+            </div>
+            <div class="card-body p-4">
+                <dl class="row mb-0 small">
+                    <dt class="col-sm-5 text-muted">Khách hàng:</dt>
+                    <dd class="col-sm-7 fw-bold text-dark">@ViewBag.TenKhachHang</dd>
 
-    <button type="submit" class="btn btn-success">✅ Xác nhận tiếp nhận</button>
-    <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-secondary">Hủy</a>
-</form>
+                    <dt class="col-sm-5 text-muted">Thiết bị:</dt>
+                    <dd class="col-sm-7 fw-semibold">@ViewBag.TenThietBi</dd>
+
+                    <dt class="col-sm-5 text-muted">Serial Number:</dt>
+                    <dd class="col-sm-7"><span class="badge bg-light text-dark border">@ViewBag.SerialNumber</span></dd>
+
+                    <dt class="col-sm-5 text-muted">Sự cố phản ánh:</dt>
+                    <dd class="col-sm-7">
+                        <div class="p-2 rounded bg-light border">@ViewBag.NoiDungLoi</div>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
