@@ -1,6 +1,7 @@
 // Họ và tên: Nguyễn Văn Tú
 // Mã sinh viên: 23103100077
 // Nội dung thực hiện: Module 2 - Quản lý thiết bị: CRUD, Tìm kiếm, Lọc kết hợp, Sắp xếp, Phân trang LINQ
+// Phân quyền: Khách hàng xem danh sách, tìm kiếm và xem chi tiết; Nhân viên/Admin quản lý CRUD
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -23,6 +24,11 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             _context = context;
         }
 
+        private bool IsKhachHang()
+        {
+            return HttpContext.Session.GetString("VaiTro") == VaiTroConstant.KhachHang;
+        }
+
         // ==========================================
         // 1. DANH SÁCH + TÌM KIẾM + LỌC + SẮP XẾP + PHÂN TRANG
         // ==========================================
@@ -37,7 +43,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             string? sortOrder,
             int pageIndex = 1)
         {
-            // Truy vấn gốc (dùng Include để lấy thông tin bảng quan hệ)
+            // Truy vấn gốc
             var query = _context.ThietBis
                 .Include(t => t.LoaiThietBi)
                 .Include(t => t.KhachHang)
@@ -104,10 +110,10 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 "warranty_desc" => query.OrderByDescending(t => t.HanBaoHanh),
                 "price_asc" => query.OrderBy(t => t.GiaTri),
                 "price_desc" => query.OrderByDescending(t => t.GiaTri),
-                _ => query.OrderBy(t => t.TenThietBi) // Mặc định: Tên A -> Z
+                _ => query.OrderBy(t => t.TenThietBi)
             };
 
-            // D. PHÂN TRANG (Dùng Skip/Take qua PaginatedList)
+            // D. PHÂN TRANG
             var paginatedItems = await PaginatedList<ThietBi>.CreateAsync(query, pageIndex, PageSize);
 
             // E. LẤY DỮ LIỆU CHO CÁC DROPDOWN
@@ -141,7 +147,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
         // ==========================================
-        // 2. CHI TIẾT THIẾT BỊ
+        // 2. CHI TIẾT THIẾT BỊ (Ai cũng xem được)
         // ==========================================
         public async Task<IActionResult> Details(int? id)
         {
@@ -150,7 +156,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             var thietBi = await _context.ThietBis
                 .Include(t => t.LoaiThietBi)
                 .Include(t => t.KhachHang)
-                .Include(t => t.PhieuSuaChuas) // Xem lịch sử sửa chữa
+                .Include(t => t.PhieuSuaChuas)
                 .FirstOrDefaultAsync(m => m.MaThietBi == id);
 
             if (thietBi == null) return NotFound();
@@ -159,11 +165,17 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
         // ==========================================
-        // 3. THÊM MỚI THIẾT BỊ (CREATE)
+        // 3. THÊM MỚI THIẾT BỊ (CREATE - Chỉ Nhân viên/Admin)
         // ==========================================
         [HttpGet]
         public async Task<IActionResult> Create()
         {
+            if (IsKhachHang())
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền thêm mới thiết bị. Chức năng này dành cho Nhân viên/Admin.";
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
             await LoadDropdownDataAsync();
             var model = new ThietBi
             {
@@ -177,6 +189,12 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ThietBi thietBi)
         {
+            if (IsKhachHang())
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền thêm mới thiết bị. Chức năng này dành cho Nhân viên/Admin.";
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
             // Kiểm tra trùng SerialNumber
             if (await _context.ThietBis.AnyAsync(t => t.SerialNumber == thietBi.SerialNumber))
             {
@@ -202,11 +220,17 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
         // ==========================================
-        // 4. CHỈNH SỬA THIẾT BỊ (EDIT)
+        // 4. CHỈNH SỬA THIẾT BỊ (EDIT - Chỉ Nhân viên/Admin)
         // ==========================================
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
+            if (IsKhachHang())
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền chỉnh sửa thiết bị. Chức năng này dành cho Nhân viên/Admin.";
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
             if (id == null) return NotFound();
 
             var thietBi = await _context.ThietBis.FindAsync(id);
@@ -220,9 +244,14 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ThietBi thietBi)
         {
+            if (IsKhachHang())
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền chỉnh sửa thiết bị. Chức năng này dành cho Nhân viên/Admin.";
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
             if (id != thietBi.MaThietBi) return NotFound();
 
-            // Kiểm tra trùng SerialNumber với thiết bị khác
             if (await _context.ThietBis.AnyAsync(t => t.SerialNumber == thietBi.SerialNumber && t.MaThietBi != id))
             {
                 ModelState.AddModelError("SerialNumber", "Số Serial này đang trùng với thiết bị khác.");
@@ -257,11 +286,17 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
         // ==========================================
-        // 5. XÓA THIẾT BỊ (DELETE - Kiểm tra ràng buộc lịch sử)
+        // 5. XÓA THIẾT BỊ (DELETE - Chỉ Nhân viên/Admin)
         // ==========================================
         [HttpGet]
         public async Task<IActionResult> Delete(int? id)
         {
+            if (IsKhachHang())
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền xóa thiết bị. Chức năng này dành cho Nhân viên/Admin.";
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
             if (id == null) return NotFound();
 
             var thietBi = await _context.ThietBis
@@ -271,7 +306,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             if (thietBi == null) return NotFound();
 
-            // Kiểm tra nghiệp vụ: đã từng có phiếu sửa chữa hay chưa
             var countPhieu = await _context.PhieuSuaChuas.CountAsync(p => p.MaThietBi == id);
             ViewBag.HasHistory = countPhieu > 0;
             ViewBag.HistoryCount = countPhieu;
@@ -283,7 +317,12 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            // Nghiệp vụ bắt buộc (Mục 6.2): Không xóa đối tượng đã phát sinh lịch sử
+            if (IsKhachHang())
+            {
+                TempData["ErrorMessage"] = "Bạn không có quyền xóa thiết bị. Chức năng này dành cho Nhân viên/Admin.";
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
             var hasHistory = await _context.PhieuSuaChuas.AnyAsync(p => p.MaThietBi == id);
             if (hasHistory)
             {
@@ -302,7 +341,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // Hàm tiện ích load Dropdown lấy trực tiếp từ Database
         private async Task LoadDropdownDataAsync(int? selectedLoai = null, int? selectedKhachHang = null)
         {
             ViewBag.MaLoai = new SelectList(await _context.LoaiThietBis.AsNoTracking().ToListAsync(), "MaLoai", "TenLoai", selectedLoai);

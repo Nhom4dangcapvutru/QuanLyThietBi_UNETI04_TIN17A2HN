@@ -1,118 +1,185 @@
-﻿@model IEnumerable<QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.TaiKhoan>
+@model IEnumerable<QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.TaiKhoan>
 @{
     ViewData["Title"] = "Quản lý tài khoản";
 }
 
-<h2>👥 Quản lý tài khoản</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: #0f172a;">
+            <i class="bi bi-people-fill text-primary me-2"></i>Quản lý Tài khoản người dùng
+        </h3>
+        <p class="text-muted small mb-0">Quản trị phân quyền truy cập, tài khoản nhân viên và khách hàng</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-person-plus me-1"></i> Thêm tài khoản
+    </a>
+</div>
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success">@TempData["Success"]</div>
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4">
+        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+        <div>@TempData["Success"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
 }
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger">@TempData["Error"]</div>
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-4">
+        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+        <div>@TempData["Error"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
 }
 
-<form asp-action="Index" method="get" class="row g-2 mb-3">
-    <div class="col-md-4">
-        <input type="text" name="searchString" value="@ViewBag.SearchString" class="form-control" placeholder="Tìm theo tên đăng nhập / họ tên / email..." />
+<div class="card-enterprise mb-4">
+    <div class="p-3 border-bottom bg-white">
+        <form asp-action="Index" method="get" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="searchString" value="@ViewBag.SearchString" class="form-control border-start-0 ps-0" placeholder="Tên đăng nhập / họ tên / email..." />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <select name="vaiTro" class="form-select">
+                    <option value="">-- Tất cả vai trò --</option>
+                    <option value="Admin" selected="@(ViewBag.VaiTro == "Admin")">Admin</option>
+                    <option value="KyThuatVien" selected="@(ViewBag.VaiTro == "KyThuatVien")">Kỹ thuật viên</option>
+                    <option value="KhachHang" selected="@(ViewBag.VaiTro == "KhachHang")">Khách hàng</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="trangThai" class="form-select">
+                    <option value="">-- Tất cả trạng thái --</option>
+                    <option value="Hoạt động" selected="@(ViewBag.TrangThai == "Hoạt động")">Hoạt động</option>
+                    <option value="Bị khóa" selected="@(ViewBag.TrangThai == "Bị khóa")">Bị khóa</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2 justify-content-md-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel me-1"></i> Lọc
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Đặt lại
+                </a>
+            </div>
+        </form>
     </div>
-    <div class="col-md-2">
-        <select name="vaiTro" class="form-select">
-            <option value="">-- Vai trò --</option>
-            <option value="Admin" selected="@(ViewBag.VaiTro == "Admin")">Admin</option>
-            <option value="KyThuatVien" selected="@(ViewBag.VaiTro == "KyThuatVien")">Kỹ thuật viên</option>
-            <option value="KhachHang" selected="@(ViewBag.VaiTro == "KhachHang")">Khách hàng</option>
-        </select>
-    </div>
-    <div class="col-md-2">
-        <select name="trangThai" class="form-select">
-            <option value="">-- Trạng thái --</option>
-            <option value="Hoạt động" selected="@(ViewBag.TrangThai == "Hoạt động")">Hoạt động</option>
-            <option value="Bị khóa" selected="@(ViewBag.TrangThai == "Bị khóa")">Bị khóa</option>
-        </select>
-    </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary">🔍 Tìm</button>
-        <a asp-action="Index" class="btn btn-secondary">Reset</a>
-    </div>
-    <div class="col-md-2 text-end">
-        <a asp-action="Create" class="btn btn-success">➕ Thêm mới</a>
-    </div>
-</form>
 
-<table class="table table-bordered table-hover">
-    <thead class="table-dark">
-        <tr>
-            <th>Mã</th>
-            <th>Tên đăng nhập</th>
-            <th>Họ tên</th>
-            <th>Email</th>
-            <th>Vai trò</th>
-            <th>Trạng thái</th>
-            <th style="width: 260px;">Thao tác</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.MaTaiKhoan</td>
-                <td>@item.TenDangNhap</td>
-                <td>@item.HoTen</td>
-                <td>@item.Email</td>
-                <td>
-                    @switch (item.VaiTro)
+    <div class="table-responsive">
+        <table class="table-enterprise align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">Mã</th>
+                    <th>Tên đăng nhập</th>
+                    <th>Họ và tên</th>
+                    <th>Email</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th style="width: 170px;" class="text-end pe-3">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-people fs-1 d-block mb-2"></i>
+                            Không có tài khoản nào phù hợp với bộ lọc.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
                     {
-                        case "Admin":
-                            <span class="badge bg-danger">Admin</span>
-                            break;
-                        case "KyThuatVien":
-                            <span class="badge bg-info">Kỹ thuật viên</span>
-                            break;
-                        default:
-                            <span class="badge bg-secondary">Khách hàng</span>
-                            break;
+                        <tr>
+                            <td><span class="badge bg-light text-dark border">#@item.MaTaiKhoan</span></td>
+                            <td>
+                                <span class="fw-bold text-dark">@item.TenDangNhap</span>
+                            </td>
+                            <td>@item.HoTen</td>
+                            <td class="text-muted small">@item.Email</td>
+                            <td>
+                                @switch (item.VaiTro)
+                                {
+                                    case "Admin":
+                                        <span class="badge" style="background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca;">
+                                            <i class="bi bi-shield-lock-fill me-1"></i>Admin
+                                        </span>
+                                        break;
+                                    case "KyThuatVien":
+                                        <span class="badge" style="background-color: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;">
+                                            <i class="bi bi-tools me-1"></i>Kỹ thuật viên
+                                        </span>
+                                        break;
+                                    default:
+                                        <span class="badge" style="background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">
+                                            <i class="bi bi-person me-1"></i>Khách hàng
+                                        </span>
+                                        break;
+                                }
+                            </td>
+                            <td>
+                                @if (item.TrangThai == "Hoạt động")
+                                {
+                                    <span class="badge-status badge-status-hoanthanh">
+                                        <i class="bi bi-check-circle me-1"></i>Hoạt động
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-status-dahuy">
+                                        <i class="bi bi-lock me-1"></i>Bị khóa
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end pe-3">
+                                <div class="d-inline-flex gap-1 align-items-center">
+                                    <a asp-action="Details" asp-route-id="@item.MaTaiKhoan" class="btn-action btn-action-view" title="Chi tiết">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.MaTaiKhoan" class="btn-action btn-action-edit" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    <form asp-action="ToggleStatus" asp-route-id="@item.MaTaiKhoan" method="post" class="d-inline">
+                                        <button type="submit" class="btn-action @(item.TrangThai == "Hoạt động" ? "text-warning" : "text-success")"
+                                                title="@(item.TrangThai == "Hoạt động" ? "Khóa tài khoản" : "Kích hoạt tài khoản")">
+                                            <i class="bi @(item.TrangThai == "Hoạt động" ? "bi-lock" : "bi-unlock")"></i>
+                                        </button>
+                                    </form>
+
+                                    <a asp-action="Delete" asp-route-id="@item.MaTaiKhoan" class="btn-action btn-action-delete" title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
                     }
-                </td>
-                <td>
-                    @if (item.TrangThai == "Hoạt động")
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (ViewBag.TotalPages != null && ViewBag.TotalPages > 1)
+    {
+        <div class="p-3 border-top bg-white d-flex justify-content-between align-items-center">
+            <small class="text-muted">Trang @ViewBag.CurrentPage / @ViewBag.TotalPages</small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    @for (int i = 1; i <= ViewBag.TotalPages; i++)
                     {
-                        <span class="badge bg-success">Hoạt động</span>
+                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@i"
+                               asp-route-searchString="@ViewBag.SearchString"
+                               asp-route-vaiTro="@ViewBag.VaiTro"
+                               asp-route-trangThai="@ViewBag.TrangThai">@i</a>
+                        </li>
                     }
-                    else
-                    {
-                        <span class="badge bg-warning text-dark">Bị khóa</span>
-                    }
-                </td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.MaTaiKhoan" class="btn btn-sm btn-info">Chi tiết</a>
-                    <a asp-action="Edit" asp-route-id="@item.MaTaiKhoan" class="btn btn-sm btn-warning">Sửa</a>
-
-                    <form asp-action="ToggleStatus" asp-route-id="@item.MaTaiKhoan" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-sm @(item.TrangThai == "Hoạt động" ? "btn-secondary" : "btn-success")">
-                            @(item.TrangThai == "Hoạt động" ? "🔒 Khóa" : "🔓 Mở")
-                        </button>
-                    </form>
-
-                    <a asp-action="Delete" asp-route-id="@item.MaTaiKhoan" class="btn btn-sm btn-danger">Xóa</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<nav>
-    <ul class="pagination">
-        @for (int i = 1; i <= ViewBag.TotalPages; i++)
-        {
-            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                <a class="page-link" asp-action="Index" asp-route-page="@i"
-                   asp-route-searchString="@ViewBag.SearchString"
-                   asp-route-vaiTro="@ViewBag.VaiTro"
-                   asp-route-trangThai="@ViewBag.TrangThai">@i</a>
-            </li>
-        }
-    </ul>
-</nav>
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

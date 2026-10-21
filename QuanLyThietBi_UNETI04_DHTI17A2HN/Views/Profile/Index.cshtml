@@ -1,4 +1,4 @@
-﻿@* 
+@* 
     Họ và tên: Nguyễn Thị Thảo
     Mã sinh viên: 23103100092
     Nội dung thực hiện: View xem hồ sơ cá nhân
@@ -10,132 +10,198 @@
     ViewData["Title"] = "Hồ sơ cá nhân";
 }
 
-<h2 class="mb-4">👤 Hồ sơ cá nhân</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: #0f172a;">
+            <i class="bi bi-person-badge text-primary me-2"></i>Hồ sơ cá nhân
+        </h3>
+        <p class="text-muted small mb-0">Quản lý và cập nhật thông tin tài khoản cá nhân của bạn</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" class="btn btn-primary">
+            <i class="bi bi-pencil-square me-1"></i> Cập nhật thông tin
+        </a>
+        <a asp-controller="PhieuSuaChua" asp-action="Create" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i> Gửi phiếu sửa chữa
+        </a>
+    </div>
+</div>
 
 @* ==================== THÔNG BÁO ==================== *@
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show">
-        @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4">
+        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+        <div>@TempData["SuccessMessage"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
     </div>
 }
 
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger alert-dismissible fade show">
-        @TempData["ErrorMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-4">
+        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+        <div>@TempData["ErrorMessage"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
     </div>
 }
 
 @* ==================== THỐNG KÊ NHANH ==================== *@
-<div class="row mb-4">
+<div class="row g-3 mb-4">
     <div class="col-md-4">
-        <div class="card text-center bg-primary text-white">
-            <div class="card-body">
-                <h3>@Model.TongSoThietBi</h3>
-                <p class="mb-0">Thiết bị của tôi</p>
+        <div class="card-kpi p-3 d-flex align-items-center justify-content-between">
+            <div>
+                <div class="text-muted small fw-medium mb-1">Thiết bị của tôi</div>
+                <div class="h3 fw-bold mb-0" style="color: #0f172a;">@Model.TongSoThietBi</div>
+            </div>
+            <div class="rounded-3 d-flex align-items-center justify-content-center"
+                 style="width: 50px; height: 50px; background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                <i class="bi bi-laptop fs-3"></i>
             </div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card text-center bg-info text-white">
-            <div class="card-body">
-                <h3>@Model.TongSoPhieu</h3>
-                <p class="mb-0">Tổng phiếu sửa chữa</p>
+        <div class="card-kpi p-3 d-flex align-items-center justify-content-between">
+            <div>
+                <div class="text-muted small fw-medium mb-1">Tổng phiếu sửa chữa</div>
+                <div class="h3 fw-bold mb-0" style="color: #0f172a;">@Model.TongSoPhieu</div>
+            </div>
+            <div class="rounded-3 d-flex align-items-center justify-content-center"
+                 style="width: 50px; height: 50px; background: rgba(99, 102, 241, 0.1); color: #6366f1;">
+                <i class="bi bi-receipt fs-3"></i>
             </div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card text-center bg-warning text-dark">
-            <div class="card-body">
-                <h3>@Model.SoPhieuDangXuLy</h3>
-                <p class="mb-0">Phiếu đang xử lý</p>
+        <div class="card-kpi p-3 d-flex align-items-center justify-content-between">
+            <div>
+                <div class="text-muted small fw-medium mb-1">Phiếu đang xử lý</div>
+                <div class="h3 fw-bold mb-0" style="color: #d97706;">@Model.SoPhieuDangXuLy</div>
+            </div>
+            <div class="rounded-3 d-flex align-items-center justify-content-center"
+                 style="width: 50px; height: 50px; background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                <i class="bi bi-hourglass-split fs-3"></i>
             </div>
         </div>
     </div>
 </div>
 
 @* ==================== THÔNG TIN CÁ NHÂN ==================== *@
-<div class="card mb-4">
-    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-        <strong>Thông tin cá nhân</strong>
-        <a asp-action="Edit" class="btn btn-sm btn-warning">✏️ Sửa thông tin</a>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-6">
-                <dl class="row">
-                    <dt class="col-sm-4">Mã khách hàng</dt>
-                    <dd class="col-sm-8">@Model.MaKhachHang</dd>
-
-                    <dt class="col-sm-4">Tên đăng nhập</dt>
-                    <dd class="col-sm-8">@(Model.TenDangNhap ?? "Chưa liên kết")</dd>
-
-                    <dt class="col-sm-4">Họ và tên</dt>
-                    <dd class="col-sm-8"><strong>@Model.HoTen</strong></dd>
-
-                    <dt class="col-sm-4">Số điện thoại</dt>
-                    <dd class="col-sm-8">@Model.SoDienThoai</dd>
-
-                    <dt class="col-sm-4">Email</dt>
-                    <dd class="col-sm-8">@Model.Email</dd>
-                </dl>
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="card-enterprise h-100 p-4 text-center">
+            <div class="mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                 style="width: 80px; height: 80px; background: linear-space; background-color: #e0e7ff; color: #4338ca; font-size: 2rem; font-weight: 700;">
+                @(string.IsNullOrWhiteSpace(Model.HoTen) ? "U" : Model.HoTen.Substring(0, 1).ToUpper())
             </div>
-            <div class="col-md-6">
-                <dl class="row">
-                    <dt class="col-sm-4">Địa chỉ</dt>
-                    <dd class="col-sm-8">@(Model.DiaChi ?? "Chưa cập nhật")</dd>
+            <h5 class="fw-bold mb-1" style="color: #0f172a;">@Model.HoTen</h5>
+            <div class="text-muted small mb-3">@@@(Model.TenDangNhap ?? "chua_lien_ket")</div>
 
-                    <dt class="col-sm-4">CCCD</dt>
-                    <dd class="col-sm-8">@(Model.CCCD ?? "Chưa cập nhật")</dd>
+            <div class="d-flex justify-content-center gap-2 mb-4">
+                @if (Model.LoaiKhachHang == "Doanh nghiệp")
+                {
+                    <span class="badge bg-primary px-3 py-2">
+                        <i class="bi bi-building me-1"></i>Doanh nghiệp
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary px-3 py-2">
+                        <i class="bi bi-person me-1"></i>Cá nhân
+                    </span>
+                }
 
-                    <dt class="col-sm-4">Loại khách hàng</dt>
-                    <dd class="col-sm-8">
-                        @if (Model.LoaiKhachHang == "Doanh nghiệp")
-                        {
-                            <span class="badge bg-info">@Model.LoaiKhachHang</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">@Model.LoaiKhachHang</span>
-                        }
-                    </dd>
+                @if (Model.TrangThai == "Hoạt động")
+                {
+                    <span class="badge bg-success px-3 py-2">
+                        <i class="bi bi-check-circle me-1"></i>Hoạt động
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-danger px-3 py-2">
+                        <i class="bi bi-lock me-1"></i>@Model.TrangThai
+                    </span>
+                }
+            </div>
 
-                    @if (!string.IsNullOrWhiteSpace(Model.MaSoThue))
-                    {
-                        <dt class="col-sm-4">Mã số thuế</dt>
-                        <dd class="col-sm-8">@Model.MaSoThue</dd>
-                    }
+            <hr class="my-3 opacity-25" />
 
-                    <dt class="col-sm-4">Trạng thái</dt>
-                    <dd class="col-sm-8">
-                        @if (Model.TrangThai == "Hoạt động")
-                        {
-                            <span class="badge bg-success">@Model.TrangThai</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-danger">@Model.TrangThai</span>
-                        }
-                    </dd>
-
-                    <dt class="col-sm-4">Ngày tạo</dt>
-                    <dd class="col-sm-8">@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</dd>
-                </dl>
+            <div class="text-start small">
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted"><i class="bi bi-qr-code me-1"></i> Mã KH:</span>
+                    <span class="fw-semibold">#@Model.MaKhachHang</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted"><i class="bi bi-calendar3 me-1"></i> Ngày tạo:</span>
+                    <span class="fw-semibold">@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.MaSoThue))
+                {
+                    <div class="d-flex justify-content-between py-2">
+                        <span class="text-muted"><i class="bi bi-file-earmark-text me-1"></i> MST:</span>
+                        <span class="fw-semibold">@Model.MaSoThue</span>
+                    </div>
+                }
             </div>
         </div>
     </div>
-</div>
 
-@* ==================== NÚT THAO TÁC ==================== *@
-<div class="mt-4">
-    <a asp-action="Edit" class="btn btn-warning">✏️ Sửa hồ sơ</a>
-    <a asp-controller="PhieuSuaChua" asp-action="Index" class="btn btn-info">
-        📋 Xem phiếu sửa chữa của tôi
-    </a>
-    <a asp-controller="PhieuSuaChua" asp-action="Create" class="btn btn-success">
-        ➕ Tạo phiếu sửa chữa mới
-    </a>
+    <div class="col-lg-8">
+        <div class="card-enterprise h-100">
+            <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                <span class="fw-bold" style="color: #0f172a;">
+                    <i class="bi bi-info-circle text-primary me-2"></i>Chi tiết thông tin liên hệ
+                </span>
+                <a asp-action="Edit" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil me-1"></i> Sửa
+                </a>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+                            <div class="text-muted small mb-1">
+                                <i class="bi bi-telephone text-primary me-1"></i> Số điện thoại
+                            </div>
+                            <div class="fw-semibold fs-6">@(string.IsNullOrWhiteSpace(Model.SoDienThoai) ? "—" : Model.SoDienThoai)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+                            <div class="text-muted small mb-1">
+                                <i class="bi bi-envelope text-primary me-1"></i> Địa chỉ Email
+                            </div>
+                            <div class="fw-semibold fs-6">@(string.IsNullOrWhiteSpace(Model.Email) ? "—" : Model.Email)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+                            <div class="text-muted small mb-1">
+                                <i class="bi bi-card-heading text-primary me-1"></i> Căn cước công dân (CCCD)
+                            </div>
+                            <div class="fw-semibold fs-6">@(string.IsNullOrWhiteSpace(Model.CCCD) ? "Chưa cập nhật" : Model.CCCD)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+                            <div class="text-muted small mb-1">
+                                <i class="bi bi-geo-alt text-primary me-1"></i> Địa chỉ liên hệ
+                            </div>
+                            <div class="fw-semibold fs-6">@(string.IsNullOrWhiteSpace(Model.DiaChi) ? "Chưa cập nhật" : Model.DiaChi)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex gap-2">
+                    <a asp-controller="PhieuSuaChua" asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-card-checklist me-1"></i> Lịch sử phiếu sửa chữa của tôi
+                    </a>
+                    <a asp-controller="ThietBi" asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-laptop me-1"></i> Danh sách thiết bị của tôi
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

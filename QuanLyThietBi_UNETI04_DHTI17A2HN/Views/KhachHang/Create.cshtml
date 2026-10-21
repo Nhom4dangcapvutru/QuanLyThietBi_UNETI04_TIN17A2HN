@@ -1,4 +1,4 @@
-﻿@* 
+@* 
     Họ và tên: Nguyễn Thị Thảo
     Mã sinh viên: 23103100092
     Nội dung thực hiện: View thêm mới khách hàng
@@ -6,90 +6,102 @@
 @model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.KhachHang
 
 @{
-    ViewData["Title"] = "Thêm khách hàng";
+    ViewData["Title"] = "Thêm khách hàng mới";
 }
 
-<h2 class="mb-4">➕ Thêm khách hàng mới</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: #0f172a;">
+            <i class="bi bi-person-plus-fill text-primary me-2"></i>Thêm khách hàng mới
+        </h3>
+        <p class="text-muted small mb-0">Đăng ký thông tin hồ sơ khách hàng vào hệ thống</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+    </a>
+</div>
 
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-lg-8">
         <form asp-action="Create" method="post">
-            @* Hiển thị lỗi tổng quát *@
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-            @* ==================== HỌ TÊN ==================== *@
-            <div class="mb-3">
-                <label asp-for="HoTen" class="form-label"></label>
-                <input asp-for="HoTen" class="form-control" placeholder="Nhập họ tên khách hàng" />
-                <span asp-validation-for="HoTen" class="text-danger"></span>
-            </div>
+            <div class="card-enterprise mb-4">
+                <div class="card-header bg-white py-3 px-4 border-bottom">
+                    <span class="fw-bold" style="color: #0f172a;">
+                        <i class="bi bi-card-heading text-primary me-2"></i>Thông tin định danh & Liên lạc
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="HoTen" class="form-label fw-semibold">Họ và tên <span class="text-danger">*</span></label>
+                            <input asp-for="HoTen" class="form-control" placeholder="Nhập họ tên đầy đủ..." />
+                            <span asp-validation-for="HoTen" class="text-danger small"></span>
+                        </div>
 
-            @* ==================== SỐ ĐIỆN THOẠI ==================== *@
-            <div class="mb-3">
-                <label asp-for="SoDienThoai" class="form-label"></label>
-                <input asp-for="SoDienThoai" class="form-control" placeholder="VD: 0901234567" />
-                <span asp-validation-for="SoDienThoai" class="text-danger"></span>
-            </div>
+                        <div class="col-md-6">
+                            <label asp-for="SoDienThoai" class="form-label fw-semibold">Số điện thoại <span class="text-danger">*</span></label>
+                            <input asp-for="SoDienThoai" class="form-control" placeholder="VD: 0901234567" />
+                            <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
+                        </div>
 
-            @* ==================== EMAIL ==================== *@
-            <div class="mb-3">
-                <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" type="email" class="form-control" placeholder="VD: khachhang@gmail.com" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label fw-semibold">Địa chỉ Email <span class="text-danger">*</span></label>
+                            <input asp-for="Email" type="email" class="form-control" placeholder="VD: email@gmail.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
 
-            @* ==================== ĐỊA CHỈ ==================== *@
-            <div class="mb-3">
-                <label asp-for="DiaChi" class="form-label"></label>
-                <textarea asp-for="DiaChi" class="form-control" rows="2" placeholder="Địa chỉ liên hệ"></textarea>
-                <span asp-validation-for="DiaChi" class="text-danger"></span>
-            </div>
+                        <div class="col-md-6">
+                            <label asp-for="CCCD" class="form-label fw-semibold">Số CCCD</label>
+                            <input asp-for="CCCD" class="form-control" placeholder="9 - 12 chữ số" />
+                            <span asp-validation-for="CCCD" class="text-danger small"></span>
+                        </div>
 
-            @* ==================== CCCD ==================== *@
-            <div class="mb-3">
-                <label asp-for="CCCD" class="form-label"></label>
-                <input asp-for="CCCD" class="form-control" placeholder="9-12 chữ số" />
-                <span asp-validation-for="CCCD" class="text-danger"></span>
-            </div>
+                        <div class="col-md-6">
+                            <label asp-for="LoaiKhachHang" class="form-label fw-semibold">Loại khách hàng</label>
+                            <select asp-for="LoaiKhachHang" class="form-select" id="loaiKhachHang">
+                                <option value="Cá nhân">Cá nhân</option>
+                                <option value="Doanh nghiệp">Doanh nghiệp</option>
+                            </select>
+                            <span asp-validation-for="LoaiKhachHang" class="text-danger small"></span>
+                        </div>
 
-            @* ==================== LOẠI KHÁCH HÀNG ==================== *@
-            <div class="mb-3">
-                <label asp-for="LoaiKhachHang" class="form-label"></label>
-                <select asp-for="LoaiKhachHang" class="form-select" id="loaiKhachHang">
-                    <option value="Cá nhân">Cá nhân</option>
-                    <option value="Doanh nghiệp">Doanh nghiệp</option>
-                </select>
-                <span asp-validation-for="LoaiKhachHang" class="text-danger"></span>
-            </div>
+                        <div class="col-md-6" id="khungMaSoThue" style="display:none;">
+                            <label asp-for="MaSoThue" class="form-label fw-semibold">Mã số thuế</label>
+                            <input asp-for="MaSoThue" class="form-control" placeholder="Mã số thuế doanh nghiệp" />
+                            <span asp-validation-for="MaSoThue" class="text-danger small"></span>
+                        </div>
 
-            @* ==================== MÃ SỐ THUẾ (chỉ hiện khi chọn Doanh nghiệp) ==================== *@
-            <div class="mb-3" id="khungMaSoThue" style="display:none;">
-                <label asp-for="MaSoThue" class="form-label"></label>
-                <input asp-for="MaSoThue" class="form-control" placeholder="Mã số thuế doanh nghiệp" />
-                <span asp-validation-for="MaSoThue" class="text-danger"></span>
-            </div>
+                        <div class="col-md-6">
+                            <label asp-for="TrangThai" class="form-label fw-semibold">Trạng thái hồ sơ</label>
+                            <select asp-for="TrangThai" class="form-select">
+                                <option value="Hoạt động">Hoạt động</option>
+                                <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                            </select>
+                            <span asp-validation-for="TrangThai" class="text-danger small"></span>
+                        </div>
 
-            @* ==================== TRẠNG THÁI ==================== *@
-            <div class="mb-3">
-                <label asp-for="TrangThai" class="form-label"></label>
-                <select asp-for="TrangThai" class="form-select">
-                    <option value="Hoạt động">Hoạt động</option>
-                    <option value="Ngừng hoạt động">Ngừng hoạt động</option>
-                </select>
-                <span asp-validation-for="TrangThai" class="text-danger"></span>
-            </div>
+                        <div class="col-12">
+                            <label asp-for="DiaChi" class="form-label fw-semibold">Địa chỉ liên hệ</label>
+                            <textarea asp-for="DiaChi" class="form-control" rows="2" placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."></textarea>
+                            <span asp-validation-for="DiaChi" class="text-danger small"></span>
+                        </div>
 
-            @* ==================== GHI CHÚ ==================== *@
-            <div class="mb-3">
-                <label asp-for="GhiChu" class="form-label"></label>
-                <textarea asp-for="GhiChu" class="form-control" rows="2" placeholder="Ghi chú nội bộ (nếu có)"></textarea>
-                <span asp-validation-for="GhiChu" class="text-danger"></span>
-            </div>
+                        <div class="col-12">
+                            <label asp-for="GhiChu" class="form-label fw-semibold">Ghi chú bổ sung</label>
+                            <textarea asp-for="GhiChu" class="form-control" rows="2" placeholder="Ghi chú nội bộ (nếu có)..."></textarea>
+                            <span asp-validation-for="GhiChu" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
 
-            @* ==================== NÚT ==================== *@
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">💾 Lưu</button>
-                <a asp-action="Index" class="btn btn-secondary">↩ Quay lại</a>
+                <div class="card-footer bg-light px-4 py-3 d-flex justify-content-end gap-2 border-top">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check2-circle me-1"></i> Lưu khách hàng
+                    </button>
+                </div>
             </div>
         </form>
     </div>
@@ -101,21 +113,13 @@
     }
 
     <script>
-        // Hiện/ẩn ô Mã số thuế dựa vào Loại khách hàng
-        document.addEventListener("DOMContentLoaded", function () {
-            var loaiSelect = document.getElementById("loaiKhachHang");
-            var khungMaSoThue = document.getElementById("khungMaSoThue");
-
-            function toggleMaSoThue() {
-                if (loaiSelect.value === "Doanh nghiệp") {
-                    khungMaSoThue.style.display = "block";
-                } else {
-                    khungMaSoThue.style.display = "none";
-                }
+        document.getElementById("loaiKhachHang")?.addEventListener("change", function () {
+            var khungMST = document.getElementById("khungMaSoThue");
+            if (this.value === "Doanh nghiệp") {
+                khungMST.style.display = "block";
+            } else {
+                khungMST.style.display = "none";
             }
-
-            loaiSelect.addEventListener("change", toggleMaSoThue);
-            toggleMaSoThue(); // Gọi lần đầu khi load
         });
     </script>
 }

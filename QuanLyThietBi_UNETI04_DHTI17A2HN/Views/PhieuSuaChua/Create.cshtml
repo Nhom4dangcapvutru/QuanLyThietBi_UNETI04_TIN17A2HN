@@ -1,4 +1,4 @@
-﻿@* 
+@* 
     Họ và tên: Nguyễn Thị Thảo
     Mã sinh viên: 23103100092
     Nội dung thực hiện: View tạo phiếu sửa chữa
@@ -10,125 +10,175 @@
     ViewData["Title"] = "Tạo phiếu sửa chữa";
 }
 
-<h2 class="mb-4">➕ Tạo phiếu sửa chữa mới</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: #0f172a;">
+            <i class="bi bi-file-earmark-plus-fill text-primary me-2"></i>Tạo phiếu yêu cầu sửa chữa
+        </h3>
+        <p class="text-muted small mb-0">Đăng ký thông tin thiết bị gặp sự cố để kỹ thuật viên kiểm tra</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Danh sách phiếu
+    </a>
+</div>
 
 @if (!string.IsNullOrWhiteSpace(Model.TenKhachHang))
 {
-    <div class="alert alert-info">
-        Xin chào <strong>@Model.TenKhachHang</strong>! Vui lòng chọn thiết bị cần sửa và mô tả lỗi.
+    <div class="alert alert-info d-flex align-items-center mb-4">
+        <i class="bi bi-person-check-fill me-2 fs-5"></i>
+        <div>
+            Khách hàng gửi yêu cầu: <strong>@Model.TenKhachHang</strong> (Mã KH: #@Model.MaKhachHang)
+        </div>
     </div>
 }
 
-<div class="row">
-    <div class="col-md-8">
+<div class="row g-4">
+    <div class="col-lg-8">
         <form asp-action="Create" method="post">
-            @* Hiển thị lỗi tổng quát *@
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-            @* Ẩn mã khách hàng *@
             <input type="hidden" asp-for="MaKhachHang" />
             <input type="hidden" asp-for="TenKhachHang" />
 
-            @* ==================== CHỌN THIẾT BỊ ==================== *@
-            <div class="mb-3">
-                <label asp-for="MaThietBi" class="form-label">
-                    <strong>Thiết bị cần sửa</strong>
-                </label>
-                <select asp-for="MaThietBi" class="form-select" id="chonThietBi">
-                    <option value="">-- Chọn thiết bị --</option>
-                    @foreach (var item in Model.DanhSachThietBi)
-                    {
-                        <option value="@item.Value">@item.Text</option>
-                    }
-                </select>
-                <span asp-validation-for="MaThietBi" class="text-danger"></span>
-                <small class="text-muted">
-                    Chỉ hiển thị thiết bị thuộc quyền sở hữu của bạn.
-                </small>
-            </div>
+            <div class="card-enterprise mb-4">
+                <div class="card-header bg-white py-3 px-4 border-bottom">
+                    <span class="fw-bold" style="color: #0f172a;">
+                        <i class="bi bi-tools text-primary me-2"></i>Thông tin sự cố thiết bị
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    @* Chọn thiết bị *@
+                    <div class="mb-3">
+                        <label asp-for="MaThietBi" class="form-label fw-semibold">
+                            Thiết bị cần bảo hành / sửa chữa <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="MaThietBi" class="form-select" id="chonThietBi">
+                            <option value="">-- Chọn thiết bị của bạn --</option>
+                            @foreach (var item in Model.DanhSachThietBi)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                        <span asp-validation-for="MaThietBi" class="text-danger small"></span>
+                        <div class="form-text small text-muted">
+                            <i class="bi bi-info-circle me-1"></i>Hệ thống tự động lọc danh sách thiết bị thuộc sở hữu của bạn.
+                        </div>
+                    </div>
 
-            @* ==================== THÔNG TIN THIẾT BỊ ĐƯỢC CHỌN ==================== *@
-            @if (Model.TenThietBiDuocChon != null)
-            {
-                <div class="card mb-3 border-info">
-                    <div class="card-body bg-light">
-                        <strong>Thiết bị đang chọn:</strong> @Model.TenThietBiDuocChon
-                        @if (Model.HanBaoHanhThietBi.HasValue)
-                        {
-                            <br />
-                            <strong>Hạn bảo hành:</strong>
-                            @Model.HanBaoHanhThietBi.Value.ToString("dd/MM/yyyy")
-                            @if (Model.ConBaoHanh)
+                    @* Preview thiết bị *@
+                    @if (Model.TenThietBiDuocChon != null)
+                    {
+                        <div class="p-3 mb-3 rounded-3" style="background-color: #f0fdf4; border: 1px solid #bbf7d0;">
+                            <div class="fw-semibold text-success mb-1">
+                                <i class="bi bi-check-circle me-1"></i>Thiết bị: @Model.TenThietBiDuocChon
+                            </div>
+                            @if (Model.HanBaoHanhThietBi.HasValue)
                             {
-                                <span class="badge bg-success">Còn bảo hành</span>
+                                <div class="small text-muted">
+                                    Hạn bảo hành: @Model.HanBaoHanhThietBi.Value.ToString("dd/MM/yyyy")
+                                    @if (Model.ConBaoHanh)
+                                    {
+                                        <span class="badge bg-success ms-2">Còn bảo hành</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark ms-2">Hết bảo hành (tính phí)</span>
+                                    }
+                                </div>
                             }
-                            else
+                        </div>
+                    }
+
+                    @* Mức độ ưu tiên *@
+                    <div class="mb-3">
+                        <label asp-for="MucDo" class="form-label fw-semibold">
+                            Mức độ ưu tiên / tính khẩn cấp <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="MucDo" class="form-select">
+                            @foreach (var item in Model.DanhSachMucDo)
                             {
-                                <span class="badge bg-warning text-dark">Hết bảo hành (sửa tính phí)</span>
+                                <option value="@item.Value">@item.Text</option>
                             }
-                        }
+                        </select>
+                        <span asp-validation-for="MucDo" class="text-danger small"></span>
+                    </div>
+
+                    @* Mô tả lỗi *@
+                    <div class="mb-3">
+                        <label asp-for="NoiDungLoi" class="form-label fw-semibold">
+                            Mô tả chi tiết tình trạng lỗi <span class="text-danger">*</span>
+                        </label>
+                        <textarea asp-for="NoiDungLoi" class="form-control" rows="5"
+                                  placeholder="Mô tả cụ thể hiện tượng hư hỏng, âm thanh lạ, đèn báo lỗi, thời điểm phát sinh lỗi..."></textarea>
+                        <span asp-validation-for="NoiDungLoi" class="text-danger small"></span>
+                        <div class="form-text small text-muted">Từ 10 đến 1000 ký tự. Mô tả càng kỹ sẽ giúp kỹ thuật viên chẩn đoán nhanh hơn.</div>
                     </div>
                 </div>
-            }
 
-            @* ==================== MỨC ĐỘ ƯU TIÊN ==================== *@
-            <div class="mb-3">
-                <label asp-for="MucDo" class="form-label">
-                    <strong>Mức độ ưu tiên</strong>
-                </label>
-                <select asp-for="MucDo" class="form-select">
-                    @foreach (var item in Model.DanhSachMucDo)
-                    {
-                        <option value="@item.Value">@item.Text</option>
-                    }
-                </select>
-                <span asp-validation-for="MucDo" class="text-danger"></span>
-            </div>
-
-            @* ==================== MÔ TẢ LỖI ==================== *@
-            <div class="mb-3">
-                <label asp-for="NoiDungLoi" class="form-label">
-                    <strong>Mô tả chi tiết lỗi</strong>
-                </label>
-                <textarea asp-for="NoiDungLoi" class="form-control" rows="5"
-                          placeholder="Mô tả chi tiết tình trạng lỗi của thiết bị: hiện tượng, thời điểm xuất hiện, các bước đã thử..."></textarea>
-                <span asp-validation-for="NoiDungLoi" class="text-danger"></span>
-                <small class="text-muted">Từ 10 đến 1000 ký tự. Càng chi tiết càng giúp kỹ thuật viên xử lý nhanh.</small>
-            </div>
-
-            @* ==================== LƯU Ý ==================== *@
-            <div class="alert alert-warning">
-                <strong>ℹ️ Lưu ý:</strong>
-                <ul class="mb-0 mt-2">
-                    <li>Sau khi gửi, phiếu sẽ ở trạng thái <strong>"Chờ tiếp nhận"</strong>.</li>
-                    <li>Bạn có thể <strong>hủy phiếu</strong> khi còn ở trạng thái này.</li>
-                    <li>Mỗi thiết bị chỉ có thể có <strong>1 phiếu đang xử lý</strong> tại một thời điểm.</li>
-                </ul>
-            </div>
-
-            @* ==================== NÚT ==================== *@
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">📤 Gửi phiếu sửa chữa</button>
-                <a asp-action="Index" class="btn btn-secondary">↩ Quay lại danh sách</a>
+                <div class="card-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center border-top">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Hủy
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-send-fill me-1"></i> Gửi phiếu tiếp nhận
+                    </button>
+                </div>
             </div>
         </form>
     </div>
 
-    @* ==================== CỘT PHẢI: HƯỚNG DẪN ==================== *@
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <strong>📖 Hướng dẫn</strong>
+    @* Hướng dẫn & Quy trình *@
+    <div class="col-lg-4">
+        <div class="card-enterprise mb-4">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <span class="fw-bold" style="color: #0f172a;">
+                    <i class="bi bi-journal-text text-primary me-2"></i>Quy trình tiếp nhận
+                </span>
             </div>
-            <div class="card-body">
-                <ol class="mb-0">
-                    <li class="mb-2">Chọn thiết bị cần sửa từ dropdown.</li>
-                    <li class="mb-2">Chọn mức độ ưu tiên phù hợp.</li>
-                    <li class="mb-2">Mô tả chi tiết tình trạng lỗi.</li>
-                    <li class="mb-2">Nhấn "Gửi phiếu sửa chữa".</li>
-                    <li>Chờ kỹ thuật viên tiếp nhận và xử lý.</li>
-                </ol>
+            <div class="card-body p-4">
+                <div class="d-flex mb-3">
+                    <div class="me-3 rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 28px; height: 28px; font-weight: 700; font-size: 0.85rem;">1</div>
+                    <div>
+                        <div class="fw-semibold">Gửi yêu cầu</div>
+                        <div class="small text-muted">Phiếu khởi tạo với trạng thái <em>Chờ tiếp nhận</em>.</div>
+                    </div>
+                </div>
+                <div class="d-flex mb-3">
+                    <div class="me-3 rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 28px; height: 28px; font-weight: 700; font-size: 0.85rem;">2</div>
+                    <div>
+                        <div class="fw-semibold">Tiếp nhận & Chẩn đoán</div>
+                        <div class="small text-muted">Kỹ thuật viên kiểm tra lỗi và đề xuất hướng xử lý.</div>
+                    </div>
+                </div>
+                <div class="d-flex mb-3">
+                    <div class="me-3 rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 28px; height: 28px; font-weight: 700; font-size: 0.85rem;">3</div>
+                    <div>
+                        <div class="fw-semibold">Sửa chữa linh kiện</div>
+                        <div class="small text-muted">Thay thế, sửa chữa theo hạng mục chi tiết.</div>
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="me-3 rounded-circle bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 28px; height: 28px; font-weight: 700; font-size: 0.85rem;">4</div>
+                    <div>
+                        <div class="fw-semibold">Bàn giao & Hoàn thành</div>
+                        <div class="small text-muted">Nghiệm thu, cập nhật phiếu và bàn giao thiết bị.</div>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <div class="alert alert-warning border-0 shadow-sm">
+            <div class="fw-bold mb-1">
+                <i class="bi bi-shield-exclamation me-1"></i> Lưu ý quy định:
+            </div>
+            <ul class="small mb-0 ps-3">
+                <li>Bạn có quyền hủy phiếu khi đang ở trạng thái <strong>Chờ tiếp nhận</strong>.</li>
+                <li>Mỗi thiết bị chỉ được tạo 1 phiếu đang xử lý đồng thời.</li>
+            </ul>
         </div>
     </div>
 </div>
@@ -137,12 +187,4 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
-    <script>
-        // Khi chọn thiết bị, hiển thị preview (tùy chọn AJAX nâng cao)
-        // Hiện tại chỉ log ra console, có thể mở rộng sau
-        document.getElementById("chonThietBi")?.addEventListener("change", function () {
-            console.log("Đã chọn thiết bị: " + this.value);
-        });
-    </script>
 }

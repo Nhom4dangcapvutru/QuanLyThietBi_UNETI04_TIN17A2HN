@@ -1,99 +1,207 @@
-﻿@* 
+@* 
 // Họ và tên: Nguyễn Văn Tú
 // Mã sinh viên: 23103100077
 Nội dung thực hiện: Module 2 - Giao diện Xem chi tiết thiết bị & Lịch sử sửa chữa
 *@
 
 @model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.ThietBi
+@using QuanLyThietBi_UNETI04_DHTI17A2HN.Helpers
 
 @{
     ViewData["Title"] = "Chi tiết thiết bị";
+    bool isKhachHang = SessionHelper.IsKhachHang(Context.Session);
 }
 
-<div class="container py-4">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-info text-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold">Thông tin chi tiết thiết bị #@Model.MaThietBi</h5>
-            <div>
-                <a asp-action="Edit" asp-route-id="@Model.MaThietBi" class="btn btn-sm btn-light">Sửa thông tin</a>
-                <a asp-action="Index" class="btn btn-sm btn-outline-light">Quay lại danh sách</a>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: #0f172a;">
+            <i class="bi bi-laptop text-primary me-2"></i>Chi tiết thiết bị #@Model.MaThietBi
+        </h3>
+        <p class="text-muted small mb-0">Hồ sơ thiết bị, thời hạn bảo hành và lịch sử bảo trì sửa chữa</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+        </a>
+        @if (!isKhachHang)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.MaThietBi" class="btn btn-primary">
+                <i class="bi bi-pencil me-1"></i> Sửa thông tin
+            </a>
+        }
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-7">
+        <div class="card-enterprise h-100">
+            <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                <span class="fw-bold" style="color: #0f172a;">
+                    <i class="bi bi-info-circle text-primary me-2"></i>Thông số kỹ thuật & Sở hữu
+                </span>
+                <span class="badge bg-light text-dark border">
+                    <i class="bi bi-upc-scan me-1"></i>@Model.SerialNumber
+                </span>
             </div>
-        </div>
-        <div class="card-body p-4">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <p><strong>Tên thiết bị:</strong> @Model.TenThietBi</p>
-                    <p><strong>Số Serial:</strong> <span class="badge bg-secondary font-monospace">@Model.SerialNumber</span></p>
-                    <p><strong>Loại thiết bị:</strong> @Model.LoaiThietBi?.TenLoai (@Model.LoaiThietBi?.HangSanXuat)</p>
-                    <p><strong>Chủ sở hữu:</strong> @Model.KhachHang?.HoTen (SĐT: @Model.KhachHang?.SoDienThoai)</p>
-                </div>
-                <div class="col-md-6">
-                    <p><strong>Ngày mua:</strong> @Model.NgayMua.ToString("dd/MM/yyyy")</p>
-                    <p><strong>Hạn bảo hành:</strong> @Model.HanBaoHanh.ToString("dd/MM/yyyy")</p>
-                    <p>
-                        <strong>Tình trạng bảo hành:</strong> 
-                        @if (Model.ConBaoHanh)
+            <div class="card-body p-4">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted small">Tên thiết bị:</dt>
+                    <dd class="col-sm-8 fw-bold fs-6 text-dark">@Model.TenThietBi</dd>
+
+                    <dt class="col-sm-4 text-muted small">Loại thiết bị:</dt>
+                    <dd class="col-sm-8">
+                        @(Model.LoaiThietBi?.TenLoai ?? "—")
+                        @if (!string.IsNullOrEmpty(Model.LoaiThietBi?.HangSanXuat))
                         {
-                            <span class="badge bg-success">Còn hạn bảo hành</span>
+                            <span class="badge bg-light text-secondary border ms-1">@Model.LoaiThietBi.HangSanXuat</span>
                         }
-                        else
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted small">Khách hàng sở hữu:</dt>
+                    <dd class="col-sm-8">
+                        <strong class="text-dark">@(Model.KhachHang?.HoTen ?? "Chưa gán")</strong>
+                        @if (!string.IsNullOrEmpty(Model.KhachHang?.SoDienThoai))
                         {
-                            <span class="badge bg-danger">Đã hết hạn bảo hành</span>
+                            <div class="small text-muted"><i class="bi bi-telephone me-1"></i>@Model.KhachHang.SoDienThoai</div>
                         }
-                    </p>
-                    <p><strong>Giá trị thiết bị:</strong> @Model.GiaTri.ToString("N0") VNĐ</p>
-                    <p><strong>Trạng thái máy:</strong> <span class="badge bg-primary">@Model.TrangThai</span></p>
-                </div>
-                <div class="col-12">
-                    <p><strong>Mô tả:</strong> @(string.IsNullOrEmpty(Model.MoTa) ? "Không có" : Model.MoTa)</p>
-                    <p><strong>Ghi chú:</strong> @(string.IsNullOrEmpty(Model.GhiChu) ? "Không có" : Model.GhiChu)</p>
-                </div>
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted small">Giá trị thiết bị:</dt>
+                    <dd class="col-sm-8 fw-semibold text-primary">@Model.GiaTri.ToString("N0") VNĐ</dd>
+
+                    <dt class="col-sm-4 text-muted small">Mô tả cấu hình:</dt>
+                    <dd class="col-sm-8 small">@(string.IsNullOrEmpty(Model.MoTa) ? "—" : Model.MoTa)</dd>
+
+                    <dt class="col-sm-4 text-muted small">Ghi chú thêm:</dt>
+                    <dd class="col-sm-8 small text-muted">@(string.IsNullOrEmpty(Model.GhiChu) ? "—" : Model.GhiChu)</dd>
+                </dl>
             </div>
         </div>
     </div>
 
-    <!-- LỊCH SỬ PHIẾU SỬA CHỮA / BẢO HÀNH CỦA THIẾT BỊ NÀY -->
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-light py-2">
-            <h6 class="mb-0 fw-bold text-secondary">Lịch sử tiếp nhận & sửa chữa của thiết bị này</h6>
+    <div class="col-lg-5">
+        <div class="card-enterprise h-100">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <span class="fw-bold" style="color: #0f172a;">
+                    <i class="bi bi-shield-check text-primary me-2"></i>Bảo hành & Tình trạng
+                </span>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-3 p-3 rounded-3 @(Model.ConBaoHanh ? "bg-success bg-opacity-10 border border-success border-opacity-25" : "bg-danger bg-opacity-10 border border-danger border-opacity-25")">
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="bi @(Model.ConBaoHanh ? "bi-check-circle-fill text-success" : "bi-exclamation-octagon-fill text-danger") fs-4 me-2"></i>
+                        <span class="fw-bold @(Model.ConBaoHanh ? "text-success" : "text-danger")">
+                            @(Model.ConBaoHanh ? "Còn thời hạn bảo hành" : "Đã hết hạn bảo hành")
+                        </span>
+                    </div>
+                    <div class="small text-muted">
+                        @(Model.ConBaoHanh ? "Thiết bị được hỗ trợ kỹ thuật miễn phí các lỗi do nhà sản xuất." : "Các chi phí linh kiện phát sinh sẽ được tính phí.")
+                    </div>
+                </div>
+
+                <div class="small">
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted"><i class="bi bi-calendar-event me-1"></i> Ngày mua máy:</span>
+                        <span class="fw-semibold">@Model.NgayMua.ToString("dd/MM/yyyy")</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted"><i class="bi bi-calendar-check me-1"></i> Hạn bảo hành:</span>
+                        <span class="fw-semibold">@Model.HanBaoHanh.ToString("dd/MM/yyyy")</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2">
+                        <span class="text-muted"><i class="bi bi-activity me-1"></i> Tình trạng máy:</span>
+                        <span class="badge bg-primary">@Model.TrangThai</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-sm table-hover mb-0">
-                    <thead class="table-light">
+    </div>
+</div>
+
+<!-- LỊCH SỬ PHIẾU SỬA CHỮA / BẢO HÀNH CỦA THIẾT BỊ NÀY -->
+<div class="card-enterprise mb-4">
+    <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+        <span class="fw-bold" style="color: #0f172a;">
+            <i class="bi bi-clock-history text-primary me-2"></i>Lịch sử phiếu tiếp nhận & sửa chữa
+        </span>
+        <span class="badge bg-light text-dark border">@Model.PhieuSuaChuas.Count() phiếu</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table-enterprise align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 100px;">Mã phiếu</th>
+                        <th>Ngày tiếp nhận</th>
+                        <th>Nội dung sự cố</th>
+                        <th>Mức độ</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày hoàn thành</th>
+                        <th style="width: 80px;" class="text-end pe-3">Xem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.PhieuSuaChuas.Any())
+                    {
                         <tr>
-                            <th>Mã phiếu</th>
-                            <th>Ngày tiếp nhận</th>
-                            <th>Nội dung lỗi báo hỏng</th>
-                            <th>Mức độ</th>
-                            <th>Trạng thái phiếu</th>
-                            <th>Ngày hoàn thành</th>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-check2-circle fs-2 d-block mb-2 text-success"></i>
+                                Thiết bị này chưa phát sinh sự cố bảo hành/sửa chữa nào.
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @if (!Model.PhieuSuaChuas.Any())
+                    }
+                    else
+                    {
+                        @foreach (var p in Model.PhieuSuaChuas.OrderByDescending(x => x.NgayTiepNhan))
                         {
+                            string badgeClass = p.TrangThai switch
+                            {
+                                "Chờ tiếp nhận" => "badge-status-tiepnhan",
+                                "Đang xử lý" => "badge-status-dangsua",
+                                "Hoàn thành" => "badge-status-hoanthanh",
+                                "Đã hủy" => "badge-status-dahuy",
+                                _ => "badge-status-dangsua"
+                            };
+
                             <tr>
-                                <td colspan="6" class="text-center py-3 text-muted">Thiết bị này chưa từng phát sinh sự cố bảo hành/sửa chữa nào.</td>
+                                <td><span class="badge bg-light text-dark border">#@p.MaPhieu</span></td>
+                                <td>@p.NgayTiepNhan.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 320px;" title="@p.NoiDungLoi">
+                                        @p.NoiDungLoi
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (p.MucDo == "Khẩn cấp")
+                                    {
+                                        <span class="badge bg-danger">Khẩn cấp</span>
+                                    }
+                                    else if (p.MucDo == "Cao")
+                                    {
+                                        <span class="badge bg-warning text-dark">Cao</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Bình thường</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge-status @badgeClass">@p.TrangThai</span>
+                                </td>
+                                <td class="text-muted small">
+                                    @(p.NgayHoanThanh?.ToString("dd/MM/yyyy") ?? "—")
+                                </td>
+                                <td class="text-end pe-3">
+                                    <a asp-controller="PhieuSuaChua" asp-action="Details" asp-route-id="@p.MaPhieu"
+                                       class="btn-action btn-action-view" title="Chi tiết phiếu">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
                             </tr>
                         }
-                        else
-                        {
-                            @foreach (var p in Model.PhieuSuaChuas)
-                            {
-                                <tr>
-                                    <td>#@p.MaPhieu</td>
-                                    <td>@p.NgayTiepNhan.ToString("dd/MM/yyyy")</td>
-                                    <td>@p.NoiDungLoi</td>
-                                    <td><span class="badge bg-warning text-dark">@p.MucDo</span></td>
-                                    <td><span class="badge bg-info text-dark">@p.TrangThai</span></td>
-                                    <td>@(p.NgayHoanThanh?.ToString("dd/MM/yyyy") ?? "Chưa xong")</td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

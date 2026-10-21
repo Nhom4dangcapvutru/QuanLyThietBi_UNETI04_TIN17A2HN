@@ -7,80 +7,130 @@
     ViewData["Title"] = "Cập nhật trạng thái phiếu #" + Model.MaPhieu;
 }
 
-<h2>🔄 Cập nhật trạng thái phiếu #@Model.MaPhieu</h2>
-
-<div class="card mb-3">
-    <div class="card-body">
-        <p><strong>Khách hàng:</strong> @Model.TenKhachHang</p>
-        <p><strong>Thiết bị:</strong> @Model.TenThietBi — S/N: @Model.SerialNumber</p>
-        <p><strong>Trạng thái hiện tại:</strong>
-            <span class="badge bg-info text-dark">@Model.TrangThaiHienTai</span>
-        </p>
-        <p>
-            <strong>Bảo hành:</strong>
-            @if (Model.ConBaoHanh)
-            {
-                <span class="badge bg-success">Còn bảo hành</span>
-            }
-            else
-            {
-                <span class="badge bg-danger">Hết bảo hành</span>
-            }
-        </p>
-        <p><strong>Tiền linh kiện:</strong>
-            <span class="text-danger fw-bold">@Model.TongTienLinhKien.ToString("N0") VNĐ</span>
-        </p>
-        @if (Model.ChiPhiDuKienHienThi.HasValue)
-        {
-            <p><strong>Chi phí dự kiến (tham khảo):</strong>
-                @Model.ChiPhiDuKienHienThi.Value.ToString("N0") VNĐ</p>
-        }
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: #0f172a;">
+            <i class="bi bi-arrow-repeat text-primary me-2"></i>Cập nhật trạng thái phiếu #@Model.MaPhieu
+        </h3>
+        <p class="text-muted small mb-0">Chuyển đổi trạng thái quy trình và chốt tổng chi phí nghiệm thu</p>
     </div>
+    <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại chi tiết
+    </a>
 </div>
 
-<form asp-action="CapNhatTrangThai" method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="MaPhieu" />
-    <input type="hidden" asp-for="TenKhachHang" />
-    <input type="hidden" asp-for="TenThietBi" />
-    <input type="hidden" asp-for="SerialNumber" />
-    <input type="hidden" asp-for="TrangThaiHienTai" />
-    <input type="hidden" asp-for="ConBaoHanh" />
-    <input type="hidden" asp-for="TongTienLinhKien" />
-    <input type="hidden" asp-for="ChiPhiDuKienHienThi" />
+<div class="row g-4">
+    <div class="col-lg-7">
+        <form asp-action="CapNhatTrangThai" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="MaPhieu" />
+            <input type="hidden" asp-for="TenKhachHang" />
+            <input type="hidden" asp-for="TenThietBi" />
+            <input type="hidden" asp-for="SerialNumber" />
+            <input type="hidden" asp-for="TrangThaiHienTai" />
+            <input type="hidden" asp-for="ConBaoHanh" />
+            <input type="hidden" asp-for="TongTienLinhKien" />
+            <input type="hidden" asp-for="ChiPhiDuKienHienThi" />
 
-    <div class="mb-3">
-        <label asp-for="TrangThaiMoi" class="form-label"></label>
-        <select asp-for="TrangThaiMoi" asp-items="Model.DanhSachTrangThaiChoPhep" class="form-select">
-            <option value="">-- Chọn trạng thái mới --</option>
-        </select>
-        <span asp-validation-for="TrangThaiMoi" class="text-danger"></span>
+            <div class="card-enterprise mb-4">
+                <div class="card-header bg-white py-3 px-4 border-bottom">
+                    <span class="fw-bold" style="color: #0f172a;">
+                        <i class="bi bi-check2-circle text-primary me-2"></i>Thiết lập trạng thái mới
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <label asp-for="TrangThaiMoi" class="form-label fw-semibold">Trạng thái mới <span class="text-danger">*</span></label>
+                        <select asp-for="TrangThaiMoi" asp-items="Model.DanhSachTrangThaiChoPhep" class="form-select">
+                            <option value="">-- Chọn trạng thái tiếp theo --</option>
+                        </select>
+                        <span asp-validation-for="TrangThaiMoi" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="TongChiPhi" class="form-label fw-semibold">Tổng chi phí thực tế (VNĐ)</label>
+                            <div class="input-group">
+                                <input asp-for="TongChiPhi" type="number" step="1000" class="form-control" placeholder="0" />
+                                <span class="input-group-text">VNĐ</span>
+                            </div>
+                            <span asp-validation-for="TongChiPhi" class="text-danger small"></span>
+                            <div class="form-text small text-muted">Bắt buộc khi hoàn thành sửa chữa.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NgayHenTra" class="form-label fw-semibold">Ngày hẹn trả thiết bị</label>
+                            <input asp-for="NgayHenTra" type="date" class="form-control" />
+                            <span asp-validation-for="NgayHenTra" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <label asp-for="LyDoHuy" class="form-label fw-semibold">Lý do từ chối / hủy (nếu có)</label>
+                        <textarea asp-for="LyDoHuy" class="form-control" rows="3"
+                                  placeholder="Ghi rõ lý do hủy phiếu hoặc từ chối tiếp nhận..."></textarea>
+                        <span asp-validation-for="LyDoHuy" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light px-4 py-3 d-flex justify-content-end gap-2 border-top">
+                    <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-outline-secondary">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check2-circle me-1"></i> Lưu trạng thái
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label asp-for="TongChiPhi" class="form-label"></label>
-            <input asp-for="TongChiPhi" type="number" step="1000" class="form-control" />
-            <span asp-validation-for="TongChiPhi" class="text-danger"></span>
-            <small class="text-muted">Bắt buộc khi chuyển sang "Hoàn thành"</small>
+    <div class="col-lg-5">
+        <div class="card-enterprise h-100">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <span class="fw-bold" style="color: #0f172a;">
+                    <i class="bi bi-receipt text-primary me-2"></i>Tổng kết chi phí & Thiết bị
+                </span>
+            </div>
+            <div class="card-body p-4">
+                <dl class="row mb-0 small">
+                    <dt class="col-sm-5 text-muted">Khách hàng:</dt>
+                    <dd class="col-sm-7 fw-bold text-dark">@Model.TenKhachHang</dd>
+
+                    <dt class="col-sm-5 text-muted">Thiết bị:</dt>
+                    <dd class="col-sm-7 fw-semibold">@Model.TenThietBi</dd>
+
+                    <dt class="col-sm-5 text-muted">Serial Number:</dt>
+                    <dd class="col-sm-7"><span class="badge bg-light text-dark border">@Model.SerialNumber</span></dd>
+
+                    <dt class="col-sm-5 text-muted">Trạng thái hiện tại:</dt>
+                    <dd class="col-sm-7">
+                        <span class="badge bg-info text-dark">@Model.TrangThaiHienTai</span>
+                    </dd>
+
+                    <dt class="col-sm-5 text-muted">Bảo hành:</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.ConBaoHanh)
+                        {
+                            <span class="badge bg-success">Còn bảo hành</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Hết hạn</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-5 text-muted">Tiền linh kiện đã xuất:</dt>
+                    <dd class="col-sm-7 fw-bold text-danger">@Model.TongTienLinhKien.ToString("N0") VNĐ</dd>
+
+                    @if (Model.ChiPhiDuKienHienThi.HasValue)
+                    {
+                        <dt class="col-sm-5 text-muted">Dự kiến ban đầu:</dt>
+                        <dd class="col-sm-7 text-muted">@Model.ChiPhiDuKienHienThi.Value.ToString("N0") VNĐ</dd>
+                    }
+                </dl>
+            </div>
         </div>
-        <div class="col-md-6 mb-3">
-            <label asp-for="NgayHenTra" class="form-label"></label>
-            <input asp-for="NgayHenTra" type="date" class="form-control" />
-            <span asp-validation-for="NgayHenTra" class="text-danger"></span>
-        </div>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="LyDoHuy" class="form-label"></label>
-        <textarea asp-for="LyDoHuy" class="form-control" rows="2"
-                  placeholder="Bắt buộc khi chọn Hủy / Từ chối..."></textarea>
-        <span asp-validation-for="LyDoHuy" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">💾 Lưu trạng thái</button>
-    <a asp-action="Details" asp-route-id="@Model.MaPhieu" class="btn btn-secondary">Hủy</a>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

@@ -1,7 +1,7 @@
 // Họ và tên: Nguyễn Thị Thảo
 // Mã sinh viên: 23103100092
 // Nội dung thực hiện: Phiếu sửa chữa - Tạo phiếu, theo dõi, hủy phiếu
-// (Khách hàng chỉ thấy phiếu của chính mình; kiểm tra quyền sở hữu trên Controller)
+// Phân quyền: Khách hàng chỉ thấy phiếu của chính mình; Nhân viên/Admin quản lý toàn bộ phiếu hệ thống
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -38,8 +38,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
         // ====================================================================
-        // 1. INDEX - Danh sách phiếu sửa chữa của tôi
-        //     (Tìm kiếm + Lọc + Sắp xếp + Phân trang)
+        // 1. INDEX - Danh sách phiếu sửa chữa
+        //     (Khách hàng: chỉ xem phiếu của mình; Admin/KTV: xem toàn bộ phiếu)
         // ====================================================================
         [HttpGet]
         public async Task<IActionResult> Index(
@@ -55,24 +55,34 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Lấy mã khách hàng đang đăng nhập
-            var maKhachHang = await GetCurrentMaKhachHangAsync();
-            if (maKhachHang == null)
+            var isAdminOrKtv = SessionHelper.IsAdminOrKyThuatVien(HttpContext.Session);
+            int? maKhachHang = null;
+
+            if (!isAdminOrKtv)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy thông tin khách hàng.";
-                return RedirectToAction("Index", "Home");
+                maKhachHang = await GetCurrentMaKhachHangAsync();
+                if (maKhachHang == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy hồ sơ khách hàng liên kết với tài khoản này.";
+                    return RedirectToAction("Index", "Home");
+                }
             }
 
             // ----------------------------------------------------------------
-            // QUERY: CHỈ LẤY PHIẾU CỦA CHÍNH MÌNH
+            // QUERY
             // ----------------------------------------------------------------
             var query = _context.PhieuSuaChuas
                 .Include(p => p.ThietBi)
                 .Include(p => p.KhachHang)
-                .Where(p => p.MaKhachHang == maKhachHang.Value)
                 .AsQueryable();
 
-            // Tìm kiếm theo nội dung lỗi, tên thiết bị
+            // Nếu là Khách hàng: Chỉ lấy phiếu của chính mình
+            if (!isAdminOrKtv && maKhachHang.HasValue)
+            {
+                query = query.Where(p => p.MaKhachHang == maKhachHang.Value);
+            }
+
+            // Tìm kiếm theo nội dung lỗi, tên thiết bị, serial
             if (!string.IsNullOrWhiteSpace(tuKhoa))
             {
                 tuKhoa = tuKhoa.Trim();
@@ -110,7 +120,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 .Take(kichThuocTrang)
                 .ToListAsync();
 
-            // Truyền dữ liệu qua ViewBag (đơn giản, không cần ViewModel phức tạp)
             ViewBag.TuKhoa = tuKhoa;
             ViewBag.TrangThai = trangThai;
             ViewBag.SapXep = sapXep;
@@ -118,7 +127,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             ViewBag.TongSoTrang = tongSoTrang;
             ViewBag.TongSoBanGhi = tongSoBanGhi;
 
-            // Danh sách trạng thái để render dropdown
             ViewBag.DanhSachTrangThai = new List<string>
             {
                 TrangThaiPhieu.ChoTiepNhan,
@@ -149,11 +157,17 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var maKhachHang = await GetCurrentMaKhachHangAsync();
-            if (maKhachHang == null)
+            var isAdminOrKtv = SessionHelper.IsAdminOrKyThuatVien(HttpContext.Session);
+            int? maKhachHang = null;
+
+            if (!isAdminOrKtv)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy thông tin khách hàng.";
-                return RedirectToAction(nameof(Index));
+                maKhachHang = await GetCurrentMaKhachHangAsync();
+                if (maKhachHang == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy thông tin khách hàng.";
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
             // Lấy phiếu + kiểm tra quyền sở hữu
@@ -173,17 +187,13 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // ================================================================
             // BẢO MẬT: Khách hàng chỉ được xem phiếu CỦA CHÍNH MÌNH
-            // (Thay đổi mã trên URL cũng không xem được phiếu người khác)
-            // ================================================================
-            if (phieu.MaKhachHang != maKhachHang.Value)
+            if (!isAdminOrKtv && maKhachHang.HasValue && phieu.MaKhachHang != maKhachHang.Value)
             {
                 TempData["ErrorMessage"] = "Bạn không có quyền xem phiếu này.";
                 return RedirectToAction(nameof(Index));
             }
 
-            // Tạo ViewModel
             var viewModel = new PhieuSuaChuaDetailsViewModel
             {
                 PhieuSuaChua = phieu,
@@ -209,28 +219,41 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var maKhachHang = await GetCurrentMaKhachHangAsync();
-            if (maKhachHang == null)
+            var isAdminOrKtv = SessionHelper.IsAdminOrKyThuatVien(HttpContext.Session);
+            int? maKhachHang = null;
+            List<ThietBi> thietBis;
+
+            if (isAdminOrKtv)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy thông tin khách hàng.";
-                return RedirectToAction(nameof(Index));
+                thietBis = await _context.ThietBis
+                    .Include(t => t.KhachHang)
+                    .OrderBy(t => t.TenThietBi)
+                    .ToListAsync();
+                maKhachHang = thietBis.FirstOrDefault()?.MaKhachHang ?? 1;
+            }
+            else
+            {
+                maKhachHang = await GetCurrentMaKhachHangAsync();
+                if (maKhachHang == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy thông tin khách hàng.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                thietBis = await _context.ThietBis
+                    .Where(t => t.MaKhachHang == maKhachHang.Value)
+                    .OrderBy(t => t.TenThietBi)
+                    .ToListAsync();
             }
 
-            // Lấy danh sách thiết bị của khách hàng này
-            var thietBis = await _context.ThietBis
-                .Where(t => t.MaKhachHang == maKhachHang.Value)
-                .OrderBy(t => t.TenThietBi)
-                .ToListAsync();
-
-            // Tạo ViewModel
             var viewModel = new PhieuSuaChuaCreateViewModel
             {
-                MaKhachHang = maKhachHang.Value,
-                TenKhachHang = SessionHelper.GetHoTen(HttpContext.Session),
+                MaKhachHang = maKhachHang ?? 1,
+                TenKhachHang = SessionHelper.GetHoTen(HttpContext.Session) ?? "Khách hàng",
                 DanhSachThietBi = thietBis.Select(t => new SelectListItem
                 {
                     Value = t.MaThietBi.ToString(),
-                    Text = $"{t.TenThietBi} (S/N: {t.SerialNumber})"
+                    Text = $"{t.TenThietBi} (S/N: {t.SerialNumber}) - KH: {t.KhachHang?.HoTen ?? "N/A"}"
                 }).ToList(),
                 DanhSachMucDo = new List<SelectListItem>
                 {
@@ -257,42 +280,35 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var maKhachHang = await GetCurrentMaKhachHangAsync();
-            if (maKhachHang == null)
+            var isAdminOrKtv = SessionHelper.IsAdminOrKyThuatVien(HttpContext.Session);
+            int maKhachHangVal;
+
+            if (isAdminOrKtv)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy thông tin khách hàng.";
-                return RedirectToAction(nameof(Index));
+                var tb = await _context.ThietBis.FirstOrDefaultAsync(t => t.MaThietBi == model.MaThietBi);
+                maKhachHangVal = tb?.MaKhachHang ?? model.MaKhachHang;
+            }
+            else
+            {
+                var maKhachHang = await GetCurrentMaKhachHangAsync();
+                if (maKhachHang == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy thông tin khách hàng.";
+                    return RedirectToAction(nameof(Index));
+                }
+                maKhachHangVal = maKhachHang.Value;
             }
 
-            // ================================================================
-            // KIỂM TRA NGHIỆP VỤ (theo yêu cầu đề bài mục 7.3)
-            // ================================================================
-
-            // 1. Khách hàng phải tồn tại & đang Hoạt động
-            var khachHang = await _context.KhachHangs
-                .FirstOrDefaultAsync(k => k.MaKhachHang == maKhachHang.Value);
-
-            if (khachHang == null)
-            {
-                ModelState.AddModelError("", "Không tìm thấy thông tin khách hàng.");
-            }
-            else if (khachHang.TrangThai != "Hoạt động")
-            {
-                ModelState.AddModelError("", "Tài khoản khách hàng đang bị khóa, không thể tạo phiếu.");
-            }
-
-            // 2. Thiết bị phải tồn tại & thuộc khách hàng đang đăng nhập
+            // 1. Kiểm tra thiết bị
             var thietBi = await _context.ThietBis
-                .FirstOrDefaultAsync(t => t.MaThietBi == model.MaThietBi
-                                       && t.MaKhachHang == maKhachHang.Value);
+                .FirstOrDefaultAsync(t => t.MaThietBi == model.MaThietBi && (isAdminOrKtv || t.MaKhachHang == maKhachHangVal));
 
             if (thietBi == null)
             {
-                ModelState.AddModelError("MaThietBi",
-                    "Thiết bị không tồn tại hoặc không thuộc quyền sở hữu của bạn.");
+                ModelState.AddModelError("MaThietBi", "Thiết bị không tồn tại hoặc không thuộc quyền sở hữu.");
             }
 
-            // 3. Không tạo phiếu trùng: cùng thiết bị đang có phiếu chưa hoàn thành
+            // 2. Không tạo phiếu trùng nếu đang có phiếu chưa hoàn thành
             if (thietBi != null)
             {
                 bool coPhieuDangXuLy = await _context.PhieuSuaChuas
@@ -303,22 +319,19 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 if (coPhieuDangXuLy)
                 {
                     ModelState.AddModelError("MaThietBi",
-                        "Thiết bị này đang có phiếu sửa chữa chưa hoàn thành. Vui lòng chờ xử lý xong.");
+                        "Thiết bị này đang có phiếu sửa chữa chưa hoàn tất trong hệ thống.");
                 }
             }
 
-            // ================================================================
-            // NẾU HỢP LỆ → LƯU DATABASE
-            // ================================================================
             if (ModelState.IsValid)
             {
                 var phieu = new PhieuSuaChua
                 {
                     MaThietBi = model.MaThietBi,
-                    MaKhachHang = maKhachHang.Value,
-                    NgayTiepNhan = DateTime.Now, // Hệ thống tự gán
+                    MaKhachHang = maKhachHangVal,
+                    NgayTiepNhan = DateTime.Now,
                     NoiDungLoi = model.NoiDungLoi,
-                    TrangThai = TrangThaiPhieu.ChoTiepNhan, // Mặc định
+                    TrangThai = TrangThaiPhieu.ChoTiepNhan,
                     MucDo = model.MucDo,
                     HanDuKien = null,
                     NgayHoanThanh = null
@@ -327,17 +340,16 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 _context.PhieuSuaChuas.Add(phieu);
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = $"Đã gửi phiếu sửa chữa thành công! Mã phiếu: #{phieu.MaPhieu}";
+                TempData["SuccessMessage"] = $"Đã tạo phiếu tiếp nhận sửa chữa thành công! Mã phiếu: #{phieu.MaPhieu}";
                 return RedirectToAction(nameof(Details), new { id = phieu.MaPhieu });
             }
 
             // Nếu lỗi → load lại dropdown
-            var thietBis = await _context.ThietBis
-                .Where(t => t.MaKhachHang == maKhachHang.Value)
-                .OrderBy(t => t.TenThietBi)
-                .ToListAsync();
+            List<ThietBi> thietBisList = isAdminOrKtv
+                ? await _context.ThietBis.Include(t => t.KhachHang).OrderBy(t => t.TenThietBi).ToListAsync()
+                : await _context.ThietBis.Where(t => t.MaKhachHang == maKhachHangVal).OrderBy(t => t.TenThietBi).ToListAsync();
 
-            model.DanhSachThietBi = thietBis.Select(t => new SelectListItem
+            model.DanhSachThietBi = thietBisList.Select(t => new SelectListItem
             {
                 Value = t.MaThietBi.ToString(),
                 Text = $"{t.TenThietBi} (S/N: {t.SerialNumber})"
@@ -350,8 +362,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 new() { Value = MucDoUuTien.Cao, Text = MucDoUuTien.Cao },
                 new() { Value = MucDoUuTien.KhanCap, Text = MucDoUuTien.KhanCap }
             };
-            model.MaKhachHang = maKhachHang.Value;
-            model.TenKhachHang = SessionHelper.GetHoTen(HttpContext.Session);
+            model.MaKhachHang = maKhachHangVal;
+            model.TenKhachHang = SessionHelper.GetHoTen(HttpContext.Session) ?? "Khách hàng";
 
             return View(model);
         }
@@ -374,11 +386,17 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var maKhachHang = await GetCurrentMaKhachHangAsync();
-            if (maKhachHang == null)
+            var isAdminOrKtv = SessionHelper.IsAdminOrKyThuatVien(HttpContext.Session);
+            int? maKhachHang = null;
+
+            if (!isAdminOrKtv)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy thông tin khách hàng.";
-                return RedirectToAction(nameof(Index));
+                maKhachHang = await GetCurrentMaKhachHangAsync();
+                if (maKhachHang == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy thông tin khách hàng.";
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
             var phieu = await _context.PhieuSuaChuas
@@ -391,14 +409,13 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Bảo mật: chỉ xem được phiếu của mình
-            if (phieu.MaKhachHang != maKhachHang.Value)
+            // Bảo mật: chỉ xem được phiếu của mình (nếu là khách)
+            if (!isAdminOrKtv && maKhachHang.HasValue && phieu.MaKhachHang != maKhachHang.Value)
             {
                 TempData["ErrorMessage"] = "Bạn không có quyền hủy phiếu này.";
                 return RedirectToAction(nameof(Index));
             }
 
-            // Kiểm tra trạng thái có cho phép hủy không
             if (phieu.TrangThai != TrangThaiPhieu.ChoTiepNhan)
             {
                 TempData["ErrorMessage"] = "Chỉ có thể hủy phiếu đang ở trạng thái 'Chờ tiếp nhận'.";
@@ -421,15 +438,20 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var maKhachHang = await GetCurrentMaKhachHangAsync();
-            if (maKhachHang == null)
+            var isAdminOrKtv = SessionHelper.IsAdminOrKyThuatVien(HttpContext.Session);
+            int? maKhachHang = null;
+
+            if (!isAdminOrKtv)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy thông tin khách hàng.";
-                return RedirectToAction(nameof(Index));
+                maKhachHang = await GetCurrentMaKhachHangAsync();
+                if (maKhachHang == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy thông tin khách hàng.";
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
-            var phieu = await _context.PhieuSuaChuas
-                .FirstOrDefaultAsync(p => p.MaPhieu == id);
+            var phieu = await _context.PhieuSuaChuas.FirstOrDefaultAsync(p => p.MaPhieu == id);
 
             if (phieu == null)
             {
@@ -437,21 +459,18 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Kiểm tra quyền sở hữu
-            if (phieu.MaKhachHang != maKhachHang.Value)
+            if (!isAdminOrKtv && maKhachHang.HasValue && phieu.MaKhachHang != maKhachHang.Value)
             {
                 TempData["ErrorMessage"] = "Bạn không có quyền hủy phiếu này.";
                 return RedirectToAction(nameof(Index));
             }
 
-            // Kiểm tra trạng thái cho phép hủy
             if (phieu.TrangThai != TrangThaiPhieu.ChoTiepNhan)
             {
                 TempData["ErrorMessage"] = "Không thể hủy phiếu. Chỉ hủy được khi phiếu ở trạng thái 'Chờ tiếp nhận'.";
                 return RedirectToAction(nameof(Details), new { id = phieu.MaPhieu });
             }
 
-            // Cập nhật trạng thái → Đã hủy
             phieu.TrangThai = TrangThaiPhieu.DaHuy;
             await _context.SaveChangesAsync();
 
