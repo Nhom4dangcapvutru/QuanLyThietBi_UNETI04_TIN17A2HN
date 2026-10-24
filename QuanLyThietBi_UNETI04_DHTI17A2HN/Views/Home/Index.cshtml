@@ -1,4 +1,4 @@
-@model QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels.DashboardViewModel
+﻿@model QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels.DashboardViewModel
 @using QuanLyThietBi_UNETI04_DHTI17A2HN.Helpers
 @{
     bool isKhachHang = SessionHelper.IsKhachHang(Context.Session);
@@ -141,15 +141,15 @@
             <div class="col-md-7">
                 <span class="text-uppercase small fw-bold" style="color: #94a3b8; letter-spacing: 0.05em;">
                     <i class="bi bi-cash-stack me-1"></i>
-                    @(isKhachHang ? "Tổng chi phí sửa chữa của bạn" : "Tổng doanh thu dịch vụ sửa chữa thực tế")
+                    @(isKhachHang ? "Tổng chi phí sửa chữa của bạn" : "Tổng giá trị sửa chữa đã hoàn thành")
                 </span>
                 <div class="display-6 fw-bold text-warning my-1">
-                    @Model.TongGiaTriPhatSinh.ToString("N0") <span class="fs-4 text-light fw-normal">VNĐ</span>
+                    @Model.TongGiaTriPhatSinh.ToString("#,##0.##") <span class="fs-4 text-light fw-normal">VNĐ</span>
                 </div>
                 <div class="small text-muted" style="color: #cbd5e1 !important;">
                     @(isKhachHang 
-                        ? "Tổng chi phí tích lũy từ các phiếu sửa chữa của bạn đã được kỹ thuật viên hoàn tất nghiệm thu." 
-                        : "Số liệu doanh thu tổng hợp từ tất cả các phiếu sửa chữa đã nghiệm thu và hoàn tất bàn giao cho khách hàng.")
+                        ? "Tổng chi phí thực tế của các phiếu đã hoàn thành của bạn; chưa xác nhận thanh toán."
+                        : "Tổng chi phí thực tế của các phiếu đã hoàn thành; chưa xác nhận thanh toán.")
                 </div>
             </div>
             <div class="col-md-5 d-flex flex-wrap justify-content-md-end gap-2">
@@ -195,7 +195,7 @@
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <div>
                         <i class="bi bi-graph-up text-primary me-2"></i>
-                        <span>@(isKhachHang ? "Lịch sử tiếp nhận phiếu 6 tháng gần nhất của bạn" : "Xu hướng tiếp nhận phiếu & Doanh thu 6 tháng gần nhất")</span>
+                        <span>@(isKhachHang ? "Lịch sử tiếp nhận phiếu 6 tháng gần nhất của bạn" : "Xu hướng tiếp nhận phiếu & Giá trị hoàn thành 6 tháng gần nhất")</span>
                     </div>
                     <span class="badge bg-light text-secondary border">Chart.js</span>
                 </div>
@@ -386,7 +386,7 @@
 
                 if (!isCustomer) {
                     datasets.push({
-                        label: 'Doanh thu (VNĐ)',
+                        label: 'Giá trị hoàn thành (VNĐ)',
                         data: dataDoanhThu,
                         type: 'line',
                         borderColor: '#f59e0b',
@@ -420,7 +420,7 @@
                                 display: !isCustomer,
                                 position: 'right',
                                 grid: { drawOnChartArea: false },
-                                title: { display: true, text: 'Doanh thu (VNĐ)' },
+                                title: { display: true, text: 'Giá trị hoàn thành (VNĐ)' },
                                 ticks: {
                                     callback: function(value) {
                                         return (value / 1000000) + ' Tr';

@@ -1,4 +1,4 @@
-@* Họ và tên: DINH THI THUY LINH
+﻿@* Họ và tên: DINH THI THUY LINH
     MSV: 23103100110
    Nội dung thực hiện: Form cập nhật trạng thái và chi phí cuối *@
 
@@ -7,7 +7,7 @@
     ViewData["Title"] = "Cập nhật trạng thái phiếu #" + Model.MaPhieu;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div>
         <h3 class="fw-bold mb-1" style="color: #0f172a;">
             <i class="bi bi-arrow-repeat text-primary me-2"></i>Cập nhật trạng thái phiếu #@Model.MaPhieu
@@ -24,13 +24,7 @@
         <form asp-action="CapNhatTrangThai" method="post">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="MaPhieu" />
-            <input type="hidden" asp-for="TenKhachHang" />
-            <input type="hidden" asp-for="TenThietBi" />
-            <input type="hidden" asp-for="SerialNumber" />
-            <input type="hidden" asp-for="TrangThaiHienTai" />
-            <input type="hidden" asp-for="ConBaoHanh" />
-            <input type="hidden" asp-for="TongTienLinhKien" />
-            <input type="hidden" asp-for="ChiPhiDuKienHienThi" />
+            <div asp-validation-summary="All" class="text-danger mb-3" role="alert"></div>
 
             <div class="card-enterprise mb-4">
                 <div class="card-header bg-white py-3 px-4 border-bottom">
@@ -49,21 +43,43 @@
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label asp-for="TongChiPhi" class="form-label fw-semibold">Tổng chi phí thực tế (VNĐ)</label>
-                            <div class="input-group">
-                                <input asp-for="TongChiPhi" type="number" step="1000" class="form-control" placeholder="0" />
-                                <span class="input-group-text">VNĐ</span>
-                            </div>
-                            <span asp-validation-for="TongChiPhi" class="text-danger small"></span>
-                            <div class="form-text small text-muted">Bắt buộc khi hoàn thành sửa chữa.</div>
-                        </div>
-
-                        <div class="col-md-6">
                             <label asp-for="NgayHenTra" class="form-label fw-semibold">Ngày hẹn trả thiết bị</label>
                             <input asp-for="NgayHenTra" type="date" class="form-control" />
                             <span asp-validation-for="NgayHenTra" class="text-danger small"></span>
                         </div>
                     </div>
+
+                    <fieldset id="costBreakdown" class="mt-4">
+                        <legend class="h6">Chi phí nghiệm thu khi hoàn thành</legend>
+                        <p class="small text-muted">Tổng = linh kiện + tiền công + chi phí khác − giảm trừ. Nhập 0 nếu không phát sinh. Bảo hành được ghi nhận bằng khoản giảm trừ có lý do.</p>
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label asp-for="TienCong" class="form-label"></label>
+                                <input asp-for="TienCong" type="number" min="0" max="1000000000000" step="0.01" class="form-control cost-input" />
+                                <span asp-validation-for="TienCong" class="text-danger small"></span>
+                            </div>
+                            <div class="col-sm-6">
+                                <label asp-for="ChiPhiKhac" class="form-label"></label>
+                                <input asp-for="ChiPhiKhac" type="number" min="0" max="1000000000000" step="0.01" class="form-control cost-input" />
+                                <span asp-validation-for="ChiPhiKhac" class="text-danger small"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="NoiDungChiPhiKhac" class="form-label"></label>
+                                <textarea asp-for="NoiDungChiPhiKhac" rows="2" class="form-control"></textarea>
+                                <span asp-validation-for="NoiDungChiPhiKhac" class="text-danger small"></span>
+                            </div>
+                            <div class="col-sm-6">
+                                <label asp-for="GiamTru" class="form-label"></label>
+                                <input asp-for="GiamTru" type="number" min="0" max="1000000000000" step="0.01" class="form-control cost-input" />
+                                <span asp-validation-for="GiamTru" class="text-danger small"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="LyDoGiamTru" class="form-label"></label>
+                                <textarea asp-for="LyDoGiamTru" rows="2" class="form-control"></textarea>
+                                <span asp-validation-for="LyDoGiamTru" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </fieldset>
 
                     <div class="mt-3">
                         <label asp-for="LyDoHuy" class="form-label fw-semibold">Lý do từ chối / hủy (nếu có)</label>
@@ -119,14 +135,19 @@
                     </dd>
 
                     <dt class="col-sm-5 text-muted">Tiền linh kiện đã xuất:</dt>
-                    <dd class="col-sm-7 fw-bold text-danger">@Model.TongTienLinhKien.ToString("N0") VNĐ</dd>
+                    <dd class="col-sm-7 fw-bold text-danger">@Model.TongTienLinhKien.ToString("#,##0.##") VNĐ</dd>
 
                     @if (Model.ChiPhiDuKienHienThi.HasValue)
                     {
                         <dt class="col-sm-5 text-muted">Dự kiến ban đầu:</dt>
-                        <dd class="col-sm-7 text-muted">@Model.ChiPhiDuKienHienThi.Value.ToString("N0") VNĐ</dd>
+                        <dd class="col-sm-7 text-muted">@Model.ChiPhiDuKienHienThi.Value.ToString("#,##0.##") VNĐ</dd>
                     }
                 </dl>
+                <div id="costPreview" class="border-top mt-3 pt-3" data-parts="@Model.TongTienLinhKien.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                    <div class="fw-semibold">Tổng chi phí thực tế khi hoàn thành</div>
+                    <output id="calculatedCost" class="fs-4 text-danger fw-bold" aria-live="polite"></output>
+                    <p class="small text-muted mb-0">Tổng được kiểm tra lại khi lưu dựa trên các hạng mục linh kiện đã ghi nhận. Chưa xác nhận thanh toán.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -134,4 +155,5 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/repair-costs.js" asp-append-version="true"></script>
 }

@@ -39,10 +39,10 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels
         // ================================================================
 
         /// <summary>
-        /// Tổng tiền sửa chữa = tổng ThanhTien của tất cả ChiTietSuaChua.
+        /// Tổng tiền linh kiện = tổng ThanhTien của tất cả ChiTietSuaChua.
         /// Nếu chưa có chi tiết → trả về 0.
         /// </summary>
-        public decimal TongTien => ChiTietSuaChuas?.Sum(c => c.ThanhTien) ?? 0;
+        public decimal TongTienLinhKien => ChiTietSuaChuas?.Sum(c => c.ThanhTien) ?? 0;
 
         /// <summary>
         /// Thiết bị có còn trong thời hạn bảo hành không.

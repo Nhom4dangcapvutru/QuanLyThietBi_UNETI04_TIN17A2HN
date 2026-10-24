@@ -212,10 +212,34 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaPhieu"));
 
+                    b.Property<decimal?>("ChiPhiDuKien")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("ChiPhiKhac")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("GiamTru")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime?>("HanDuKien")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("KetQuaChanDoan")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("LyDoGiamTru")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("LyDoHuy")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int>("MaKhachHang")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MaKyThuatVienTiepNhan")
                         .HasColumnType("int");
 
                     b.Property<int>("MaThietBi")
@@ -226,16 +250,35 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<DateTime?>("NgayCapNhat")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("NgayHenTra")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("NgayHoanThanh")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("NgayTiepNhan")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("NoiDungChiPhiKhac")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("NoiDungLoi")
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal?>("TienCong")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("TienLinhKienChot")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("TongChiPhi")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("TrangThai")
                         .IsRequired()
@@ -245,6 +288,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Migrations
                     b.HasKey("MaPhieu");
 
                     b.HasIndex("MaKhachHang");
+
+                    b.HasIndex("MaKyThuatVienTiepNhan");
 
                     b.HasIndex("MaThietBi");
 
@@ -400,6 +445,11 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.TaiKhoan", "KyThuatVienTiepNhan")
+                        .WithMany()
+                        .HasForeignKey("MaKyThuatVienTiepNhan")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.ThietBi", "ThietBi")
                         .WithMany("PhieuSuaChuas")
                         .HasForeignKey("MaThietBi")
@@ -407,6 +457,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Migrations
                         .IsRequired();
 
                     b.Navigation("KhachHang");
+
+                    b.Navigation("KyThuatVienTiepNhan");
 
                     b.Navigation("ThietBi");
                 });

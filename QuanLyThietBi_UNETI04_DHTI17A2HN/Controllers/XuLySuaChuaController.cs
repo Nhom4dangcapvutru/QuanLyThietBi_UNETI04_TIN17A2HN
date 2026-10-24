@@ -384,6 +384,11 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ThemLinhKien(SuaChuaViewModel vm)
         {
+            if (!ModelState.IsValid || vm.SoLuong <= 0)
+            {
+                TempData["ErrorMessage"] = "Thông tin linh kiện không hợp lệ. Số lượng phải lớn hơn 0.";
+                return RedirectToAction(nameof(SuaChua), new { id = vm.MaPhieu });
+            }
             var phieu = await _context.PhieuSuaChuas
                 .FirstOrDefaultAsync(p => p.MaPhieu == vm.MaPhieu);
 
@@ -446,7 +451,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         {
             var chiTiet = await _context.ChiTietSuaChuas
                 .Include(c => c.LinhKien)
-                .FirstOrDefaultAsync(c => c.MaChiTiet == maChiTiet);
+                .FirstOrDefaultAsync(c => c.MaChiTiet == maChiTiet && c.MaPhieu == maPhieu);
 
             if (chiTiet == null) return NotFound();
 
@@ -499,7 +504,11 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 TrangThaiHienTai = phieu.TrangThai,
                 TrangThaiMoi = "",
                 ChiPhiDuKienHienThi = phieu.ChiPhiDuKien,
-                TongChiPhi = phieu.TongChiPhi,
+                TienCong = phieu.TienCong ?? 0,
+                ChiPhiKhac = phieu.ChiPhiKhac ?? 0,
+                NoiDungChiPhiKhac = phieu.NoiDungChiPhiKhac,
+                GiamTru = phieu.GiamTru ?? 0,
+                LyDoGiamTru = phieu.LyDoGiamTru,
                 NgayHenTra = phieu.NgayHenTra,
                 LyDoHuy = phieu.LyDoHuy,
                 ConBaoHanh = phieu.ThietBi != null
@@ -532,11 +541,22 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                     $"Không thể chuyển từ '{phieu.TrangThai}' sang '{vm.TrangThaiMoi}'.");
             }
 
-            // Nếu hoàn thành phải có tổng chi phí
-            if (vm.TrangThaiMoi == TrangThaiPhieu.HoanThanh && !vm.TongChiPhi.HasValue)
+            decimal? tongChiPhi = null;
+            var tienLinhKien = phieu.ChiTietSuaChuas.Sum(c => c.ThanhTien);
+            if (vm.TrangThaiMoi == TrangThaiPhieu.HoanThanh)
             {
-                ModelState.AddModelError(nameof(vm.TongChiPhi),
-                    "Vui lòng nhập tổng chi phí thực tế trước khi hoàn thành.");
+                if (phieu.ChiTietSuaChuas.Any(c => c.SoLuong <= 0 || c.DonGia < 0
+                    || c.ThanhTien != c.DonGia * c.SoLuong))
+                    ModelState.AddModelError("", "Có hạng mục linh kiện không hợp lệ. Vui lòng kiểm tra số lượng, đơn giá và thành tiền trước khi nghiệm thu.");
+                try
+                {
+                    tongChiPhi = ChiPhiSuaChuaService.TinhTong(tienLinhKien, vm.TienCong,
+                        vm.ChiPhiKhac, vm.NoiDungChiPhiKhac, vm.GiamTru, vm.LyDoGiamTru);
+                }
+                catch (System.ComponentModel.DataAnnotations.ValidationException ex)
+                {
+                    ModelState.AddModelError("", ex.Message);
+                }
             }
 
             // Nếu hủy/từ chối phải có lý do
@@ -548,13 +568,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                     "Vui lòng nhập lý do hủy / từ chối.");
             }
 
-            // Nếu có tổng chi phí thì phải >= 0
-            if (vm.TongChiPhi.HasValue && vm.TongChiPhi.Value < 0)
-            {
-                ModelState.AddModelError(nameof(vm.TongChiPhi),
-                    "Tổng chi phí phải >= 0.");
-            }
-
             if (!ModelState.IsValid)
             {
                 vm.TenKhachHang = phieu.KhachHang?.HoTen ?? "";
@@ -563,7 +576,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 vm.TrangThaiHienTai = phieu.TrangThai;
                 vm.ConBaoHanh = phieu.ThietBi != null
                     && DateTime.Now.Date <= phieu.ThietBi.HanBaoHanh.Date;
-                vm.TongTienLinhKien = phieu.ChiTietSuaChuas.Sum(c => c.ThanhTien);
+                vm.TongTienLinhKien = tienLinhKien;
+                vm.ChiPhiDuKienHienThi = phieu.ChiPhiDuKien;
                 vm.DanhSachTrangThaiChoPhep = _quyTrinh
                     .LayTrangThaiChoPhep(phieu.TrangThai)
                     .Select(tt => new SelectListItem { Value = tt, Text = tt })
@@ -573,7 +587,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             // ===== CẬP NHẬT =====
             phieu.TrangThai = vm.TrangThaiMoi;
-            phieu.TongChiPhi = vm.TongChiPhi;
             phieu.NgayHenTra = vm.NgayHenTra;
             phieu.LyDoHuy = vm.LyDoHuy;
             phieu.NgayCapNhat = DateTime.Now;
@@ -581,6 +594,14 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             // Khi HOÀN THÀNH: set ngày hoàn thành + cập nhật thiết bị
             if (vm.TrangThaiMoi == TrangThaiPhieu.HoanThanh)
             {
+                // Chỉ chốt khi hoàn thành; không tin tổng tiền hoặc tiền linh kiện gửi từ form.
+                phieu.TienLinhKienChot = tienLinhKien;
+                phieu.TienCong = vm.TienCong;
+                phieu.ChiPhiKhac = vm.ChiPhiKhac;
+                phieu.NoiDungChiPhiKhac = vm.ChiPhiKhac > 0 ? vm.NoiDungChiPhiKhac?.Trim() : null;
+                phieu.GiamTru = vm.GiamTru;
+                phieu.LyDoGiamTru = vm.GiamTru > 0 ? vm.LyDoGiamTru?.Trim() : null;
+                phieu.TongChiPhi = tongChiPhi;
                 phieu.NgayHoanThanh = DateTime.Now;
 
                 if (phieu.ThietBi != null)

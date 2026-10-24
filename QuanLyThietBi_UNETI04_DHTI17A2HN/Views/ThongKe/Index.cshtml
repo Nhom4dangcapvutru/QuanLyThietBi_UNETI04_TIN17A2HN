@@ -142,7 +142,7 @@
                 <div class="card-body p-1 d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold text-uppercase mb-1">Chi phí linh kiện</div>
-                        <div class="fs-4 fw-bold text-dark">@Model.TongChiPhiLinhKien.ToString("N0") <span class="fs-6 text-muted">VNĐ</span></div>
+                        <div class="fs-4 fw-bold text-dark">@Model.TongChiPhiLinhKien.ToString("#,##0.##") <span class="fs-6 text-muted">VNĐ</span></div>
                     </div>
                     <div class="icon-box" style="background: var(--warning-grad);">
                         <i class="bi bi-cpu-fill"></i>
@@ -156,8 +156,8 @@
             <div class="card kpi-card p-3 h-100 border-start border-4 border-success">
                 <div class="card-body p-1 d-flex align-items-center justify-content-between">
                     <div>
-                        <div class="text-muted small fw-semibold text-uppercase mb-1">Doanh thu sửa chữa</div>
-                        <div class="fs-4 fw-bold text-success">@Model.DoanhThuSuaChua.ToString("N0") <span class="fs-6 text-muted">VNĐ</span></div>
+                        <div class="text-muted small fw-semibold text-uppercase mb-1">Giá trị sửa chữa đã hoàn thành</div>
+                        <div class="fs-4 fw-bold text-success">@Model.DoanhThuSuaChua.ToString("#,##0.##") <span class="fs-6 text-muted">VNĐ</span></div>
                     </div>
                     <div class="icon-box" style="background: var(--success-grad);">
                         <i class="bi bi-cash-coin"></i>

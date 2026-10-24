@@ -1,4 +1,4 @@
-// Họ và tên: Cả nhóm thống nhất thực hiện
+﻿// Họ và tên: Cả nhóm thống nhất thực hiện
 // Mã sinh viên: Dùng chung 5 thành viên
 // Nội dung thực hiện: Tạo dữ liệu mẫu (Seed Data) chuẩn số lượng yêu cầu để kiểm thử 5 Module
 
@@ -12,6 +12,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Data
         public static void Initialize(ApplicationDbContext context)
         {
             context.Database.EnsureCreated();
+            RepairCostSchema.EnsureColumns(context);
 
             // Nếu đã có dữ liệu: Tự động cập nhật nội dung lỗi chân thực cho các phiếu cũ nếu đang dùng chuỗi dập khuôn
             if (context.TaiKhoans.Any())
@@ -41,33 +42,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Data
                     context.SaveChanges();
                 }
 
-                // Cập nhật tổng chi phí cho các phiếu sửa chữa nếu chưa có (để Module 5 hiển thị biểu đồ & doanh thu)
-                var phieusChuaCoChiPhi = context.PhieuSuaChuas
-                    .Where(p => p.TongChiPhi == null || p.TongChiPhi == 0)
-                    .ToList();
-
-                if (phieusChuaCoChiPhi.Any())
-                {
-                    var chiTietTheoPhieu = context.ChiTietSuaChuas
-                        .GroupBy(c => c.MaPhieu)
-                        .ToDictionary(g => g.Key, g => g.Sum(c => c.ThanhTien));
-
-                    decimal[] chiPhiMacDinh = { 350000m, 550000m, 850000m, 1200000m, 450000m, 600000m, 950000m };
-
-                    for (int k = 0; k < phieusChuaCoChiPhi.Count; k++)
-                    {
-                        var p = phieusChuaCoChiPhi[k];
-                        if (chiTietTheoPhieu.TryGetValue(p.MaPhieu, out decimal tongChiTiet) && tongChiTiet > 0)
-                        {
-                            p.TongChiPhi = tongChiTiet;
-                        }
-                        else if (p.TrangThai == TrangThaiPhieu.HoanThanh)
-                        {
-                            p.TongChiPhi = chiPhiMacDinh[k % chiPhiMacDinh.Length];
-                        }
-                    }
-                    context.SaveChanges();
-                }
+                // Giữ nguyên tổng đã ghi nhận của phiếu cũ, kể cả 0/null; không tự sinh chi phí.
                 return;
             }
 
@@ -282,6 +257,17 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Data
                     GhiChu = "Đã kiểm thử 24h trước khi bàn giao"
                 });
             }
+            // Chỉ dữ liệu mẫu mới: khai báo chi phí minh bạch, không chạy với phiếu đã có.
+            foreach (var phieu in phieuSuaChuas.Where(p => p.TrangThai == TrangThaiPhieu.HoanThanh))
+            {
+                phieu.TienLinhKienChot = chiTiets.Where(c => c.MaPhieu == phieu.MaPhieu).Sum(c => c.ThanhTien);
+                phieu.TienCong = 200000m; // Tiền công minh họa trong bộ dữ liệu mẫu.
+                phieu.ChiPhiKhac = 0;
+                phieu.GiamTru = 0;
+                phieu.TongChiPhi = Services.ChiPhiSuaChuaService.TinhTong(
+                    phieu.TienLinhKienChot.Value, phieu.TienCong, phieu.ChiPhiKhac, null, phieu.GiamTru, null);
+            }
+
             context.ChiTietSuaChuas.AddRange(chiTiets);
             context.SaveChanges();
         }

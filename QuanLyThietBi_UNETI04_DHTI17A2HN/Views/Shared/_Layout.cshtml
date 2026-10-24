@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Http
+﻿@using Microsoft.AspNetCore.Http
 @using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants
 @{
     var tenDangNhap = Context.Session.GetString("TenDangNhap");
@@ -150,7 +150,7 @@
                     <li>
                         <a asp-controller="ThongKe" asp-action="Index" class="nav-link-custom @(currentCtrl == "ThongKe" ? "active" : "")">
                             <i class="bi bi-bar-chart-line"></i>
-                            <span>Thống kê doanh thu</span>
+                            <span>Thống kê chi phí</span>
                         </a>
                     </li>
                     <li>

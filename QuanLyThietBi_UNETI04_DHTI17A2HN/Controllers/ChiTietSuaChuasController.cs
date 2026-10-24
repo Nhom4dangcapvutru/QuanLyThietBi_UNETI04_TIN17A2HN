@@ -1,4 +1,4 @@
-// Họ và tên: Cung Đình Phước
+﻿// Họ và tên: Cung Đình Phước
 // Mã sinh viên: 23103100311
 
 using Microsoft.AspNetCore.Mvc;
@@ -98,6 +98,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         var phieu = await _context.PhieuSuaChuas
             .FirstOrDefaultAsync(p => p.MaPhieu == chiTiet.MaPhieu);
 
+        if (phieu != null && phieu.TrangThai != TrangThaiPhieu.DangXuLy)
+            ModelState.AddModelError("MaPhieu", "Chỉ thay đổi linh kiện khi phiếu đang xử lý.");
         if (phieu == null)
         {
             ModelState.AddModelError(
@@ -160,9 +162,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
            
             if (phieu != null)
             {
-                phieu.TongChiPhi =
-                    (phieu.TongChiPhi ?? 0) + chiTiet.ThanhTien;
-
                 phieu.NgayCapNhat = DateTime.Now;
             }
 
@@ -199,6 +198,13 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         if (chiTiet == null)
             return NotFound();
 
+        if (!await _context.PhieuSuaChuas.AnyAsync(p => p.MaPhieu == chiTiet.MaPhieu
+            && p.TrangThai == TrangThaiPhieu.DangXuLy))
+        {
+            TempData["Error"] = "Phiếu không ở trạng thái cho phép thay đổi linh kiện.";
+            return RedirectToAction(nameof(Index));
+        }
+
         await LoadDropdown(
             chiTiet.MaPhieu,
             chiTiet.MaKyThuatVien,
@@ -228,6 +234,14 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         if (oldData == null)
             return NotFound();
 
+        var phieuGoc = await _context.PhieuSuaChuas.FindAsync(oldData.MaPhieu);
+        var phieuMoi = await _context.PhieuSuaChuas.FindAsync(model.MaPhieu);
+        if (phieuGoc?.TrangThai != TrangThaiPhieu.DangXuLy || phieuMoi?.TrangThai != TrangThaiPhieu.DangXuLy)
+        {
+            TempData["Error"] = "Chỉ thay đổi linh kiện giữa các phiếu đang xử lý. Phiếu đã nghiệm thu được giữ nguyên chi phí.";
+            return RedirectToAction(nameof(Index));
+        }
+
         var linhKien = await _context.LinhKiens
             .FirstOrDefaultAsync(l =>
                 l.MaLinhKien == model.MaLinhKien);
@@ -247,7 +261,9 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
        
-        linhKien.SoLuongTon += oldData.SoLuong;
+        var linhKienCu = await _context.LinhKiens.FindAsync(oldData.MaLinhKien);
+        var soLuongKhaDung = linhKien.SoLuongTon
+            + (oldData.MaLinhKien == model.MaLinhKien ? oldData.SoLuong : 0);
 
       
         if (model.SoLuong <= 0)
@@ -257,7 +273,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 "Số lượng phải lớn hơn 0.");
         }
 
-        if (model.SoLuong > linhKien.SoLuongTon)
+        if (model.SoLuong > soLuongKhaDung)
         {
             ModelState.AddModelError(
                 "SoLuong",
@@ -272,6 +288,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         if (ModelState.IsValid)
         {
            
+            if (linhKienCu != null) linhKienCu.SoLuongTon += oldData.SoLuong;
             linhKien.SoLuongTon -= model.SoLuong;
 
             oldData.MaPhieu = model.MaPhieu;
@@ -283,23 +300,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             oldData.KetQuaChanDoan = model.KetQuaChanDoan;
             oldData.GhiChu = model.GhiChu;
 
-            var phieu = await _context.PhieuSuaChuas
-                .FirstOrDefaultAsync(p =>
-                    p.MaPhieu == model.MaPhieu);
-
-            if (phieu != null)
-            {
-                var tongChiPhi = await _context.ChiTietSuaChuas
-                    .Where(c =>
-                        c.MaPhieu == model.MaPhieu &&
-                        c.MaChiTiet != model.MaChiTiet)
-                    .SumAsync(c => (decimal?)c.ThanhTien) ?? 0;
-
-                phieu.TongChiPhi =
-                    tongChiPhi + model.ThanhTien;
-
-                phieu.NgayCapNhat = DateTime.Now;
-            }
+            phieuGoc.NgayCapNhat = DateTime.Now;
+            phieuMoi.NgayCapNhat = DateTime.Now;
 
             await _context.SaveChangesAsync();
 
@@ -309,7 +311,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        linhKien.SoLuongTon -= oldData.SoLuong;
 
         await LoadDropdown(
             model.MaPhieu,
@@ -338,6 +339,13 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         if (chiTiet == null)
             return NotFound();
 
+        if (!await _context.PhieuSuaChuas.AnyAsync(p => p.MaPhieu == chiTiet.MaPhieu
+            && p.TrangThai == TrangThaiPhieu.DangXuLy))
+        {
+            TempData["Error"] = "Phiếu không ở trạng thái cho phép thay đổi linh kiện.";
+            return RedirectToAction(nameof(Index));
+        }
+
         return View(chiTiet);
     }
 
@@ -356,6 +364,13 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         if (chiTiet == null)
             return NotFound();
 
+        var phieu = await _context.PhieuSuaChuas.FindAsync(chiTiet.MaPhieu);
+        if (phieu?.TrangThai != TrangThaiPhieu.DangXuLy)
+        {
+            TempData["Error"] = "Không thể xóa linh kiện của phiếu ngoài trạng thái đang xử lý.";
+            return RedirectToAction(nameof(Index));
+        }
+
       
         var linhKien = await _context.LinhKiens
             .FirstOrDefaultAsync(l =>
@@ -367,21 +382,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
 
-        var phieu = await _context.PhieuSuaChuas
-            .FirstOrDefaultAsync(p =>
-                p.MaPhieu == chiTiet.MaPhieu);
-
-        if (phieu != null)
-        {
-            phieu.TongChiPhi =
-                Math.Max(
-                    0,
-                    (phieu.TongChiPhi ?? 0)
-                    - chiTiet.ThanhTien
-                );
-
-            phieu.NgayCapNhat = DateTime.Now;
-        }
+        phieu.NgayCapNhat = DateTime.Now;
 
         _context.ChiTietSuaChuas.Remove(chiTiet);
 
@@ -403,6 +404,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         int? maLinhKien = null)
     {
         var phieuList = await _context.PhieuSuaChuas
+            .Where(p => p.TrangThai == TrangThaiPhieu.DangXuLy)
             .OrderByDescending(p => p.MaPhieu)
             .ToListAsync();
 

@@ -1,4 +1,4 @@
-@* Họ và tên: DINH THI THUY LINH
+﻿@* Họ và tên: DINH THI THUY LINH
     MSV: 23103100110
    Nội dung thực hiện: Chi tiết phiếu sửa chữa *@
 
@@ -18,9 +18,9 @@
     };
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div>
-        <div class="d-flex align-items-center gap-2 mb-1">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
             <h3 class="fw-bold mb-0" style="color: #0f172a;">
                 <i class="bi bi-file-earmark-medical text-primary me-2"></i>Chi tiết phiếu kỹ thuật #@Model.MaPhieu
             </h3>
@@ -28,7 +28,7 @@
         </div>
         <p class="text-muted small mb-0">Quản lý trạng thái, tiến độ sửa chữa và vật tư thay thế</p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap gap-2">
         <a asp-action="Index" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i> Danh sách phiếu
         </a>
@@ -182,28 +182,10 @@
             </div>
         </div>
 
-        <div class="row g-3 mt-2">
-            @if (Model.ChiPhiDuKien.HasValue)
-            {
-                <div class="col-md-6">
-                    <div class="d-flex justify-content-between p-2 rounded border bg-white">
-                        <span class="text-muted small">Chi phí dự kiến:</span>
-                        <strong class="text-dark">@Model.ChiPhiDuKien.Value.ToString("N0") VNĐ</strong>
-                    </div>
-                </div>
-            }
-            @if (Model.TongChiPhi.HasValue)
-            {
-                <div class="col-md-6">
-                    <div class="d-flex justify-content-between p-2 rounded border bg-white">
-                        <span class="text-muted small">Tổng chi phí thực tế:</span>
-                        <strong class="text-danger fs-6">@Model.TongChiPhi.Value.ToString("N0") VNĐ</strong>
-                    </div>
-                </div>
-            }
-        </div>
     </div>
 </div>
+
+<partial name="_ChiPhiPhieu" model="Model" />
 
 @* ===== DANH SÁCH LINH KIỆN ===== *@
 @if (Model.ChiTietSuaChuas != null && Model.ChiTietSuaChuas.Any())

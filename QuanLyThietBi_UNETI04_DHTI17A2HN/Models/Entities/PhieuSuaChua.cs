@@ -53,6 +53,29 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities
         [Display(Name = "Tổng chi phí thực tế (VNĐ)")]
         public decimal? TongChiPhi { get; set; }
 
+        // Nullable để nhận biết phiếu cũ chưa có phân tích chi phí, không tự suy diễn tiền công.
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? TienLinhKienChot { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? TienCong { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? ChiPhiKhac { get; set; }
+
+        [StringLength(500)]
+        public string? NoiDungChiPhiKhac { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? GiamTru { get; set; }
+
+        [StringLength(500)]
+        public string? LyDoGiamTru { get; set; }
+
+        [NotMapped]
+        public bool CoPhanTichChiPhi => TienLinhKienChot.HasValue && TienCong.HasValue
+            && ChiPhiKhac.HasValue && GiamTru.HasValue && TongChiPhi.HasValue;
+
         [Display(Name = "Ngày hoàn thành")]
         public DateTime? NgayHoanThanh { get; set; }
 
