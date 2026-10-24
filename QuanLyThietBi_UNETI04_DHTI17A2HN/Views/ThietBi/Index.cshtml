@@ -56,7 +56,7 @@ Nội dung thực hiện: Module 2 - Giao diện Quản lý thiết bị: Tìm k
 
                 <div class="row g-3">
                     <!-- Từ khóa -->
-                    <div class="col-md-4">
+                    <div class="col-12 col-xl-8 col-xxl-4">
                         <label class="form-label small fw-semibold text-secondary">Từ khóa tìm kiếm</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0 text-muted">
@@ -67,7 +67,7 @@ Nội dung thực hiện: Module 2 - Giao diện Quản lý thiết bị: Tìm k
                     </div>
 
                     <!-- Loại thiết bị -->
-                    <div class="col-md-2">
+                    <div class="col-12 col-sm-6 col-xl-4 col-xxl-2">
                         <label class="form-label small fw-semibold text-secondary">Loại thiết bị</label>
                         <select name="maLoai" asp-items="Model.LoaiThietBiList" class="form-select">
                             <option value="">-- Tất cả loại --</option>
@@ -75,7 +75,7 @@ Nội dung thực hiện: Module 2 - Giao diện Quản lý thiết bị: Tìm k
                     </div>
 
                     <!-- Hãng sản xuất -->
-                    <div class="col-md-2">
+                    <div class="col-12 col-sm-6 col-xl-4 col-xxl-2">
                         <label class="form-label small fw-semibold text-secondary">Hãng sản xuất</label>
                         <select name="hangSanXuat" asp-items="Model.HangSanXuatList" class="form-select">
                             <option value="">-- Tất cả hãng --</option>
@@ -83,7 +83,7 @@ Nội dung thực hiện: Module 2 - Giao diện Quản lý thiết bị: Tìm k
                     </div>
 
                     <!-- Hạn bảo hành -->
-                    <div class="col-md-2">
+                    <div class="col-12 col-sm-6 col-xl-4 col-xxl-2">
                         <label class="form-label small fw-semibold text-secondary">Hạn bảo hành</label>
                         <select name="trangThaiBaoHanh" class="form-select">
                             <option value="">-- Tất cả --</option>
@@ -93,7 +93,7 @@ Nội dung thực hiện: Module 2 - Giao diện Quản lý thiết bị: Tìm k
                     </div>
 
                     <!-- Trạng thái máy -->
-                    <div class="col-md-2">
+                    <div class="col-12 col-sm-6 col-xl-4 col-xxl-2">
                         <label class="form-label small fw-semibold text-secondary">Trạng thái máy</label>
                         <select name="trangThaiThietBi" asp-items="Model.TrangThaiList" class="form-select">
                             <option value="">-- Tất cả trạng thái --</option>
@@ -101,7 +101,7 @@ Nội dung thực hiện: Module 2 - Giao diện Quản lý thiết bị: Tìm k
                     </div>
 
                     <!-- Khoảng giá trị -->
-                    <div class="col-md-4">
+                    <div class="col-12 col-sm-6 col-xl-4">
                         <label class="form-label small fw-semibold text-secondary">Khoảng giá trị (VNĐ)</label>
                         <div class="input-group input-group-sm">
                             <input type="number" name="giaTu" value="@Model.GiaTu" class="form-control" placeholder="Từ..." />
@@ -111,7 +111,7 @@ Nội dung thực hiện: Module 2 - Giao diện Quản lý thiết bị: Tìm k
                     </div>
 
                     <!-- Nút thao tác lọc -->
-                    <div class="col-md-8 d-flex justify-content-end align-items-end gap-2">
+                    <div class="col-12 col-sm-6 col-xl-8 d-flex flex-wrap justify-content-end align-items-end gap-2">
                         <a asp-action="Index" class="btn btn-outline-secondary btn-sm px-3 d-flex align-items-center gap-1">
                             <i class="bi bi-arrow-counterclockwise"></i>
                             <span>Làm mới bộ lọc</span>
