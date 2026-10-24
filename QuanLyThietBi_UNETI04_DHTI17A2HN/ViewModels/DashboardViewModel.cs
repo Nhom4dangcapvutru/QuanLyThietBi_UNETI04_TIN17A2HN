@@ -14,6 +14,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels
         public int SoGiaoDichDangXuLy { get; set; }
         public int SoGiaoDichHoanThanh { get; set; }
         public int SoGiaoDichDaHuy { get; set; }
+        public int SoGiaoDichTuChoi { get; set; }
         public decimal TongGiaTriPhatSinh { get; set; }
 
         // Danh sách phiếu sửa chữa mới nhất (Trung tâm điều hành)

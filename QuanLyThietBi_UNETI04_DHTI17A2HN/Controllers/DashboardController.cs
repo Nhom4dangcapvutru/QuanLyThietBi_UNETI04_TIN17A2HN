@@ -58,7 +58,9 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 SoGiaoDichHoanThanh = await _context.PhieuSuaChuas
                     .CountAsync(x => x.TrangThai == TrangThaiPhieu.HoanThanh),
                 SoGiaoDichDaHuy = await _context.PhieuSuaChuas
-                    .CountAsync(x => x.TrangThai == TrangThaiPhieu.DaHuy || x.TrangThai == TrangThaiPhieu.TuChoi),
+                    .CountAsync(x => x.TrangThai == TrangThaiPhieu.DaHuy),
+                SoGiaoDichTuChoi = await _context.PhieuSuaChuas
+                    .CountAsync(x => x.TrangThai == TrangThaiPhieu.TuChoi),
                 TongGiaTriPhatSinh = await _context.PhieuSuaChuas
                     .Where(x => x.TrangThai == TrangThaiPhieu.HoanThanh && x.TongChiPhi != null)
                     .SumAsync(x => x.TongChiPhi ?? 0m),

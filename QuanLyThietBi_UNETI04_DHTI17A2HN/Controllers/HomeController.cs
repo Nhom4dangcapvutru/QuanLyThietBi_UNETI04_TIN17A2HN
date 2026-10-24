@@ -65,7 +65,9 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                     model.SoGiaoDichHoanThanh = await queryPhieu
                         .CountAsync(x => x.TrangThai == TrangThaiPhieu.HoanThanh);
                     model.SoGiaoDichDaHuy = await queryPhieu
-                        .CountAsync(x => x.TrangThai == TrangThaiPhieu.DaHuy || x.TrangThai == TrangThaiPhieu.TuChoi);
+                        .CountAsync(x => x.TrangThai == TrangThaiPhieu.DaHuy);
+                    model.SoGiaoDichTuChoi = await queryPhieu
+                        .CountAsync(x => x.TrangThai == TrangThaiPhieu.TuChoi);
                     
                     // Tổng chi phí sửa chữa khách hàng này đã chi trả
                     model.TongGiaTriPhatSinh = await queryPhieu
@@ -121,7 +123,9 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 model.SoGiaoDichHoanThanh = await _context.PhieuSuaChuas
                     .CountAsync(x => x.TrangThai == TrangThaiPhieu.HoanThanh);
                 model.SoGiaoDichDaHuy = await _context.PhieuSuaChuas
-                    .CountAsync(x => x.TrangThai == TrangThaiPhieu.DaHuy || x.TrangThai == TrangThaiPhieu.TuChoi);
+                    .CountAsync(x => x.TrangThai == TrangThaiPhieu.DaHuy);
+                model.SoGiaoDichTuChoi = await _context.PhieuSuaChuas
+                    .CountAsync(x => x.TrangThai == TrangThaiPhieu.TuChoi);
                 
                 // Doanh thu toàn bộ trung tâm
                 model.TongGiaTriPhatSinh = await _context.PhieuSuaChuas

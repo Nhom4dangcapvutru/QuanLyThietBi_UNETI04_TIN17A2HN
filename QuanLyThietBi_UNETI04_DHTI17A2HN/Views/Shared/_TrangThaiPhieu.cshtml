@@ -1,0 +1,14 @@
+@model string
+@using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants
+@{
+    var (css, icon, explanation) = Model switch
+    {
+        TrangThaiPhieu.ChoTiepNhan => ("badge-status-tiepnhan", "bi-hourglass-split", "Đã gửi yêu cầu, đang chờ nhân viên tiếp nhận."),
+        TrangThaiPhieu.DangXuLy => ("badge-status-dangsua", "bi-gear-wide-connected", "Nhân viên đang kiểm tra, chẩn đoán hoặc sửa chữa thiết bị."),
+        TrangThaiPhieu.HoanThanh => ("badge-status-hoanthanh", "bi-check-circle-fill", "Đã nghiệm thu hoàn thành sửa chữa."),
+        TrangThaiPhieu.DaHuy => ("badge-status-dahuy", "bi-x-circle-fill", "Phiếu đã được hủy và dừng xử lý."),
+        TrangThaiPhieu.TuChoi => ("badge-status-dahuy", "bi-slash-circle", "Yêu cầu không được tiếp nhận."),
+        _ => ("badge bg-secondary", "bi-question-circle", "Trạng thái chưa xác định.")
+    };
+}
+<span class="@css" title="@explanation"><i class="bi @icon" aria-hidden="true"></i> @Model</span>

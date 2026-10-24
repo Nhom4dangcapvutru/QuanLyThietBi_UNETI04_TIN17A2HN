@@ -121,7 +121,7 @@
             <div class="card card-enterprise h-100 p-3 mb-0" style="border-left: 4px solid #10b981;">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold text-uppercase">Đã hoàn thành</span>
+                        <span class="text-muted small fw-semibold text-uppercase">Hoàn thành</span>
                         <h2 class="fw-bold text-success my-1">@Model.SoGiaoDichHoanThanh</h2>
                         <span class="text-muted small">
                             <i class="bi bi-check2-all me-1"></i>Sẵn sàng nhận máy
@@ -164,7 +164,7 @@
                         <strong class="fs-5 text-warning">@Model.SoGiaoDichDangXuLy</strong>
                     </div>
                     <div class="bg-dark bg-opacity-50 p-3 rounded-3 text-center border border-secondary" style="min-width: 120px;">
-                        <span class="d-block small text-muted">Đã xong</span>
+                        <span class="d-block small text-muted">Hoàn thành</span>
                         <strong class="fs-5 text-success">@Model.SoGiaoDichHoanThanh</strong>
                     </div>
                 }
@@ -229,6 +229,9 @@
                         <span class="d-flex align-items-center gap-1">
                             <span style="width: 10px; height: 10px; background: #ef4444; border-radius: 50%;"></span> Đã hủy
                         </span>
+                        <span class="d-flex align-items-center gap-1">
+                            <span style="width: 10px; height: 10px; background: #64748b; border-radius: 50%;"></span> Từ chối tiếp nhận
+                        </span>
                     </div>
                 </div>
             </div>
@@ -291,30 +294,7 @@
                                     </span>
                                 </td>
                                 <td>
-                                    @if (p.TrangThai == "Chờ tiếp nhận")
-                                    {
-                                        <span class="badge-status-tiepnhan">
-                                            <i class="bi bi-hourglass-split"></i> Tiếp nhận
-                                        </span>
-                                    }
-                                    else if (p.TrangThai == "Đang xử lý")
-                                    {
-                                        <span class="badge-status-dangsua">
-                                            <i class="bi bi-gear-wide-connected"></i> Đang sửa
-                                        </span>
-                                    }
-                                    else if (p.TrangThai == "Hoàn thành")
-                                    {
-                                        <span class="badge-status-hoanthanh">
-                                            <i class="bi bi-check-circle-fill"></i> Hoàn thành
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge-status-dahuy">
-                                            <i class="bi bi-x-circle-fill"></i> @p.TrangThai
-                                        </span>
-                                    }
+                                    <partial name="_TrangThaiPhieu" model="p.TrangThai" />
                                 </td>
                                 <td>
                                     @if (p.MucDo == "Khẩn cấp")
@@ -438,15 +418,16 @@
                 new Chart(ctxStatus, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Chờ tiếp nhận', 'Đang xử lý', 'Hoàn thành', 'Đã hủy'],
+                        labels: ['Chờ tiếp nhận', 'Đang xử lý', 'Hoàn thành', 'Đã hủy', 'Từ chối tiếp nhận'],
                         datasets: [{
                             data: [
                                 @Model.SoGiaoDichChoXuLy,
                                 @Model.SoGiaoDichDangXuLy,
                                 @Model.SoGiaoDichHoanThanh,
-                                @Model.SoGiaoDichDaHuy
+                                @Model.SoGiaoDichDaHuy,
+                                @Model.SoGiaoDichTuChoi
                             ],
-                            backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444'],
+                            backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#64748b'],
                             borderWidth: 2,
                             borderColor: '#ffffff'
                         }]

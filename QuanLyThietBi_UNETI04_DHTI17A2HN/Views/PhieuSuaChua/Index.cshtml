@@ -166,30 +166,7 @@
                                     }
                                 </td>
                                 <td>
-                                    @if (p.TrangThai == "Chờ tiếp nhận")
-                                    {
-                                        <span class="badge-status-tiepnhan">
-                                            <i class="bi bi-hourglass-split"></i> Tiếp nhận
-                                        </span>
-                                    }
-                                    else if (p.TrangThai == "Đang xử lý")
-                                    {
-                                        <span class="badge-status-dangsua">
-                                            <i class="bi bi-gear-wide-connected"></i> Đang sửa
-                                        </span>
-                                    }
-                                    else if (p.TrangThai == "Hoàn thành")
-                                    {
-                                        <span class="badge-status-hoanthanh">
-                                            <i class="bi bi-check-circle-fill"></i> Hoàn thành
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge-status-dahuy">
-                                            <i class="bi bi-x-circle-fill"></i> @p.TrangThai
-                                        </span>
-                                    }
+                                    <partial name="_TrangThaiPhieu" model="p.TrangThai" />
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-action-group justify-content-center">
