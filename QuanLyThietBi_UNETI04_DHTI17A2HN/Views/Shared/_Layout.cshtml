@@ -225,10 +225,13 @@
 
                 <div class="topbar-right">
                     <!-- Shortcut Nút Lập phiếu mới -->
-                    <a asp-controller="PhieuSuaChua" asp-action="Create" class="btn btn-primary btn-sm d-none d-md-flex align-items-center gap-1 shadow-sm">
-                        <i class="bi bi-plus-lg"></i>
-                        <span>Tiếp nhận phiếu</span>
-                    </a>
+                    @if (isKhachHang || isAdminOrKtv)
+                    {
+                        <a asp-controller="PhieuSuaChua" asp-action="Create" class="btn btn-primary btn-sm d-none d-md-flex align-items-center gap-1 shadow-sm">
+                            <i class="bi bi-plus-lg"></i>
+                            <span>@(isKhachHang ? "Tạo phiếu sửa chữa" : "Tiếp nhận phiếu")</span>
+                        </a>
+                    }
 
                     <!-- Status Indicator -->
                     <span class="badge bg-success-subtle text-success border border-success-subtle d-none d-lg-inline-flex align-items-center gap-1 px-2 py-1">
@@ -237,10 +240,13 @@
                     </span>
 
                     <!-- Chuông thông báo -->
-                    <a asp-controller="XuLySuaChua" asp-action="Index" class="topbar-btn-icon text-secondary" title="Phiếu cần xử lý">
-                        <i class="bi bi-bell"></i>
-                        <span class="topbar-badge-dot"></span>
-                    </a>
+                    @if (isAdminOrKtv)
+                    {
+                        <a asp-controller="XuLySuaChua" asp-action="Index" class="topbar-btn-icon text-secondary" title="Phiếu cần xử lý">
+                            <i class="bi bi-bell"></i>
+                            <span class="topbar-badge-dot"></span>
+                        </a>
+                    }
 
                     <!-- User Account Dropdown -->
                     @if (isLogged)

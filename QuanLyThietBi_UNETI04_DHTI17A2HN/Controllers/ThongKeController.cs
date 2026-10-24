@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
-using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModel;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels;
 
 namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 {

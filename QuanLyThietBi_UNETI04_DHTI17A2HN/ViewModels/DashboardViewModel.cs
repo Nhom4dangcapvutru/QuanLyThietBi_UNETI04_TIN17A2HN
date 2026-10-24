@@ -1,6 +1,6 @@
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 
-namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModel
+namespace QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels
 {
     public class DashboardViewModel
     {

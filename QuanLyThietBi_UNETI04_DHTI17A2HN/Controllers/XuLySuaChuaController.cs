@@ -9,7 +9,7 @@ using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Helpers;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
-using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModels;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Services;
 
 namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers

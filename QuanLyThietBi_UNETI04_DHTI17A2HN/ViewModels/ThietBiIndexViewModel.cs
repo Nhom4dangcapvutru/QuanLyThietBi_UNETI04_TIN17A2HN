@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Common;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 
-namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModels
+namespace QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels
 {
     public class ThietBiIndexViewModel
     {

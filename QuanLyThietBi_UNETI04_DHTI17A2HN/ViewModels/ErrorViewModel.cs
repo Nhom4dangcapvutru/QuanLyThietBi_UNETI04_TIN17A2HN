@@ -1,4 +1,4 @@
-namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models
+namespace QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels
 {
     public class ErrorViewModel
     {

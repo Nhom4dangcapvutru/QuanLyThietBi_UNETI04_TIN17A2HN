@@ -4,7 +4,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModels
+namespace QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels
 {
     public class ChanDoanViewModel
     {
