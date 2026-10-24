@@ -231,12 +231,19 @@
                 </div>
 
                 <div class="topbar-right">
-                    <!-- Shortcut Nút Lập phiếu mới -->
-                    @if (isKhachHang || isAdminOrKtv)
+                    <!-- Lối tắt theo vai trò: khách tạo yêu cầu, nhân viên tiếp nhận phiếu đã có. -->
+                    @if (isKhachHang)
                     {
                         <a asp-controller="PhieuSuaChua" asp-action="Create" class="btn btn-primary btn-sm d-none d-md-flex align-items-center gap-1 shadow-sm">
                             <i class="bi bi-plus-lg"></i>
-                            <span>@(isKhachHang ? "Tạo phiếu sửa chữa" : "Tiếp nhận phiếu")</span>
+                            <span>Tạo phiếu sửa chữa</span>
+                        </a>
+                    }
+                    else if (isAdminOrKtv)
+                    {
+                        <a asp-controller="XuLySuaChua" asp-action="Index" asp-route-trangThai="@TrangThaiPhieu.ChoTiepNhan" class="btn btn-primary btn-sm d-none d-md-flex align-items-center gap-1 shadow-sm">
+                            <i class="bi bi-box-arrow-in-down"></i>
+                            <span>Tiếp nhận phiếu</span>
                         </a>
                     }
 
