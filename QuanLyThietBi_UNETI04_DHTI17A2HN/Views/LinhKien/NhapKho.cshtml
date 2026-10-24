@@ -1,0 +1,13 @@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels.NhapKhoLinhKienViewModel
+@{ ViewData["Title"] = "Nhập kho linh kiện"; }
+<div class="d-flex flex-wrap justify-content-between gap-3 mb-4"><h3>Nhập bổ sung linh kiện</h3><a asp-action="Details" asp-route-id="@Model.MaLinhKien" class="btn btn-outline-secondary">Về chi tiết</a></div>
+<partial name="_ThongBao" />
+<div class="row"><div class="col-lg-7"><form asp-action="NhapKho" asp-route-id="@Model.MaLinhKien" method="post" class="card card-enterprise p-3 p-md-4">
+<input asp-for="MaLinhKien" type="hidden" />
+<h5>@Model.TenLinhKien</h5><p>Tồn kho hiện tại: <strong>@Model.SoLuongTonHienTai.ToString("N0") @Model.DonViTinh</strong></p>
+<div asp-validation-summary="All" class="text-danger mb-3" role="alert"></div>
+<label asp-for="SoLuongNhap" class="form-label"></label><input asp-for="SoLuongNhap" type="number" min="1" max="2147483647" step="1" class="form-control" /><span asp-validation-for="SoLuongNhap" class="text-danger small"></span>
+<p class="form-text">Số lượng xác nhận sẽ được cộng vào tồn kho hiện tại.</p>
+<div class="d-flex flex-wrap gap-2 mt-3"><button type="submit" class="btn btn-primary">Xác nhận nhập kho</button><a asp-action="Details" asp-route-id="@Model.MaLinhKien" class="btn btn-outline-secondary">Hủy bỏ</a></div>
+</form></div></div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

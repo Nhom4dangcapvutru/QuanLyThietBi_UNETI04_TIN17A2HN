@@ -372,7 +372,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 ChiPhiDuKien = phieu.ChiPhiDuKien,
                 LinhKienList = new SelectList(
                     await _context.LinhKiens
-                        .Where(l => l.SoLuongTon > 0)
+                        .Where(l => l.SoLuongTon > 0 && l.TrangThai != TrangThaiLinhKien.NgungSuDung)
                         .AsNoTracking()
                         .ToListAsync(),
                     "MaLinhKien", "TenLinhKien")
@@ -409,6 +409,12 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(SuaChua), new { id = vm.MaPhieu });
             }
 
+            if (linhKien.TrangThai == TrangThaiLinhKien.NgungSuDung)
+            {
+                TempData["ErrorMessage"] = "Linh kiện này đã ngừng sử dụng, vui lòng chọn linh kiện khác.";
+                return RedirectToAction(nameof(SuaChua), new { id = vm.MaPhieu });
+            }
+
             if (linhKien.SoLuongTon < vm.SoLuong)
             {
                 TempData["ErrorMessage"] =
@@ -436,6 +442,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             };
 
             linhKien.SoLuongTon -= vm.SoLuong;
+            linhKien.TrangThai = TrangThaiLinhKien.TheoTonKho(linhKien.SoLuongTon, false);
             _context.ChiTietSuaChuas.Add(chiTiet);
             phieu.NgayCapNhat = DateTime.Now;
 
@@ -468,7 +475,16 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             // Hoàn trả tồn kho
             if (chiTiet.LinhKien != null)
+            {
+                if (chiTiet.SoLuong > int.MaxValue - chiTiet.LinhKien.SoLuongTon)
+                {
+                    TempData["ErrorMessage"] = "Hoàn trả linh kiện vượt giới hạn tồn kho.";
+                    return RedirectToAction(nameof(SuaChua), new { id = maPhieu });
+                }
                 chiTiet.LinhKien.SoLuongTon += chiTiet.SoLuong;
+                chiTiet.LinhKien.TrangThai = TrangThaiLinhKien.TheoTonKho(chiTiet.LinhKien.SoLuongTon,
+                    chiTiet.LinhKien.TrangThai == TrangThaiLinhKien.NgungSuDung);
+            }
 
             _context.ChiTietSuaChuas.Remove(chiTiet);
             phieu.NgayCapNhat = DateTime.Now;

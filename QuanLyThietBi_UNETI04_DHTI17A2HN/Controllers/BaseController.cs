@@ -30,6 +30,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             "Dashboard",
             "XuLySuaChua",
             "ThongKe",
+            "LinhKien",
             "ChiTietSuaChuas"
         };
 

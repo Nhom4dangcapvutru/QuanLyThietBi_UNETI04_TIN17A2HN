@@ -1,0 +1,22 @@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.LinhKien
+@using QuanLyThietBi_UNETI04_DHTI17A2HN.Helpers
+@using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants
+@{ ViewData["Title"] = "Chi tiết linh kiện"; var admin = SessionHelper.IsAdmin(Context.Session); var state = TrangThaiLinhKien.TheoTonKho(Model.SoLuongTon, Model.TrangThai == TrangThaiLinhKien.NgungSuDung); }
+<div class="d-flex flex-wrap justify-content-between gap-3 mb-4"><h3>Chi tiết linh kiện #@Model.MaLinhKien</h3><a asp-action="Index" class="btn btn-outline-secondary">Về kho linh kiện</a></div>
+<partial name="_ThongBao" />
+<div class="card card-enterprise p-3 p-md-4"><h4>@Model.TenLinhKien</h4><dl class="row mt-3">
+<dt class="col-sm-4">Loại linh kiện</dt><dd class="col-sm-8">@Model.LoaiLinhKien</dd>
+<dt class="col-sm-4">Đơn giá hiện tại</dt><dd class="col-sm-8">@Model.DonGia.ToString("#,##0.##") VNĐ</dd>
+<dt class="col-sm-4">Số lượng tồn</dt><dd class="col-sm-8 fw-bold">@Model.SoLuongTon.ToString("N0") @Model.DonViTinh</dd>
+<dt class="col-sm-4">Trạng thái</dt><dd class="col-sm-8">@state</dd>
+<dt class="col-sm-4">Số hạng mục đã sử dụng</dt><dd class="col-sm-8">@ViewBag.SoLuotSuDung</dd>
+</dl>
+@if (admin) {
+<div class="d-flex flex-wrap gap-2">
+<a asp-action="Edit" asp-route-id="@Model.MaLinhKien" class="btn btn-primary">Chỉnh sửa / Trạng thái</a>
+@if (state != TrangThaiLinhKien.NgungSuDung) { <a asp-action="NhapKho" asp-route-id="@Model.MaLinhKien" class="btn btn-success">Nhập bổ sung</a> }
+@if ((int)ViewBag.SoLuotSuDung == 0) { <a asp-action="Delete" asp-route-id="@Model.MaLinhKien" class="btn btn-outline-danger">Xóa linh kiện</a> }
+</div>
+@if ((int)ViewBag.SoLuotSuDung > 0) { <p class="text-muted mt-3 mb-0">Linh kiện đã có lịch sử sử dụng. Có thể chọn ngừng sử dụng trong phần chỉnh sửa để giữ nguyên lịch sử.</p> }
+}
+</div>

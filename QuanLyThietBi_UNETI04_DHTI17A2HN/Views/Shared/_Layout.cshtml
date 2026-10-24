@@ -146,6 +146,13 @@
                         </a>
                     </li>
 
+                    <li>
+                        <a asp-controller="LinhKien" asp-action="Index" class="nav-link-custom @(currentCtrl == "LinhKien" ? "active" : "")">
+                            <i class="bi bi-box-seam"></i>
+                            <span>Kho linh kiện</span>
+                        </a>
+                    </li>
+
                     <li class="menu-header">BÁO CÁO & THỐNG KÊ</li>
                     <li>
                         <a asp-controller="ThongKe" asp-action="Index" class="nav-link-custom @(currentCtrl == "ThongKe" ? "active" : "")">

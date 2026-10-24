@@ -25,6 +25,16 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants
         public const string Hong = "Hỏng / Không hoạt động";
     }
 
+    public static class TrangThaiLinhKien
+    {
+        public const string ConHang = "Còn hàng";
+        public const string HetHang = "Hết hàng";
+        public const string NgungSuDung = "Ngừng sử dụng";
+
+        public static string TheoTonKho(int soLuongTon, bool ngungSuDung)
+            => ngungSuDung ? NgungSuDung : soLuongTon > 0 ? ConHang : HetHang;
+    }
+
     public static class TrangThaiPhieu
     {
         public const string ChoTiepNhan = "Chờ tiếp nhận";

@@ -1,0 +1,13 @@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.LinhKien
+@{ ViewData["Title"] = "Xóa linh kiện"; bool coLichSu = ViewBag.CoLichSu; }
+<h3 class="mb-4">Xóa linh kiện #@Model.MaLinhKien</h3>
+<div class="card card-enterprise p-3 p-md-4"><h5>@Model.TenLinhKien</h5><p>@Model.LoaiLinhKien · Tồn @Model.SoLuongTon.ToString("N0") @Model.DonViTinh</p>
+@if (coLichSu) {
+<div class="alert alert-warning">Linh kiện đã được sử dụng trên phiếu sửa chữa nên không thể xóa. Hãy chọn ngừng sử dụng để giữ nguyên lịch sử.</div>
+<a asp-action="Edit" asp-route-id="@Model.MaLinhKien" class="btn btn-outline-primary align-self-start">Chỉnh sửa / Ngừng sử dụng</a>
+} else {
+<p>Xác nhận xóa linh kiện chưa phát sinh lịch sử này khỏi danh mục?</p>
+<form asp-action="Delete" asp-route-id="@Model.MaLinhKien" method="post"><button type="submit" class="btn btn-danger">Xác nhận xóa</button></form>
+}
+<a asp-action="Details" asp-route-id="@Model.MaLinhKien" class="mt-3">Quay lại chi tiết</a>
+</div>

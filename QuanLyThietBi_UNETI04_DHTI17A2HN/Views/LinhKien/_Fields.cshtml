@@ -1,0 +1,8 @@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels.LinhKienEditViewModel
+<div class="row g-3">
+    <div class="col-12"><label asp-for="TenLinhKien" class="form-label"></label><input asp-for="TenLinhKien" class="form-control" /><span asp-validation-for="TenLinhKien" class="text-danger small"></span></div>
+    <div class="col-md-6"><label asp-for="LoaiLinhKien" class="form-label"></label><input asp-for="LoaiLinhKien" class="form-control" placeholder="Ví dụ: Pin, Màn hình, RAM" /><span asp-validation-for="LoaiLinhKien" class="text-danger small"></span></div>
+    <div class="col-md-6"><label asp-for="DonViTinh" class="form-label"></label><input asp-for="DonViTinh" class="form-control" placeholder="Ví dụ: Cái, Bộ, Thanh" /><span asp-validation-for="DonViTinh" class="text-danger small"></span></div>
+    <div class="col-md-6"><label asp-for="DonGia" class="form-label"></label><input asp-for="DonGia" type="number" min="0" max="1000000000000" step="0.01" class="form-control" /><span asp-validation-for="DonGia" class="text-danger small"></span></div>
+    <div class="col-12"><div class="form-check"><input asp-for="NgungSuDung" class="form-check-input" /><label asp-for="NgungSuDung" class="form-check-label"></label></div><p class="form-text">Linh kiện ngừng sử dụng được giữ lại trong lịch sử và không được xuất thêm vào phiếu sửa chữa.</p></div>
+</div>

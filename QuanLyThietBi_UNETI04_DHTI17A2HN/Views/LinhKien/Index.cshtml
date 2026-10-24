@@ -1,0 +1,37 @@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels.LinhKienIndexViewModel
+@using QuanLyThietBi_UNETI04_DHTI17A2HN.Helpers
+@using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants
+@{ ViewData["Title"] = "Kho linh kiện"; var admin = SessionHelper.IsAdmin(Context.Session); }
+<div class="d-flex flex-wrap justify-content-between gap-3 mb-4"><div><h3>Kho linh kiện</h3><p class="text-muted mb-0">Danh mục, đơn giá và số lượng tồn phục vụ sửa chữa thiết bị.</p></div>
+@if (admin) { <a asp-action="Create" class="btn btn-primary align-self-start">Thêm linh kiện mới</a> }
+</div>
+<partial name="_ThongBao" />
+<form asp-action="Index" method="get" class="card card-enterprise p-3 p-md-4">
+<div class="row g-3">
+<div class="col-12 col-lg-4"><label asp-for="TuKhoa" class="form-label">Tìm kiếm</label><input asp-for="TuKhoa" class="form-control" placeholder="Tên hoặc loại linh kiện..." /></div>
+<div class="col-12 col-sm-6 col-lg-2"><label asp-for="Loai" class="form-label">Loại linh kiện</label><select asp-for="Loai" class="form-select"><option value="">Tất cả loại</option>@foreach (var loai in Model.DanhSachLoai) { <option value="@loai">@loai</option> }</select></div>
+<div class="col-12 col-sm-6 col-lg-3"><label asp-for="TrangThai" class="form-label">Trạng thái kho</label><select asp-for="TrangThai" class="form-select"><option value="">Tất cả trạng thái</option><option value="@TrangThaiLinhKien.ConHang">Còn hàng</option><option value="@TrangThaiLinhKien.HetHang">Hết hàng</option><option value="@TrangThaiLinhKien.NgungSuDung">Ngừng sử dụng</option></select></div>
+<div class="col-12 col-sm-6 col-lg-3"><label asp-for="SapXep" class="form-label">Sắp xếp</label><select asp-for="SapXep" class="form-select"><option value="">Tên A → Z</option><option value="ten_desc">Tên Z → A</option><option value="ton_asc">Tồn kho tăng dần</option><option value="ton_desc">Tồn kho giảm dần</option><option value="gia_asc">Đơn giá tăng dần</option><option value="gia_desc">Đơn giá giảm dần</option></select></div>
+<div class="col-12 d-flex flex-wrap gap-2"><button class="btn btn-primary" type="submit">Áp dụng lọc</button><a asp-action="Index" class="btn btn-outline-secondary">Làm mới</a></div>
+</div></form>
+<div class="card card-enterprise"><div class="card-header">Danh sách linh kiện <span class="badge bg-light text-dark border">@Model.TongSoBanGhi linh kiện</span></div>
+<div class="table-responsive"><table class="table table-enterprise mb-0"><thead><tr><th>Mã</th><th>Linh kiện</th><th>Loại</th><th class="text-end">Đơn giá</th><th class="text-end">Tồn kho</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
+@if (Model.DanhSach.Count == 0) { <tr><td colspan="7" class="text-center py-4">Không tìm thấy linh kiện phù hợp.</td></tr> }
+@foreach (var item in Model.DanhSach) {
+var state = TrangThaiLinhKien.TheoTonKho(item.SoLuongTon, item.TrangThai == TrangThaiLinhKien.NgungSuDung);
+var badge = state == TrangThaiLinhKien.NgungSuDung ? "bg-secondary" : item.SoLuongTon == 0 ? "bg-danger" : "bg-success";
+<tr><td>#@item.MaLinhKien</td><td class="fw-semibold">@item.TenLinhKien</td><td>@item.LoaiLinhKien</td><td class="text-end">@item.DonGia.ToString("#,##0.##") đ</td><td class="text-end">@item.SoLuongTon.ToString("N0") @item.DonViTinh</td><td><span class="badge @badge">@state</span></td>
+<td><div class="d-flex flex-wrap gap-2"><a asp-action="Details" asp-route-id="@item.MaLinhKien" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+@if (admin) { <a asp-action="Edit" asp-route-id="@item.MaLinhKien" class="btn btn-sm btn-outline-secondary">Sửa</a>@if (state != TrangThaiLinhKien.NgungSuDung) { <a asp-action="NhapKho" asp-route-id="@item.MaLinhKien" class="btn btn-sm btn-outline-success">Nhập kho</a> } }
+</div></td></tr>
+}
+</tbody></table></div>
+@if (Model.TongSoTrang > 0) {
+<div class="card-footer bg-white d-flex flex-wrap justify-content-between gap-3 align-items-center"><span>Trang @Model.Trang / @Model.TongSoTrang</span>
+<nav aria-label="Phân trang kho linh kiện"><ul class="pagination pagination-enterprise mb-0 flex-wrap">
+@if (Model.Trang > 1) { <li class="page-item"><a class="page-link" asp-action="Index" asp-route-trang="@(Model.Trang-1)" asp-route-tuKhoa="@Model.TuKhoa" asp-route-loai="@Model.Loai" asp-route-trangThai="@Model.TrangThai" asp-route-sapXep="@Model.SapXep">Trước</a></li> }
+@for (int i=1;i<=Model.TongSoTrang;i++) { <li class="page-item @(i == Model.Trang ? "active" : "")"><a class="page-link" asp-action="Index" asp-route-trang="@i" asp-route-tuKhoa="@Model.TuKhoa" asp-route-loai="@Model.Loai" asp-route-trangThai="@Model.TrangThai" asp-route-sapXep="@Model.SapXep" aria-current="@(i == Model.Trang ? "page" : null)">@i</a></li> }
+@if (Model.Trang < Model.TongSoTrang) { <li class="page-item"><a class="page-link" asp-action="Index" asp-route-trang="@(Model.Trang+1)" asp-route-tuKhoa="@Model.TuKhoa" asp-route-loai="@Model.Loai" asp-route-trangThai="@Model.TrangThai" asp-route-sapXep="@Model.SapXep">Sau</a></li> }
+</ul></nav></div>
+}
+</div>

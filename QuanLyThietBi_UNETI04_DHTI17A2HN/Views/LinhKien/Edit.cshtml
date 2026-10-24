@@ -1,0 +1,11 @@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels.LinhKienEditViewModel
+@{ ViewData["Title"] = "Chỉnh sửa linh kiện"; }
+<div class="d-flex flex-wrap justify-content-between gap-3 mb-4"><h3>Chỉnh sửa linh kiện #@Model.MaLinhKien</h3><a asp-action="Details" asp-route-id="@Model.MaLinhKien" class="btn btn-outline-secondary">Về chi tiết</a></div>
+<div class="row"><div class="col-lg-8"><form asp-action="Edit" asp-route-id="@Model.MaLinhKien" method="post" class="card card-enterprise p-3 p-md-4">
+<input asp-for="MaLinhKien" type="hidden" />
+<div asp-validation-summary="All" class="text-danger mb-3" role="alert"></div>
+<div class="alert alert-info">Tồn kho hiện tại: <strong>@Model.SoLuongTonHienTai.ToString("N0") @Model.DonViTinh</strong>. Số lượng được cập nhật qua nhập kho và xuất / hoàn linh kiện trên phiếu.</div>
+<partial name="_Fields" model="Model" />
+<div class="d-flex flex-wrap gap-2 mt-4"><button type="submit" class="btn btn-primary">Lưu thông tin</button><a asp-action="Details" asp-route-id="@Model.MaLinhKien" class="btn btn-outline-secondary">Hủy bỏ</a></div>
+</form></div></div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

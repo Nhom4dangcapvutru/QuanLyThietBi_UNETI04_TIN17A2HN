@@ -118,6 +118,9 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 "Linh kiện không tồn tại.");
         }
 
+        if (linhKien?.TrangThai == TrangThaiLinhKien.NgungSuDung)
+            ModelState.AddModelError("MaLinhKien", "Linh kiện này đã ngừng sử dụng.");
+
         var kyThuatVien = await _context.TaiKhoans
             .FirstOrDefaultAsync(t =>
                 t.MaTaiKhoan == chiTiet.MaKyThuatVien);
@@ -158,6 +161,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         {
          
             linhKien!.SoLuongTon -= chiTiet.SoLuong;
+            linhKien.TrangThai = TrangThaiLinhKien.TheoTonKho(linhKien.SoLuongTon, false);
 
            
             if (phieu != null)
@@ -261,9 +265,17 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
        
+        if (linhKien.TrangThai == TrangThaiLinhKien.NgungSuDung)
+            ModelState.AddModelError("MaLinhKien", "Linh kiện này đã ngừng sử dụng.");
+
         var linhKienCu = await _context.LinhKiens.FindAsync(oldData.MaLinhKien);
-        var soLuongKhaDung = linhKien.SoLuongTon
+        var soLuongKhaDung = (long)linhKien.SoLuongTon
             + (oldData.MaLinhKien == model.MaLinhKien ? oldData.SoLuong : 0);
+        if (soLuongKhaDung - model.SoLuong > int.MaxValue)
+            ModelState.AddModelError("SoLuong", "Điều chỉnh số lượng vượt giới hạn tồn kho.");
+        if (linhKienCu != null && oldData.MaLinhKien != model.MaLinhKien
+            && oldData.SoLuong > int.MaxValue - linhKienCu.SoLuongTon)
+            ModelState.AddModelError("MaLinhKien", "Hoàn trả linh kiện cũ vượt giới hạn tồn kho.");
 
       
         if (model.SoLuong <= 0)
@@ -288,8 +300,19 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         if (ModelState.IsValid)
         {
            
-            if (linhKienCu != null) linhKienCu.SoLuongTon += oldData.SoLuong;
-            linhKien.SoLuongTon -= model.SoLuong;
+            if (oldData.MaLinhKien == model.MaLinhKien)
+                linhKien.SoLuongTon = (int)(soLuongKhaDung - model.SoLuong);
+            else
+            {
+                if (linhKienCu != null)
+                {
+                    linhKienCu.SoLuongTon += oldData.SoLuong;
+                    linhKienCu.TrangThai = TrangThaiLinhKien.TheoTonKho(linhKienCu.SoLuongTon,
+                        linhKienCu.TrangThai == TrangThaiLinhKien.NgungSuDung);
+                }
+                linhKien.SoLuongTon -= model.SoLuong;
+            }
+            linhKien.TrangThai = TrangThaiLinhKien.TheoTonKho(linhKien.SoLuongTon, false);
 
             oldData.MaPhieu = model.MaPhieu;
             oldData.MaKyThuatVien = model.MaKyThuatVien;
@@ -378,7 +401,14 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
         if (linhKien != null)
         {
+            if (chiTiet.SoLuong > int.MaxValue - linhKien.SoLuongTon)
+            {
+                TempData["Error"] = "Hoàn trả linh kiện vượt giới hạn tồn kho.";
+                return RedirectToAction(nameof(Index));
+            }
             linhKien.SoLuongTon += chiTiet.SoLuong;
+            linhKien.TrangThai = TrangThaiLinhKien.TheoTonKho(linhKien.SoLuongTon,
+                linhKien.TrangThai == TrangThaiLinhKien.NgungSuDung);
         }
 
 
@@ -427,7 +457,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             maKyThuatVien);
 
         var linhKienList = await _context.LinhKiens
-            .Where(l => l.SoLuongTon > 0)
+            .Where(l => l.SoLuongTon > 0 && l.TrangThai != TrangThaiLinhKien.NgungSuDung)
             .OrderBy(l => l.TenLinhKien)
             .ToListAsync();
 
