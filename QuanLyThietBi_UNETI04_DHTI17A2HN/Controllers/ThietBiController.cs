@@ -1,7 +1,7 @@
 // Họ và tên: Nguyễn Văn Tú
 // Mã sinh viên: 23103100077
 // Nội dung thực hiện: Module 2 - Quản lý thiết bị: CRUD, Tìm kiếm, Lọc kết hợp, Sắp xếp, Phân trang LINQ
-// Phân quyền: Khách hàng xem danh sách, tìm kiếm và xem chi tiết; Nhân viên/Admin quản lý CRUD
+// Phân quyền: Khách hàng chỉ xem thiết bị của mình; Nhân viên/Admin quản lý CRUD
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -29,6 +29,23 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return HttpContext.Session.GetString("VaiTro") == VaiTroConstant.KhachHang;
         }
 
+        private IQueryable<ThietBi> QueryThietBiDuocPhepXem()
+        {
+            var query = _context.ThietBis.AsNoTracking();
+            var vaiTro = HttpContext.Session.GetString("VaiTro");
+
+            if (vaiTro == VaiTroConstant.Admin || vaiTro == VaiTroConstant.KyThuatVien)
+                return query;
+
+            var maTaiKhoan = HttpContext.Session.GetInt32("MaTaiKhoan");
+            if (vaiTro != VaiTroConstant.KhachHang || !maTaiKhoan.HasValue)
+                return query.Where(t => false);
+
+            // Lọc tại Database bằng tài khoản trong Session, không nhận mã khách từ URL.
+            return query.Where(t => t.KhachHang != null
+                && t.KhachHang.MaTaiKhoan == maTaiKhoan.Value);
+        }
+
         // ==========================================
         // 1. DANH SÁCH + TÌM KIẾM + LỌC + SẮP XẾP + PHÂN TRANG
         // ==========================================
@@ -44,7 +61,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             int pageIndex = 1)
         {
             // Truy vấn gốc
-            var query = _context.ThietBis
+            var query = QueryThietBiDuocPhepXem()
                 .Include(t => t.LoaiThietBi)
                 .Include(t => t.KhachHang)
                 .AsNoTracking()
@@ -147,16 +164,22 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
         // ==========================================
-        // 2. CHI TIẾT THIẾT BỊ (Ai cũng xem được)
+        // 2. CHI TIẾT THIẾT BỊ (Khách hàng chỉ xem thiết bị thuộc sở hữu)
         // ==========================================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
 
-            var thietBi = await _context.ThietBis
+            var isStaff = HttpContext.Session.GetString("VaiTro") == VaiTroConstant.Admin
+                || HttpContext.Session.GetString("VaiTro") == VaiTroConstant.KyThuatVien;
+            var maTaiKhoan = HttpContext.Session.GetInt32("MaTaiKhoan");
+
+            var thietBi = await QueryThietBiDuocPhepXem()
                 .Include(t => t.LoaiThietBi)
                 .Include(t => t.KhachHang)
-                .Include(t => t.PhieuSuaChuas)
+                // Thiết bị từng đổi chủ không được làm lộ lịch sử của khách hàng cũ.
+                .Include(t => t.PhieuSuaChuas.Where(p => isStaff
+                    || (p.KhachHang != null && p.KhachHang.MaTaiKhoan == maTaiKhoan)))
                 .FirstOrDefaultAsync(m => m.MaThietBi == id);
 
             if (thietBi == null) return NotFound();
