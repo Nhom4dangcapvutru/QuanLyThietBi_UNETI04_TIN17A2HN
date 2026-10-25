@@ -24,19 +24,21 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// 3. Tự động khởi tạo Migration & Seed Data khi chạy app
+// Cập nhật cấu trúc bằng Migration trước, sau đó mới tạo dữ liệu mẫu nếu chưa có.
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
+        context.Database.Migrate();
         DbInitializer.Initialize(context);
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Lỗi xảy ra trong quá trình khởi tạo dữ liệu mẫu.");
+        logger.LogCritical(ex, "Không thể cập nhật cấu trúc hoặc khởi tạo Database. Ứng dụng dừng để tránh chạy với dữ liệu chưa sẵn sàng.");
+        throw;
     }
 }
 
