@@ -59,7 +59,7 @@ Nội dung thực hiện: Module 2 - Giao diện Chỉnh sửa thiết bị
 
                             <div class="col-md-6">
                                 <label asp-for="GiaTri" class="form-label fw-bold"></label>
-                                <input asp-for="GiaTri" type="number" step="1000" class="form-control" />
+                                <input asp-for="GiaTri" asp-format="{0:0.##}" type="number" min="0" step="0.01" class="form-control" />
                                 <span asp-validation-for="GiaTri" class="text-danger small"></span>
                             </div>
 
