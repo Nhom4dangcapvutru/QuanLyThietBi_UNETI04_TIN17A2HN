@@ -61,8 +61,12 @@
                         </select>
                         <span asp-validation-for="MaThietBi" class="text-danger small"></span>
                         <div class="form-text small text-muted">
-                            <i class="bi bi-info-circle me-1"></i>Hệ thống tự động lọc danh sách thiết bị thuộc sở hữu của bạn.
+                            <i class="bi bi-info-circle me-1"></i>Chỉ hiển thị thiết bị hoạt động bình thường hoặc hỏng, thuộc hồ sơ khách hàng đang hoạt động và chưa có phiếu chờ tiếp nhận / đang xử lý.
                         </div>
+                        @if (!Model.DanhSachThietBi.Any())
+                        {
+                            <div class="text-warning small mt-2">Không có thiết bị đủ điều kiện tạo phiếu. Vui lòng kiểm tra trạng thái thiết bị, phiếu hiện tại hoặc liên hệ nhân viên.</div>
+                        }
                     </div>
 
                     @* Preview thiết bị *@

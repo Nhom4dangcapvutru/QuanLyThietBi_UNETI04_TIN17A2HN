@@ -37,6 +37,17 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return kh?.MaKhachHang;
         }
 
+        private IQueryable<ThietBi> QueryThietBiDuocTaoPhieu()
+        {
+            return _context.ThietBis.AsNoTracking()
+                .Include(t => t.KhachHang)
+                .Where(t => t.KhachHang != null
+                    && t.KhachHang.TrangThai == TrangThaiKhachHang.HoatDong
+                    && (t.TrangThai == TrangThaiThietBi.HoatDong || t.TrangThai == TrangThaiThietBi.Hong)
+                    && !t.PhieuSuaChuas.Any(p => p.TrangThai == TrangThaiPhieu.ChoTiepNhan
+                        || p.TrangThai == TrangThaiPhieu.DangXuLy));
+        }
+
         // ====================================================================
         // 1. INDEX - Danh sách phiếu sửa chữa
         //     (Khách hàng: chỉ xem phiếu của mình; Admin/KTV: xem toàn bộ phiếu)
@@ -225,8 +236,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             if (isAdminOrKtv)
             {
-                thietBis = await _context.ThietBis
-                    .Include(t => t.KhachHang)
+                thietBis = await QueryThietBiDuocTaoPhieu()
                     .OrderBy(t => t.TenThietBi)
                     .ToListAsync();
                 maKhachHang = thietBis.FirstOrDefault()?.MaKhachHang ?? 1;
@@ -240,7 +250,14 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                thietBis = await _context.ThietBis
+                if (!await _context.KhachHangs.AnyAsync(k => k.MaKhachHang == maKhachHang.Value
+                    && k.TrangThai == TrangThaiKhachHang.HoatDong))
+                {
+                    TempData["ErrorMessage"] = "Hồ sơ khách hàng đã ngừng hoạt động. Vui lòng liên hệ nhân viên để được hỗ trợ.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                thietBis = await QueryThietBiDuocTaoPhieu()
                     .Where(t => t.MaKhachHang == maKhachHang.Value)
                     .OrderBy(t => t.TenThietBi)
                     .ToListAsync();
@@ -301,6 +318,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             // 1. Kiểm tra thiết bị
             var thietBi = await _context.ThietBis
+                .Include(t => t.KhachHang)
                 .FirstOrDefaultAsync(t => t.MaThietBi == model.MaThietBi && (isAdminOrKtv || t.MaKhachHang == maKhachHangVal));
 
             if (thietBi == null)
@@ -311,6 +329,17 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             // 2. Không tạo phiếu trùng nếu đang có phiếu chưa hoàn thành
             if (thietBi != null)
             {
+                if (thietBi.KhachHang == null || thietBi.KhachHang.TrangThai != TrangThaiKhachHang.HoatDong)
+                {
+                    ModelState.AddModelError("", "Hồ sơ khách hàng không tồn tại hoặc đã ngừng hoạt động. Không thể tạo phiếu sửa chữa.");
+                }
+
+                if (thietBi.TrangThai != TrangThaiThietBi.HoatDong && thietBi.TrangThai != TrangThaiThietBi.Hong)
+                {
+                    ModelState.AddModelError("MaThietBi",
+                        "Chỉ được tạo phiếu cho thiết bị ở trạng thái 'Hoạt động bình thường' hoặc 'Hỏng / Không hoạt động'. Thiết bị đang bảo hành hoặc sửa chữa phải hoàn tất phiếu hiện tại trước.");
+                }
+
                 bool coPhieuDangXuLy = await _context.PhieuSuaChuas
                     .AnyAsync(p => p.MaThietBi == model.MaThietBi
                                 && (p.TrangThai == TrangThaiPhieu.ChoTiepNhan
@@ -346,8 +375,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             // Nếu lỗi → load lại dropdown
             List<ThietBi> thietBisList = isAdminOrKtv
-                ? await _context.ThietBis.Include(t => t.KhachHang).OrderBy(t => t.TenThietBi).ToListAsync()
-                : await _context.ThietBis.Where(t => t.MaKhachHang == maKhachHangVal).OrderBy(t => t.TenThietBi).ToListAsync();
+                ? await QueryThietBiDuocTaoPhieu().OrderBy(t => t.TenThietBi).ToListAsync()
+                : await QueryThietBiDuocTaoPhieu().Where(t => t.MaKhachHang == maKhachHangVal).OrderBy(t => t.TenThietBi).ToListAsync();
 
             model.DanhSachThietBi = thietBisList.Select(t => new SelectListItem
             {

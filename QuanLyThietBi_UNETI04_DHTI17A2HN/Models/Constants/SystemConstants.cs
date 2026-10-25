@@ -17,6 +17,11 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants
         public const string BiKhoa = "Bị khóa";
     }
 
+    public static class TrangThaiKhachHang
+    {
+        public const string HoatDong = "Hoạt động";
+    }
+
     public static class TrangThaiThietBi
     {
         public const string HoatDong = "Hoạt động bình thường";
