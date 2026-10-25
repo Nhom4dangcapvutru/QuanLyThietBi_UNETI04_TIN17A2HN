@@ -40,7 +40,7 @@
 
                     <div class="mb-3">
                         <label asp-for="GhiChu" class="form-label fw-semibold">Ghi chú ngoại quan & tình trạng thực tế khi nhận</label>
-                        <textarea asp-for="GhiChu" class="form-control" rows="4"
+                        <textarea asp-for="GhiChu" class="form-control" rows="4" maxlength="500"
                                   placeholder="Mô tả phụ kiện đi kèm (sạc, túi...), tình trạng trầy xước, tem niêm phong..."></textarea>
                         <span asp-validation-for="GhiChu" class="text-danger small"></span>
                     </div>

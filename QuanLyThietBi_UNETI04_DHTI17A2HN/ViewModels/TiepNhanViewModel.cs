@@ -15,7 +15,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels
         [Display(Name = "Mức độ ưu tiên")]
         public string MucDo { get; set; } = "Trung bình";
 
-        [StringLength(500)]
+        [StringLength(500, ErrorMessage = "Ghi chú tiếp nhận tối đa 500 ký tự")]
         [Display(Name = "Ghi chú tiếp nhận")]
         public string? GhiChu { get; set; }
 

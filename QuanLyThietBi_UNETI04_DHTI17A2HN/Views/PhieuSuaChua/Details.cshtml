@@ -150,6 +150,8 @@
                 <div class="p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #e2e8f0; min-height: 120px; white-space: pre-line;">
                     @p.NoiDungLoi
                 </div>
+                <div class="fw-semibold mt-3 mb-1">Ghi chú tiếp nhận</div>
+                <div style="white-space: pre-line">@(string.IsNullOrWhiteSpace(p.GhiChuTiepNhan) ? "Chưa có ghi chú tiếp nhận." : p.GhiChuTiepNhan)</div>
                 <div class="mt-3 text-muted small d-flex align-items-center">
                     <i class="bi bi-clock me-1"></i> Ngày ghi nhận lỗi: @p.NgayTiepNhan.ToString("dd/MM/yyyy HH:mm")
                 </div>

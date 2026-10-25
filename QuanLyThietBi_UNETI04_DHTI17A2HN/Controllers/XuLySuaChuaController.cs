@@ -211,6 +211,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             {
                 MaPhieu = phieu.MaPhieu,
                 MucDo = phieu.MucDo,
+                GhiChu = phieu.GhiChuTiepNhan,
                 DanhSachMucDo = new List<SelectListItem>
                 {
                     new(MucDoUuTien.Thap, MucDoUuTien.Thap),
@@ -228,6 +229,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         {
             var phieu = await _context.PhieuSuaChuas
                 .Include(p => p.ThietBi)
+                .Include(p => p.KhachHang)
                 .FirstOrDefaultAsync(p => p.MaPhieu == vm.MaPhieu);
 
             if (phieu == null) return NotFound();
@@ -245,9 +247,26 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            if (!ModelState.IsValid)
+            {
+                ViewBag.TenKhachHang = phieu.KhachHang?.HoTen;
+                ViewBag.TenThietBi = phieu.ThietBi?.TenThietBi;
+                ViewBag.SerialNumber = phieu.ThietBi?.SerialNumber;
+                ViewBag.NoiDungLoi = phieu.NoiDungLoi;
+                vm.DanhSachMucDo = new List<SelectListItem>
+                {
+                    new(MucDoUuTien.Thap, MucDoUuTien.Thap),
+                    new(MucDoUuTien.TrungBinh, MucDoUuTien.TrungBinh),
+                    new(MucDoUuTien.Cao, MucDoUuTien.Cao),
+                    new(MucDoUuTien.KhanCap, MucDoUuTien.KhanCap)
+                };
+                return View(vm);
+            }
+
             phieu.TrangThai = TrangThaiPhieu.DangXuLy;
             phieu.MaKyThuatVienTiepNhan = maTaiKhoan.Value;
             phieu.MucDo = vm.MucDo;
+            phieu.GhiChuTiepNhan = string.IsNullOrWhiteSpace(vm.GhiChu) ? null : vm.GhiChu.Trim();
             phieu.NgayCapNhat = DateTime.Now;
 
             if (phieu.ThietBi != null)

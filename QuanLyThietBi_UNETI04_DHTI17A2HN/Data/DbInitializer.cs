@@ -13,6 +13,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Data
         {
             context.Database.EnsureCreated();
             RepairCostSchema.EnsureColumns(context);
+            ReceptionNoteSchema.EnsureColumns(context);
 
             // Nếu đã có dữ liệu: Tự động cập nhật nội dung lỗi chân thực cho các phiếu cũ nếu đang dùng chuỗi dập khuôn
             if (context.TaiKhoans.Any())

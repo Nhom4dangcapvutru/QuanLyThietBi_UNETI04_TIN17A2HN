@@ -218,6 +218,10 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Migrations
                     b.Property<decimal?>("ChiPhiKhac")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("GhiChuTiepNhan")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<decimal?>("GiamTru")
                         .HasColumnType("decimal(18,2)");
 

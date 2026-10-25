@@ -83,6 +83,10 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities
         [Display(Name = "Kỹ thuật viên tiếp nhận")]
         public int? MaKyThuatVienTiepNhan { get; set; }
 
+        [StringLength(500)]
+        [Display(Name = "Ghi chú tiếp nhận")]
+        public string? GhiChuTiepNhan { get; set; }
+
         [StringLength(1000)]
         [Display(Name = "Kết quả chẩn đoán")]
         public string? KetQuaChanDoan { get; set; }

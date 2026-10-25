@@ -172,6 +172,8 @@
                 <div class="p-3 rounded-3 bg-light border">
                     <div class="text-muted small fw-bold mb-1">Mô tả sự cố khách hàng báo:</div>
                     <div>@Model.NoiDungLoi</div>
+                    <div class="text-muted small fw-bold mt-3 mb-1">Ghi chú tiếp nhận:</div>
+                    <div style="white-space: pre-line">@(string.IsNullOrWhiteSpace(Model.GhiChuTiepNhan) ? "Chưa có ghi chú tiếp nhận." : Model.GhiChuTiepNhan)</div>
                 </div>
             </div>
             <div class="col-md-6">
