@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Services;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,9 @@ builder.Services.AddSession(options =>
 
 // 3. Đăng ký Service nghiệp vụ cho Module 4 (Xử lý sửa chữa)
 builder.Services.AddScoped<IQuyTrinhSuaChuaService, QuyTrinhSuaChuaService>();
+
+// Repository cho Module 2 - Quản lý thiết bị
+builder.Services.AddScoped<IThietBiRepository, ThietBiRepository>();
 
 builder.Services.AddControllersWithViews();
 

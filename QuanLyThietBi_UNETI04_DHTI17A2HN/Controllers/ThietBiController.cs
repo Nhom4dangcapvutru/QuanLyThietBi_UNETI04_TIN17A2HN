@@ -5,9 +5,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
-using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Common;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels;
@@ -17,33 +15,16 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
     public class ThietBiController : BaseController
     {
         private const int PageSize = 6; // Số lượng bản ghi trên 1 trang  
-        private readonly ApplicationDbContext _context;
+        private readonly IThietBiRepository _repository;
 
-        public ThietBiController(ApplicationDbContext context)
+        public ThietBiController(IThietBiRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         private bool IsKhachHang()
         {
             return HttpContext.Session.GetString("VaiTro") == VaiTroConstant.KhachHang;
-        }
-
-        private IQueryable<ThietBi> QueryThietBiDuocPhepXem()
-        {
-            var query = _context.ThietBis.AsNoTracking();
-            var vaiTro = HttpContext.Session.GetString("VaiTro");
-
-            if (vaiTro == VaiTroConstant.Admin || vaiTro == VaiTroConstant.KyThuatVien)
-                return query;
-
-            var maTaiKhoan = HttpContext.Session.GetInt32("MaTaiKhoan");
-            if (vaiTro != VaiTroConstant.KhachHang || !maTaiKhoan.HasValue)
-                return query.Where(t => false);
-
-            // Lọc tại Database bằng tài khoản trong Session, không nhận mã khách từ URL.
-            return query.Where(t => t.KhachHang != null
-                && t.KhachHang.MaTaiKhoan == maTaiKhoan.Value);
         }
 
         // ==========================================
@@ -60,81 +41,30 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             string? sortOrder,
             int pageIndex = 1)
         {
-            // Truy vấn gốc
-            var query = QueryThietBiDuocPhepXem()
-                .Include(t => t.LoaiThietBi)
-                .Include(t => t.KhachHang)
-                .AsNoTracking()
-                .AsQueryable();
-
-            // A. TÌM KIẾM (Tên thiết bị, Serial, Tên khách hàng)
-            if (!string.IsNullOrWhiteSpace(searchString))
+            var filter = new ThietBiFilter
             {
-                var search = searchString.Trim();
-                query = query.Where(t => t.TenThietBi.Contains(search)
-                                      || t.SerialNumber.Contains(search)
-                                      || t.KhachHang!.HoTen.Contains(search));
-            }
+                SearchString = searchString,
+                MaLoai = maLoai,
+                HangSanXuat = hangSanXuat,
+                TrangThaiBaoHanh = trangThaiBaoHanh,
+                TrangThaiThietBi = trangThaiThietBi,
+                GiaTu = giaTu,
+                GiaDen = giaDen,
+                SortOrder = sortOrder,
+                PageIndex = pageIndex,
+                PageSize = PageSize
+            };
+            var paginatedItems = await _repository.SearchAsync(filter,
+                HttpContext.Session.GetString("VaiTro"), HttpContext.Session.GetInt32("MaTaiKhoan"));
 
-            // B. LỌC KẾT HỢP
-            if (maLoai.HasValue && maLoai.Value > 0)
-            {
-                query = query.Where(t => t.MaLoai == maLoai.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(hangSanXuat))
-            {
-                query = query.Where(t => t.LoaiThietBi!.HangSanXuat == hangSanXuat);
-            }
-
-            if (trangThaiBaoHanh == "con")
-            {
-                query = query.Where(t => t.HanBaoHanh.Date >= DateTime.Now.Date);
-            }
-            else if (trangThaiBaoHanh == "het")
-            {
-                query = query.Where(t => t.HanBaoHanh.Date < DateTime.Now.Date);
-            }
-
-            if (!string.IsNullOrWhiteSpace(trangThaiThietBi))
-            {
-                query = query.Where(t => t.TrangThai == trangThaiThietBi);
-            }
-
-            if (giaTu.HasValue)
-            {
-                query = query.Where(t => t.GiaTri >= giaTu.Value);
-            }
-
-            if (giaDen.HasValue)
-            {
-                query = query.Where(t => t.GiaTri <= giaDen.Value);
-            }
-
-            // C. SẮP XẾP BẰNG LINQ
             ViewData["CurrentSort"] = sortOrder;
             ViewData["NameSortParam"] = string.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             ViewData["BuyDateSortParam"] = sortOrder == "date_buy_asc" ? "date_buy_desc" : "date_buy_asc";
             ViewData["WarrantySortParam"] = sortOrder == "warranty_asc" ? "warranty_desc" : "warranty_asc";
             ViewData["PriceSortParam"] = sortOrder == "price_asc" ? "price_desc" : "price_asc";
 
-            query = sortOrder switch
-            {
-                "name_desc" => query.OrderByDescending(t => t.TenThietBi),
-                "date_buy_asc" => query.OrderBy(t => t.NgayMua),
-                "date_buy_desc" => query.OrderByDescending(t => t.NgayMua),
-                "warranty_asc" => query.OrderBy(t => t.HanBaoHanh),
-                "warranty_desc" => query.OrderByDescending(t => t.HanBaoHanh),
-                "price_asc" => query.OrderBy(t => t.GiaTri),
-                "price_desc" => query.OrderByDescending(t => t.GiaTri),
-                _ => query.OrderBy(t => t.TenThietBi)
-            };
-
-            // D. PHÂN TRANG
-            var paginatedItems = await PaginatedList<ThietBi>.CreateAsync(query, pageIndex, PageSize);
-
             // E. LẤY DỮ LIỆU CHO CÁC DROPDOWN
-            var dsLoai = await _context.LoaiThietBis.AsNoTracking().ToListAsync();
+            var dsLoai = await _repository.GetLoaiThietBisAsync();
             var dsHang = dsLoai.Select(l => l.HangSanXuat).Distinct().ToList();
             var dsTrangThai = new List<string>
             {
@@ -170,17 +100,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         {
             if (id == null) return NotFound();
 
-            var isStaff = HttpContext.Session.GetString("VaiTro") == VaiTroConstant.Admin
-                || HttpContext.Session.GetString("VaiTro") == VaiTroConstant.KyThuatVien;
-            var maTaiKhoan = HttpContext.Session.GetInt32("MaTaiKhoan");
-
-            var thietBi = await QueryThietBiDuocPhepXem()
-                .Include(t => t.LoaiThietBi)
-                .Include(t => t.KhachHang)
-                // Thiết bị từng đổi chủ không được làm lộ lịch sử của khách hàng cũ.
-                .Include(t => t.PhieuSuaChuas.Where(p => isStaff
-                    || (p.KhachHang != null && p.KhachHang.MaTaiKhoan == maTaiKhoan)))
-                .FirstOrDefaultAsync(m => m.MaThietBi == id);
+            var thietBi = await _repository.GetDetailsAsync(id.Value,
+                HttpContext.Session.GetString("VaiTro"), HttpContext.Session.GetInt32("MaTaiKhoan"));
 
             if (thietBi == null) return NotFound();
 
@@ -219,7 +140,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             }
 
             // Kiểm tra trùng SerialNumber
-            if (await _context.ThietBis.AnyAsync(t => t.SerialNumber == thietBi.SerialNumber))
+            if (await _repository.SerialExistsAsync(thietBi.SerialNumber))
             {
                 ModelState.AddModelError("SerialNumber", "Số Serial (S/N) này đã tồn tại trong hệ thống.");
             }
@@ -232,8 +153,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Add(thietBi);
-                await _context.SaveChangesAsync();
+                await _repository.AddAsync(thietBi);
                 TempData["SuccessMessage"] = "Thêm mới thiết bị thành công!";
                 return RedirectToAction(nameof(Index));
             }
@@ -256,7 +176,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             if (id == null) return NotFound();
 
-            var thietBi = await _context.ThietBis.FindAsync(id);
+            var thietBi = await _repository.GetByIdAsync(id.Value);
             if (thietBi == null) return NotFound();
 
             await LoadDropdownDataAsync(thietBi.MaLoai, thietBi.MaKhachHang);
@@ -275,7 +195,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             if (id != thietBi.MaThietBi) return NotFound();
 
-            if (await _context.ThietBis.AnyAsync(t => t.SerialNumber == thietBi.SerialNumber && t.MaThietBi != id))
+            if (await _repository.SerialExistsAsync(thietBi.SerialNumber, id))
             {
                 ModelState.AddModelError("SerialNumber", "Số Serial này đang trùng với thiết bị khác.");
             }
@@ -287,20 +207,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(thietBi);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Cập nhật thông tin thiết bị thành công!";
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!await _context.ThietBis.AnyAsync(e => e.MaThietBi == thietBi.MaThietBi))
-                    {
-                        return NotFound();
-                    }
-                    throw;
-                }
+                if (!await _repository.UpdateAsync(thietBi)) return NotFound();
+                TempData["SuccessMessage"] = "Cập nhật thông tin thiết bị thành công!";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -322,14 +230,12 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             if (id == null) return NotFound();
 
-            var thietBi = await _context.ThietBis
-                .Include(t => t.LoaiThietBi)
-                .Include(t => t.KhachHang)
-                .FirstOrDefaultAsync(m => m.MaThietBi == id);
+            var thietBi = await _repository.GetDetailsAsync(id.Value,
+                HttpContext.Session.GetString("VaiTro"), HttpContext.Session.GetInt32("MaTaiKhoan"));
 
             if (thietBi == null) return NotFound();
 
-            var countPhieu = await _context.PhieuSuaChuas.CountAsync(p => p.MaThietBi == id);
+            var countPhieu = await _repository.CountHistoryAsync(id.Value);
             ViewBag.HasHistory = countPhieu > 0;
             ViewBag.HistoryCount = countPhieu;
 
@@ -346,18 +252,15 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction("AccessDenied", "Account");
             }
 
-            var hasHistory = await _context.PhieuSuaChuas.AnyAsync(p => p.MaThietBi == id);
+            var hasHistory = (await _repository.CountHistoryAsync(id)) > 0;
             if (hasHistory)
             {
                 TempData["ErrorMessage"] = "Không thể xóa! Thiết bị này đã có lịch sử sửa chữa/bảo hành trong hệ thống.";
                 return RedirectToAction(nameof(Index));
             }
 
-            var thietBi = await _context.ThietBis.FindAsync(id);
-            if (thietBi != null)
+            if (await _repository.DeleteAsync(id))
             {
-                _context.ThietBis.Remove(thietBi);
-                await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Đã xóa thiết bị thành công!";
             }
 
@@ -366,8 +269,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
         private async Task LoadDropdownDataAsync(int? selectedLoai = null, int? selectedKhachHang = null)
         {
-            ViewBag.MaLoai = new SelectList(await _context.LoaiThietBis.AsNoTracking().ToListAsync(), "MaLoai", "TenLoai", selectedLoai);
-            ViewBag.MaKhachHang = new SelectList(await _context.KhachHangs.AsNoTracking().ToListAsync(), "MaKhachHang", "HoTen", selectedKhachHang);
+            ViewBag.MaLoai = new SelectList(await _repository.GetLoaiThietBisAsync(), "MaLoai", "TenLoai", selectedLoai);
+            ViewBag.MaKhachHang = new SelectList(await _repository.GetKhachHangsAsync(), "MaKhachHang", "HoTen", selectedKhachHang);
         }
     }
 }
