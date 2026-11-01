@@ -4,35 +4,30 @@
 // Bảo mật: Chỉ cho phép sửa hồ sơ của chính mình (kiểm tra qua Session)
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Helpers;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels;
 
 namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 {
     public class ProfileController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IProfileRepository _repository;
 
-        public ProfileController(ApplicationDbContext context)
+        public ProfileController(IProfileRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         // ====================================================================
         // LẤY MÃ KHÁCH HÀNG TỪ SESSION
-        // Từ MaTaiKhoan (Session) → truy vấn bảng KhachHang để lấy MaKhachHang
         // ====================================================================
         private async Task<int?> GetCurrentMaKhachHangAsync()
         {
             var maTaiKhoan = SessionHelper.GetMaTaiKhoan(HttpContext.Session);
             if (maTaiKhoan == null) return null;
 
-            var khachHang = await _context.KhachHangs
-                .FirstOrDefaultAsync(k => k.MaTaiKhoan == maTaiKhoan.Value);
-
-            return khachHang?.MaKhachHang;
+            return await _repository.GetMaKhachHangByTaiKhoanAsync(maTaiKhoan.Value);
         }
 
         // ====================================================================
@@ -41,14 +36,12 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            // Kiểm tra đăng nhập
             if (!SessionHelper.IsLoggedIn(HttpContext.Session))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập để xem hồ sơ cá nhân.";
                 return RedirectToAction("Login", "Account");
             }
 
-            // Lấy mã khách hàng từ Session
             var maKhachHang = await GetCurrentMaKhachHangAsync();
             if (maKhachHang == null)
             {
@@ -56,12 +49,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // Lấy thông tin khách hàng + đếm số thiết bị, phiếu
-            var khachHang = await _context.KhachHangs
-                .Include(k => k.TaiKhoan)
-                .Include(k => k.ThietBis)
-                .Include(k => k.PhieuSuaChuas)
-                .FirstOrDefaultAsync(k => k.MaKhachHang == maKhachHang.Value);
+            // Gọi Repository lấy dữ liệu
+            var khachHang = await _repository.GetProfileFullDetailsAsync(maKhachHang.Value);
 
             if (khachHang == null)
             {
@@ -69,7 +58,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // Tạo ViewModel
             var viewModel = new ProfileViewModel
             {
                 MaKhachHang = khachHang.MaKhachHang,
@@ -112,8 +100,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var khachHang = await _context.KhachHangs
-                .FirstOrDefaultAsync(k => k.MaKhachHang == maKhachHang.Value);
+            var khachHang = await _repository.GetByIdAsync(maKhachHang.Value);
 
             if (khachHang == null)
             {
@@ -121,7 +108,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // Chỉ cho sửa các trường được phép
             var viewModel = new ProfileViewModel
             {
                 MaKhachHang = khachHang.MaKhachHang,
@@ -150,7 +136,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Lấy mã khách hàng từ Session (KHÔNG tin tưởng dữ liệu từ form)
             var maKhachHang = await GetCurrentMaKhachHangAsync();
             if (maKhachHang == null || maKhachHang.Value != model.MaKhachHang)
             {
@@ -158,34 +143,21 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // ----------------------------------------------------------------
-            // KIỂM TRA NGHIỆP VỤ
-            // ----------------------------------------------------------------
-            // Kiểm tra SĐT không trùng với khách hàng khác
-            bool trungSdt = await _context.KhachHangs
-                .AnyAsync(k => k.SoDienThoai == model.SoDienThoai
-                            && k.MaKhachHang != model.MaKhachHang);
-
-            if (trungSdt)
+            // Gọi Repository kiểm tra nghiệp vụ
+            if (await _repository.CheckTrungSdtAsync(model.SoDienThoai, model.MaKhachHang))
             {
                 ModelState.AddModelError("SoDienThoai", "Số điện thoại này đã được sử dụng.");
             }
 
-            // Kiểm tra Email không trùng
-            bool trungEmail = await _context.KhachHangs
-                .AnyAsync(k => k.Email == model.Email
-                            && k.MaKhachHang != model.MaKhachHang);
-
-            if (trungEmail)
+            if (await _repository.CheckTrungEmailAsync(model.Email, model.MaKhachHang))
             {
                 ModelState.AddModelError("Email", "Email này đã được sử dụng.");
             }
 
             if (ModelState.IsValid)
             {
-                // Lấy entity từ DB
-                var khachHang = await _context.KhachHangs
-                    .FirstOrDefaultAsync(k => k.MaKhachHang == model.MaKhachHang);
+                // Lấy entity từ Repo
+                var khachHang = await _repository.GetByIdAsync(model.MaKhachHang);
 
                 if (khachHang == null)
                 {
@@ -194,13 +166,12 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 }
 
                 // CHỈ cập nhật các trường được phép
-                // (KHÔNG cho sửa: HoTen, MaTaiKhoan, TrangThai, LoaiKhachHang, NgayTao, GhiChu)
                 khachHang.SoDienThoai = model.SoDienThoai;
                 khachHang.Email = model.Email;
                 khachHang.DiaChi = model.DiaChi;
                 khachHang.CCCD = model.CCCD;
 
-                await _context.SaveChangesAsync();
+                await _repository.SaveAsync();
 
                 TempData["SuccessMessage"] = "Đã cập nhật hồ sơ cá nhân thành công.";
                 return RedirectToAction(nameof(Index));

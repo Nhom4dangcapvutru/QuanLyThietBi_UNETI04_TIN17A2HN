@@ -5,52 +5,33 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Helpers;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels;
 
 namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 {
     public class PhieuSuaChuaController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IPhieuSuaChuaRepository _repository;
 
-        public PhieuSuaChuaController(ApplicationDbContext context)
+        public PhieuSuaChuaController(IPhieuSuaChuaRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
-        // ====================================================================
-        // HELPER: Lấy mã khách hàng đang đăng nhập
-        // ====================================================================
         private async Task<int?> GetCurrentMaKhachHangAsync()
         {
             var maTaiKhoan = SessionHelper.GetMaTaiKhoan(HttpContext.Session);
             if (maTaiKhoan == null) return null;
 
-            var kh = await _context.KhachHangs
-                .FirstOrDefaultAsync(k => k.MaTaiKhoan == maTaiKhoan.Value);
-
-            return kh?.MaKhachHang;
-        }
-
-        private IQueryable<ThietBi> QueryThietBiDuocTaoPhieu()
-        {
-            return _context.ThietBis.AsNoTracking()
-                .Include(t => t.KhachHang)
-                .Where(t => t.KhachHang != null
-                    && t.KhachHang.TrangThai == TrangThaiKhachHang.HoatDong
-                    && (t.TrangThai == TrangThaiThietBi.HoatDong || t.TrangThai == TrangThaiThietBi.Hong)
-                    && !t.PhieuSuaChuas.Any(p => p.TrangThai == TrangThaiPhieu.ChoTiepNhan
-                        || p.TrangThai == TrangThaiPhieu.DangXuLy));
+            return await _repository.GetMaKhachHangByTaiKhoanAsync(maTaiKhoan.Value);
         }
 
         // ====================================================================
-        // 1. INDEX - Danh sách phiếu sửa chữa
-        //     (Khách hàng: chỉ xem phiếu của mình; Admin/KTV: xem toàn bộ phiếu)
+        // 1. INDEX
         // ====================================================================
         [HttpGet]
         public async Task<IActionResult> Index(
@@ -59,7 +40,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             string? sapXep,
             int trang = 1)
         {
-            // Kiểm tra đăng nhập
             if (!SessionHelper.IsLoggedIn(HttpContext.Session))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập để xem phiếu sửa chữa.";
@@ -79,57 +59,16 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 }
             }
 
-            // ----------------------------------------------------------------
-            // QUERY
-            // ----------------------------------------------------------------
-            var query = _context.PhieuSuaChuas
-                .Include(p => p.ThietBi)
-                .Include(p => p.KhachHang)
-                .AsQueryable();
-
-            // Nếu là Khách hàng: Chỉ lấy phiếu của chính mình
-            if (!isAdminOrKtv && maKhachHang.HasValue)
-            {
-                query = query.Where(p => p.MaKhachHang == maKhachHang.Value);
-            }
-
-            // Tìm kiếm theo nội dung lỗi, tên thiết bị, serial
-            if (!string.IsNullOrWhiteSpace(tuKhoa))
-            {
-                tuKhoa = tuKhoa.Trim();
-                query = query.Where(p =>
-                    p.NoiDungLoi.Contains(tuKhoa) ||
-                    (p.ThietBi != null && p.ThietBi.TenThietBi.Contains(tuKhoa)) ||
-                    (p.ThietBi != null && p.ThietBi.SerialNumber.Contains(tuKhoa)));
-            }
-
-            // Lọc theo trạng thái
-            if (!string.IsNullOrWhiteSpace(trangThai))
-            {
-                query = query.Where(p => p.TrangThai == trangThai);
-            }
-
-            // Sắp xếp
-            query = sapXep switch
-            {
-                "ngay_asc" => query.OrderBy(p => p.NgayTiepNhan),
-                "ngay_desc" => query.OrderByDescending(p => p.NgayTiepNhan),
-                "trangthai" => query.OrderBy(p => p.TrangThai).ThenByDescending(p => p.NgayTiepNhan),
-                _ => query.OrderByDescending(p => p.NgayTiepNhan) // Mặc định: mới nhất trước
-            };
-
-            // Phân trang
             const int kichThuocTrang = 10;
-            int tongSoBanGhi = await query.CountAsync();
+
+            // Gọi Repository lấy danh sách
+            var (phieus, tongSoBanGhi) = await _repository.GetFilteredPhieuAsync(
+                maKhachHang, isAdminOrKtv, tuKhoa, trangThai, sapXep, trang, kichThuocTrang);
+
             int tongSoTrang = (int)Math.Ceiling(tongSoBanGhi / (double)kichThuocTrang);
 
             if (trang < 1) trang = 1;
             if (trang > tongSoTrang && tongSoTrang > 0) trang = tongSoTrang;
-
-            var phieus = await query
-                .Skip((trang - 1) * kichThuocTrang)
-                .Take(kichThuocTrang)
-                .ToListAsync();
 
             ViewBag.TuKhoa = tuKhoa;
             ViewBag.TrangThai = trangThai;
@@ -151,7 +90,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
         // ====================================================================
-        // 2. DETAILS - Xem chi tiết phiếu sửa chữa
+        // 2. DETAILS
         // ====================================================================
         [HttpGet]
         public async Task<IActionResult> Details(int? id)
@@ -181,16 +120,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 }
             }
 
-            // Lấy phiếu + kiểm tra quyền sở hữu
-            var phieu = await _context.PhieuSuaChuas
-                .Include(p => p.ThietBi)
-                    .ThenInclude(t => t!.LoaiThietBi)
-                .Include(p => p.KhachHang)
-                .Include(p => p.ChiTietSuaChuas)
-                    .ThenInclude(c => c.LinhKien)
-                .Include(p => p.ChiTietSuaChuas)
-                    .ThenInclude(c => c.KyThuatVien)
-                .FirstOrDefaultAsync(p => p.MaPhieu == id);
+            var phieu = await _repository.GetPhieuDetailsAsync(id);
 
             if (phieu == null)
             {
@@ -198,7 +128,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // BẢO MẬT: Khách hàng chỉ được xem phiếu CỦA CHÍNH MÌNH
             if (!isAdminOrKtv && maKhachHang.HasValue && phieu.MaKhachHang != maKhachHang.Value)
             {
                 TempData["ErrorMessage"] = "Bạn không có quyền xem phiếu này.";
@@ -219,7 +148,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
         // ====================================================================
-        // 3. CREATE - GET: Hiển thị form tạo phiếu sửa chữa
+        // 3. CREATE - GET
         // ====================================================================
         [HttpGet]
         public async Task<IActionResult> Create()
@@ -236,9 +165,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             if (isAdminOrKtv)
             {
-                thietBis = await QueryThietBiDuocTaoPhieu()
-                    .OrderBy(t => t.TenThietBi)
-                    .ToListAsync();
+                thietBis = await _repository.GetThietBiChoPhepTaoPhieuAsync(null, true);
                 maKhachHang = thietBis.FirstOrDefault()?.MaKhachHang ?? 1;
             }
             else
@@ -250,17 +177,13 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                if (!await _context.KhachHangs.AnyAsync(k => k.MaKhachHang == maKhachHang.Value
-                    && k.TrangThai == TrangThaiKhachHang.HoatDong))
+                if (!await _repository.KiemTraKhachHangHoatDongAsync(maKhachHang.Value))
                 {
                     TempData["ErrorMessage"] = "Hồ sơ khách hàng đã ngừng hoạt động. Vui lòng liên hệ nhân viên để được hỗ trợ.";
                     return RedirectToAction(nameof(Index));
                 }
 
-                thietBis = await QueryThietBiDuocTaoPhieu()
-                    .Where(t => t.MaKhachHang == maKhachHang.Value)
-                    .OrderBy(t => t.TenThietBi)
-                    .ToListAsync();
+                thietBis = await _repository.GetThietBiChoPhepTaoPhieuAsync(maKhachHang, false);
             }
 
             var viewModel = new PhieuSuaChuaCreateViewModel
@@ -285,7 +208,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
         // ====================================================================
-        // 4. CREATE - POST: Xử lý tạo phiếu sửa chữa
+        // 4. CREATE - POST
         // ====================================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -302,7 +225,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             if (isAdminOrKtv)
             {
-                var tb = await _context.ThietBis.FirstOrDefaultAsync(t => t.MaThietBi == model.MaThietBi);
+                var tb = await _repository.GetThietBiKemKhachHangAsync(model.MaThietBi);
                 maKhachHangVal = tb?.MaKhachHang ?? model.MaKhachHang;
             }
             else
@@ -316,17 +239,13 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 maKhachHangVal = maKhachHang.Value;
             }
 
-            // 1. Kiểm tra thiết bị
-            var thietBi = await _context.ThietBis
-                .Include(t => t.KhachHang)
-                .FirstOrDefaultAsync(t => t.MaThietBi == model.MaThietBi && (isAdminOrKtv || t.MaKhachHang == maKhachHangVal));
+            var thietBi = await _repository.GetThietBiKemKhachHangAsync(model.MaThietBi);
 
-            if (thietBi == null)
+            if (thietBi == null || (!isAdminOrKtv && thietBi.MaKhachHang != maKhachHangVal))
             {
                 ModelState.AddModelError("MaThietBi", "Thiết bị không tồn tại hoặc không thuộc quyền sở hữu.");
             }
 
-            // 2. Không tạo phiếu trùng nếu đang có phiếu chưa hoàn thành
             if (thietBi != null)
             {
                 if (thietBi.KhachHang == null || thietBi.KhachHang.TrangThai != TrangThaiKhachHang.HoatDong)
@@ -340,12 +259,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                         "Chỉ được tạo phiếu cho thiết bị ở trạng thái 'Hoạt động bình thường' hoặc 'Hỏng / Không hoạt động'. Thiết bị đang bảo hành hoặc sửa chữa phải hoàn tất phiếu hiện tại trước.");
                 }
 
-                bool coPhieuDangXuLy = await _context.PhieuSuaChuas
-                    .AnyAsync(p => p.MaThietBi == model.MaThietBi
-                                && (p.TrangThai == TrangThaiPhieu.ChoTiepNhan
-                                 || p.TrangThai == TrangThaiPhieu.DangXuLy));
-
-                if (coPhieuDangXuLy)
+                if (await _repository.CoPhieuDangXuLyAsync(model.MaThietBi))
                 {
                     ModelState.AddModelError("MaThietBi",
                         "Thiết bị này đang có phiếu sửa chữa chưa hoàn tất trong hệ thống.");
@@ -366,17 +280,15 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                     NgayHoanThanh = null
                 };
 
-                _context.PhieuSuaChuas.Add(phieu);
-                await _context.SaveChangesAsync();
+                await _repository.AddAsync(phieu);
+                await _repository.SaveAsync();
 
                 TempData["SuccessMessage"] = $"Đã tạo phiếu tiếp nhận sửa chữa thành công! Mã phiếu: #{phieu.MaPhieu}";
                 return RedirectToAction(nameof(Details), new { id = phieu.MaPhieu });
             }
 
-            // Nếu lỗi → load lại dropdown
-            List<ThietBi> thietBisList = isAdminOrKtv
-                ? await QueryThietBiDuocTaoPhieu().OrderBy(t => t.TenThietBi).ToListAsync()
-                : await QueryThietBiDuocTaoPhieu().Where(t => t.MaKhachHang == maKhachHangVal).OrderBy(t => t.TenThietBi).ToListAsync();
+            // Nếu có lỗi, load lại dropdown
+            var thietBisList = await _repository.GetThietBiChoPhepTaoPhieuAsync(maKhachHangVal, isAdminOrKtv);
 
             model.DanhSachThietBi = thietBisList.Select(t => new SelectListItem
             {
@@ -398,7 +310,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
         // ====================================================================
-        // 5. HUY - GET: Hiển thị trang xác nhận hủy phiếu
+        // 5. HUY - GET
         // ====================================================================
         [HttpGet]
         public async Task<IActionResult> Huy(int? id)
@@ -428,9 +340,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 }
             }
 
-            var phieu = await _context.PhieuSuaChuas
-                .Include(p => p.ThietBi)
-                .FirstOrDefaultAsync(p => p.MaPhieu == id);
+            var phieu = await _repository.GetPhieuDetailsAsync(id);
 
             if (phieu == null)
             {
@@ -438,7 +348,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Bảo mật: chỉ xem được phiếu của mình (nếu là khách)
             if (!isAdminOrKtv && maKhachHang.HasValue && phieu.MaKhachHang != maKhachHang.Value)
             {
                 TempData["ErrorMessage"] = "Bạn không có quyền hủy phiếu này.";
@@ -455,7 +364,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
         // ====================================================================
-        // 6. HUY - POST: Xử lý hủy phiếu
+        // 6. HUY - POST
         // ====================================================================
         [HttpPost, ActionName("Huy")]
         [ValidateAntiForgeryToken]
@@ -480,7 +389,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 }
             }
 
-            var phieu = await _context.PhieuSuaChuas.FirstOrDefaultAsync(p => p.MaPhieu == id);
+            var phieu = await _repository.GetPhieuByIdAsync(id);
 
             if (phieu == null)
             {
@@ -501,7 +410,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             }
 
             phieu.TrangThai = TrangThaiPhieu.DaHuy;
-            await _context.SaveChangesAsync();
+            await _repository.SaveAsync();
 
             TempData["SuccessMessage"] = $"Đã hủy phiếu #{phieu.MaPhieu} thành công.";
             return RedirectToAction(nameof(Index));

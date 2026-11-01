@@ -21,8 +21,15 @@ builder.Services.AddSession(options =>
 // 3. Đăng ký Service nghiệp vụ cho Module 4 (Xử lý sửa chữa)
 builder.Services.AddScoped<IQuyTrinhSuaChuaService, QuyTrinhSuaChuaService>();
 
+
 // Repository cho Module 2 - Quản lý thiết bị
 builder.Services.AddScoped<IThietBiRepository, ThietBiRepository>();
+//Đăng ký module 3 - Khách hàng
+builder.Services.AddScoped<IKhachHangRepository, KhachHangRepository>();
+//Đăng ký module 3 - phiếu sửa chữa
+builder.Services.AddScoped<IPhieuSuaChuaRepository, PhieuSuaChuaRepository>();
+//Đăng ký module 3 - Hồ sơ cá nhân
+builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 
 builder.Services.AddControllersWithViews();
 

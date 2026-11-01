@@ -5,26 +5,23 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Helpers;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels;
 
 namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 {
     public class KhachHangController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IKhachHangRepository _repository;
 
-        public KhachHangController(ApplicationDbContext context)
+        public KhachHangController(IKhachHangRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
-        // ====================================================================
-        // KIỂM TRA PHÂN QUYỀN: chỉ Admin/Kỹ thuật viên được dùng các chức năng
-        // ====================================================================
         public override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context)
         {
             if (!SessionHelper.IsLoggedIn(context.HttpContext.Session))
@@ -50,9 +47,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return SessionHelper.IsAdminOrKyThuatVien(HttpContext.Session);
         }
 
-        // ====================================================================
-        // 1. INDEX - Danh sách khách hàng + Tìm kiếm + Lọc + Sắp xếp + Phân trang
-        // ====================================================================
+        // 1. INDEX
         public async Task<IActionResult> Index(
             string? tuKhoa,
             string? loaiKhachHang,
@@ -60,75 +55,23 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             string? sapXep,
             int trang = 1)
         {
-            // Phân quyền
             if (!KiemTraQuyenNhanVien())
             {
                 TempData["ErrorMessage"] = "Bạn không có quyền truy cập chức năng này.";
                 return RedirectToAction("Index", "Home");
             }
 
-            // Khởi tạo query
-            var query = _context.KhachHangs
-                .Include(k => k.TaiKhoan)
-                .AsQueryable();
-
-            // ----------------------------------------------------------------
-            // TÌM KIẾM: theo Họ tên, SĐT, Email, CCCD
-            // ----------------------------------------------------------------
-            if (!string.IsNullOrWhiteSpace(tuKhoa))
-            {
-                tuKhoa = tuKhoa.Trim();
-                query = query.Where(k =>
-                    k.HoTen.Contains(tuKhoa) ||
-                    k.SoDienThoai.Contains(tuKhoa) ||
-                    k.Email.Contains(tuKhoa) ||
-                    (k.CCCD != null && k.CCCD.Contains(tuKhoa)));
-            }
-
-            // ----------------------------------------------------------------
-            // LỌC: theo loại khách hàng và trạng thái
-            // ----------------------------------------------------------------
-            if (!string.IsNullOrWhiteSpace(loaiKhachHang))
-            {
-                query = query.Where(k => k.LoaiKhachHang == loaiKhachHang);
-            }
-
-            if (!string.IsNullOrWhiteSpace(trangThai))
-            {
-                query = query.Where(k => k.TrangThai == trangThai);
-            }
-
-            // ----------------------------------------------------------------
-            // SẮP XẾP
-            // ----------------------------------------------------------------
-            query = sapXep switch
-            {
-                "ten_asc" => query.OrderBy(k => k.HoTen),
-                "ten_desc" => query.OrderByDescending(k => k.HoTen),
-                "ngaytao_asc" => query.OrderBy(k => k.NgayTao),
-                "ngaytao_desc" => query.OrderByDescending(k => k.NgayTao),
-                _ => query.OrderBy(k => k.MaKhachHang) // Mặc định: Mã tăng dần (1, 2, 3...)
-            };
-
-            // ----------------------------------------------------------------
-            // PHÂN TRANG
-            // ----------------------------------------------------------------
             const int kichThuocTrang = 10;
-            int tongSoBanGhi = await query.CountAsync();
+
+            // Gọi Repository lấy dữ liệu
+            var (khachHangs, tongSoBanGhi) = await _repository.GetFilteredAsync(
+                tuKhoa, loaiKhachHang, trangThai, sapXep, trang, kichThuocTrang);
+
             int tongSoTrang = (int)Math.Ceiling(tongSoBanGhi / (double)kichThuocTrang);
 
-            // Đảm bảo trang hợp lệ
             if (trang < 1) trang = 1;
             if (trang > tongSoTrang && tongSoTrang > 0) trang = tongSoTrang;
 
-            var khachHangs = await query
-                .Skip((trang - 1) * kichThuocTrang)
-                .Take(kichThuocTrang)
-                .ToListAsync();
-
-            // ----------------------------------------------------------------
-            // TẠO VIEWMODEL
-            // ----------------------------------------------------------------
             var viewModel = new KhachHangFilterViewModel
             {
                 KhachHangs = khachHangs,
@@ -145,9 +88,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return View(viewModel);
         }
 
-        // ====================================================================
-        // 2. DETAILS - Xem chi tiết khách hàng
-        // ====================================================================
+        // 2. DETAILS
         public async Task<IActionResult> Details(int? id)
         {
             if (!KiemTraQuyenNhanVien())
@@ -162,11 +103,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var khachHang = await _context.KhachHangs
-                .Include(k => k.TaiKhoan)
-                .Include(k => k.ThietBis)
-                .Include(k => k.PhieuSuaChuas)
-                .FirstOrDefaultAsync(k => k.MaKhachHang == id);
+            var khachHang = await _repository.GetDetailsByIdAsync(id);
 
             if (khachHang == null)
             {
@@ -177,9 +114,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return View(khachHang);
         }
 
-        // ====================================================================
-        // 3. CREATE - GET: Hiển thị form thêm khách hàng
-        // ====================================================================
+        // 3. CREATE - GET
         [HttpGet]
         public IActionResult Create()
         {
@@ -192,9 +127,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return View();
         }
 
-        // ====================================================================
-        // 4. CREATE - POST: Xử lý thêm khách hàng
-        // ====================================================================
+        // 4. CREATE - POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
@@ -207,55 +140,28 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // ----------------------------------------------------------------
-            // KIỂM TRA NGHIỆP VỤ
-            // ----------------------------------------------------------------
-
-            // 1. Kiểm tra SĐT không trùng
-            bool trungSdt = await _context.KhachHangs
-                .AnyAsync(k => k.SoDienThoai == khachHang.SoDienThoai);
-
-            if (trungSdt)
-            {
+            // Kiểm tra nghiệp vụ (gọi qua Repository)
+            if (await _repository.CheckTrungSdtAsync(khachHang.SoDienThoai))
                 ModelState.AddModelError("SoDienThoai", "Số điện thoại này đã được đăng ký cho khách hàng khác.");
-            }
 
-            // 2. Kiểm tra Email không trùng
-            bool trungEmail = await _context.KhachHangs
-                .AnyAsync(k => k.Email == khachHang.Email);
-
-            if (trungEmail)
-            {
+            if (await _repository.CheckTrungEmailAsync(khachHang.Email))
                 ModelState.AddModelError("Email", "Email này đã được đăng ký cho khách hàng khác.");
-            }
 
-            // 3. Kiểm tra CCCD không trùng (nếu có nhập)
-            if (!string.IsNullOrWhiteSpace(khachHang.CCCD))
-            {
-                bool trungCccd = await _context.KhachHangs
-                    .AnyAsync(k => k.CCCD == khachHang.CCCD);
+            if (!string.IsNullOrWhiteSpace(khachHang.CCCD) && await _repository.CheckTrungCccdAsync(khachHang.CCCD))
+                ModelState.AddModelError("CCCD", "Số CCCD này đã được đăng ký.");
 
-                if (trungCccd)
-                {
-                    ModelState.AddModelError("CCCD", "Số CCCD này đã được đăng ký.");
-                }
-            }
-
-            // 4. Nếu là Doanh nghiệp → bắt buộc có Mã số thuế
             if (khachHang.LoaiKhachHang == LoaiKhachHangConstant.DoanhNghiep
                 && string.IsNullOrWhiteSpace(khachHang.MaSoThue))
             {
                 ModelState.AddModelError("MaSoThue", "Khách hàng doanh nghiệp bắt buộc phải có mã số thuế.");
             }
 
-            // ----------------------------------------------------------------
-            // LƯU DATABASE
-            // ----------------------------------------------------------------
             if (ModelState.IsValid)
             {
-                khachHang.NgayTao = DateTime.Now; // Hệ thống tự gán
-                _context.Add(khachHang);
-                await _context.SaveChangesAsync();
+                khachHang.NgayTao = DateTime.Now;
+
+                await _repository.AddAsync(khachHang);
+                await _repository.SaveAsync();
 
                 TempData["SuccessMessage"] = $"Đã thêm khách hàng '{khachHang.HoTen}' thành công.";
                 return RedirectToAction(nameof(Index));
@@ -264,9 +170,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return View(khachHang);
         }
 
-        // ====================================================================
-        // 5. EDIT - GET: Hiển thị form sửa khách hàng
-        // ====================================================================
+        // 5. EDIT - GET
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -282,7 +186,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var khachHang = await _context.KhachHangs.FindAsync(id);
+            var khachHang = await _repository.GetByIdAsync(id);
             if (khachHang == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy khách hàng.";
@@ -292,9 +196,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return View(khachHang);
         }
 
-        // ====================================================================
-        // 6. EDIT - POST: Xử lý sửa khách hàng
-        // ====================================================================
+        // 6. EDIT - POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
@@ -314,38 +216,14 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // ----------------------------------------------------------------
-            // KIỂM TRA NGHIỆP VỤ (loại trừ chính khách hàng này)
-            // ----------------------------------------------------------------
-            bool trungSdt = await _context.KhachHangs
-                .AnyAsync(k => k.SoDienThoai == khachHang.SoDienThoai
-                            && k.MaKhachHang != khachHang.MaKhachHang);
-
-            if (trungSdt)
-            {
+            if (await _repository.CheckTrungSdtAsync(khachHang.SoDienThoai, khachHang.MaKhachHang))
                 ModelState.AddModelError("SoDienThoai", "Số điện thoại này đã được đăng ký cho khách hàng khác.");
-            }
 
-            bool trungEmail = await _context.KhachHangs
-                .AnyAsync(k => k.Email == khachHang.Email
-                            && k.MaKhachHang != khachHang.MaKhachHang);
-
-            if (trungEmail)
-            {
+            if (await _repository.CheckTrungEmailAsync(khachHang.Email, khachHang.MaKhachHang))
                 ModelState.AddModelError("Email", "Email này đã được đăng ký cho khách hàng khác.");
-            }
 
-            if (!string.IsNullOrWhiteSpace(khachHang.CCCD))
-            {
-                bool trungCccd = await _context.KhachHangs
-                    .AnyAsync(k => k.CCCD == khachHang.CCCD
-                                && k.MaKhachHang != khachHang.MaKhachHang);
-
-                if (trungCccd)
-                {
-                    ModelState.AddModelError("CCCD", "Số CCCD này đã được đăng ký.");
-                }
-            }
+            if (!string.IsNullOrWhiteSpace(khachHang.CCCD) && await _repository.CheckTrungCccdAsync(khachHang.CCCD, khachHang.MaKhachHang))
+                ModelState.AddModelError("CCCD", "Số CCCD này đã được đăng ký.");
 
             if (khachHang.LoaiKhachHang == LoaiKhachHangConstant.DoanhNghiep
                 && string.IsNullOrWhiteSpace(khachHang.MaSoThue))
@@ -353,21 +231,18 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 ModelState.AddModelError("MaSoThue", "Khách hàng doanh nghiệp bắt buộc phải có mã số thuế.");
             }
 
-            // ----------------------------------------------------------------
-            // LƯU DATABASE
-            // ----------------------------------------------------------------
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(khachHang);
-                    await _context.SaveChangesAsync();
+                    await _repository.UpdateAsync(khachHang);
+                    await _repository.SaveAsync();
 
                     TempData["SuccessMessage"] = $"Đã cập nhật khách hàng '{khachHang.HoTen}' thành công.";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!KhachHangExists(khachHang.MaKhachHang))
+                    if (!await _repository.ExistsAsync(khachHang.MaKhachHang))
                     {
                         TempData["ErrorMessage"] = "Không tìm thấy khách hàng.";
                         return RedirectToAction(nameof(Index));
@@ -381,9 +256,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return View(khachHang);
         }
 
-        // ====================================================================
-        // 7. DELETE - GET: Hiển thị trang xác nhận xóa
-        // ====================================================================
+        // 7. DELETE - GET
         [HttpGet]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -399,11 +272,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var khachHang = await _context.KhachHangs
-                .Include(k => k.TaiKhoan)
-                .Include(k => k.ThietBis)
-                .Include(k => k.PhieuSuaChuas)
-                .FirstOrDefaultAsync(k => k.MaKhachHang == id);
+            var khachHang = await _repository.GetDetailsByIdAsync(id);
 
             if (khachHang == null)
             {
@@ -414,9 +283,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return View(khachHang);
         }
 
-        // ====================================================================
-        // 8. DELETE - POST: Xử lý xóa khách hàng
-        // ====================================================================
+        // 8. DELETE - POST
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -427,10 +294,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var khachHang = await _context.KhachHangs
-                .Include(k => k.ThietBis)
-                .Include(k => k.PhieuSuaChuas)
-                .FirstOrDefaultAsync(k => k.MaKhachHang == id);
+            // Lấy chi tiết để check các bảng liên quan (ThietBis, PhieuSuaChuas)
+            var khachHang = await _repository.GetDetailsByIdAsync(id);
 
             if (khachHang == null)
             {
@@ -438,9 +303,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // ----------------------------------------------------------------
-            // KIỂM TRA NGHIỆP VỤ: Không cho xóa nếu đã có thiết bị hoặc phiếu
-            // ----------------------------------------------------------------
             if (khachHang.ThietBis.Any())
             {
                 TempData["ErrorMessage"] = "Không thể xóa khách hàng vì đang có thiết bị trong hệ thống.";
@@ -455,19 +317,11 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             string tenKhachHang = khachHang.HoTen;
 
-            _context.KhachHangs.Remove(khachHang);
-            await _context.SaveChangesAsync();
+            await _repository.DeleteAsync(khachHang);
+            await _repository.SaveAsync();
 
             TempData["SuccessMessage"] = $"Đã xóa khách hàng '{tenKhachHang}' thành công.";
             return RedirectToAction(nameof(Index));
-        }
-
-        // ====================================================================
-        // HELPER: Kiểm tra khách hàng có tồn tại không
-        // ====================================================================
-        private bool KhachHangExists(int id)
-        {
-            return _context.KhachHangs.Any(e => e.MaKhachHang == id);
         }
     }
 }
