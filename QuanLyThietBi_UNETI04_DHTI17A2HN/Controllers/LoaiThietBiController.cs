@@ -1,43 +1,38 @@
 ﻿// Họ và tên: Bùi Thị Thu Trang
 // Mã sinh viên: 23103100103
-// Nội dung thực hiện: Quản lý loại thiết bị - CRUD, kiểm tra trùng tên và ràng buộc xóa
+// Nội dung thực hiện: Quản lý loại thiết bị - CRUD, kiểm tra trùng tên và ràng buộc xóa.
+// Áp dụng Repository Pattern (ILoaiThietBiRepository) để tách biệt logic truy vấn CSDL khỏi Controller.
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories;
 
 namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 {
     public class LoaiThietBiController : BaseController
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ILoaiThietBiRepository _repository;
 
-        public LoaiThietBiController(ApplicationDbContext context)
+        public LoaiThietBiController(ILoaiThietBiRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         // GET: /LoaiThietBi
         public async Task<IActionResult> Index(string searchString, int page = 1)
         {
             int pageSize = 5;
-            var query = _context.LoaiThietBis.AsQueryable();
 
-            // Tìm kiếm theo tên loại hoặc hãng sản xuất
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                query = query.Where(l => l.TenLoai.Contains(searchString)
-                                      || l.HangSanXuat.Contains(searchString));
-            }
+            // Gọi Repository lấy toàn bộ danh sách (đã bao gồm logic tìm kiếm)
+            var allItems = await _repository.GetAllAsync(searchString);
 
-            // Phân trang
-            var totalItems = await query.CountAsync();
-            var items = await query
-                .OrderBy(l => l.MaLoai)
+            // Phân trang bằng LINQ
+            var totalItems = allItems.Count();
+            var items = allItems
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToList();
 
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
@@ -49,10 +44,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         // GET: /LoaiThietBi/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var loai = await _context.LoaiThietBis
-                .Include(l => l.ThietBis)
-                .FirstOrDefaultAsync(l => l.MaLoai == id);
-
+            var loai = await _repository.GetByIdWithThietBiAsync(id);
             if (loai == null) return NotFound();
             return View(loai);
         }
@@ -65,16 +57,16 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(LoaiThietBi loai)
         {
-            // Kiểm tra trùng tên loại thiết bị
-            if (await _context.LoaiThietBis.AnyAsync(l => l.TenLoai == loai.TenLoai))
+            // Kiểm tra trùng tên loại thiết bị qua Repository
+            if (await _repository.CheckTenLoaiExistsAsync(loai.TenLoai))
             {
                 ModelState.AddModelError("TenLoai", "Tên loại thiết bị đã tồn tại.");
             }
 
             if (ModelState.IsValid)
             {
-                _context.Add(loai);
-                await _context.SaveChangesAsync();
+                await _repository.AddAsync(loai);
+                await _repository.SaveChangesAsync();
                 TempData["Success"] = "Thêm loại thiết bị thành công!";
                 return RedirectToAction(nameof(Index));
             }
@@ -84,7 +76,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         // GET: /LoaiThietBi/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var loai = await _context.LoaiThietBis.FindAsync(id);
+            var loai = await _repository.GetByIdAsync(id);
             if (loai == null) return NotFound();
             return View(loai);
         }
@@ -96,8 +88,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         {
             if (id != loai.MaLoai) return NotFound();
 
-            // Kiểm tra trùng tên (trừ chính nó)
-            if (await _context.LoaiThietBis.AnyAsync(l => l.TenLoai == loai.TenLoai && l.MaLoai != id))
+            // Kiểm tra trùng tên (trừ chính nó) qua Repository
+            if (await _repository.CheckTenLoaiExistsAsync(loai.TenLoai, id))
             {
                 ModelState.AddModelError("TenLoai", "Tên loại thiết bị đã tồn tại.");
             }
@@ -106,13 +98,13 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             {
                 try
                 {
-                    _context.Update(loai);
-                    await _context.SaveChangesAsync();
+                    _repository.Update(loai);
+                    await _repository.SaveChangesAsync();
                     TempData["Success"] = "Cập nhật loại thiết bị thành công!";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_context.LoaiThietBis.Any(l => l.MaLoai == id)) return NotFound();
+                    if (await _repository.GetByIdAsync(id) == null) return NotFound();
                     throw;
                 }
                 return RedirectToAction(nameof(Index));
@@ -123,10 +115,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         // GET: /LoaiThietBi/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
-            var loai = await _context.LoaiThietBis
-                .Include(l => l.ThietBis)
-                .FirstOrDefaultAsync(l => l.MaLoai == id);
-
+            var loai = await _repository.GetByIdWithThietBiAsync(id);
             if (loai == null) return NotFound();
             return View(loai);
         }
@@ -136,10 +125,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var loai = await _context.LoaiThietBis
-                .Include(l => l.ThietBis)
-                .FirstOrDefaultAsync(l => l.MaLoai == id);
-
+            // Tải loại thiết bị kèm danh sách Thiết bị (để kiểm tra ràng buộc xóa)
+            var loai = await _repository.GetByIdWithThietBiAsync(id);
             if (loai == null) return NotFound();
 
             // Không xóa nếu đã có thiết bị tham chiếu
@@ -149,8 +136,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            _context.LoaiThietBis.Remove(loai);
-            await _context.SaveChangesAsync();
+            _repository.Delete(loai);
+            await _repository.SaveChangesAsync();
             TempData["Success"] = "Xóa loại thiết bị thành công!";
             return RedirectToAction(nameof(Index));
         }

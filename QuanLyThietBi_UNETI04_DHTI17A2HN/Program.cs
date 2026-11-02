@@ -30,6 +30,9 @@ builder.Services.AddScoped<IKhachHangRepository, KhachHangRepository>();
 builder.Services.AddScoped<IPhieuSuaChuaRepository, PhieuSuaChuaRepository>();
 //Đăng ký module 3 - Hồ sơ cá nhân
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<ITaiKhoanRepository, TaiKhoanRepository>();
+builder.Services.AddScoped<ILoaiThietBiRepository, LoaiThietBiRepository>();
 
 builder.Services.AddControllersWithViews();
 
