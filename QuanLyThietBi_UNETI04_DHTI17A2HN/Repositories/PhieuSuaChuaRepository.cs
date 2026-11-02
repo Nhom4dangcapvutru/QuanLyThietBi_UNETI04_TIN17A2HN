@@ -1,6 +1,11 @@
-﻿// Họ và tên: Nguyễn Thị Thảo
+// Họ và tên: Đinh Thị Thùy Linh
+// Mã sinh viên: 23103100110
+// Nội dung thực hiện: Tiếp nhận - Chẩn đoán - Sửa chữa - Cập nhật trạng thái và chi phí
+
+// Họ và tên: Nguyễn Thị Thảo
 // Mã sinh viên: 23103100092
 // Nội dung thực hiện: Quản lý khách hàng - CRUD, tìm kiếm, lọc, sắp xếp, phân trang
+
 using Microsoft.EntityFrameworkCore;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
@@ -133,6 +138,102 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories
         public async Task SaveAsync()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<(List<PhieuSuaChua> Items, int TotalItems)> GetPagedForProcessingAsync(
+            string? searchString, string? trangThai, string? mucDo,
+            int? maLoaiThietBi, DateTime? tuNgay, DateTime? denNgay,
+            string? sortOrder, int pageIndex, int pageSize)
+        {
+            var query = _context.PhieuSuaChuas
+                .Include(p => p.ThietBi).ThenInclude(t => t!.LoaiThietBi)
+                .Include(p => p.KhachHang)
+                .Include(p => p.KyThuatVienTiepNhan)
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                var s = searchString.Trim();
+                query = query.Where(p =>
+                    p.KhachHang!.HoTen.Contains(s) ||
+                    p.ThietBi!.TenThietBi.Contains(s) ||
+                    p.ThietBi.SerialNumber.Contains(s));
+            }
+
+            if (!string.IsNullOrWhiteSpace(trangThai))
+                query = query.Where(p => p.TrangThai == trangThai);
+
+            if (!string.IsNullOrWhiteSpace(mucDo))
+                query = query.Where(p => p.MucDo == mucDo);
+
+            if (maLoaiThietBi.HasValue && maLoaiThietBi.Value > 0)
+                query = query.Where(p => p.ThietBi!.MaLoai == maLoaiThietBi.Value);
+
+            if (tuNgay.HasValue)
+                query = query.Where(p => p.NgayTiepNhan.Date >= tuNgay.Value.Date);
+
+            if (denNgay.HasValue)
+                query = query.Where(p => p.NgayTiepNhan.Date <= denNgay.Value.Date);
+
+            query = sortOrder switch
+            {
+                "date_desc" => query.OrderByDescending(p => p.NgayTiepNhan),
+                "name_asc" => query.OrderBy(p => p.KhachHang!.HoTen),
+                "name_desc" => query.OrderByDescending(p => p.KhachHang!.HoTen),
+                "status_asc" => query.OrderBy(p => p.TrangThai),
+                "status_desc" => query.OrderByDescending(p => p.TrangThai),
+                _ => query.OrderByDescending(p => p.NgayTiepNhan)
+            };
+
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalItems);
+        }
+
+        public async Task<PhieuSuaChua?> GetByIdWithDetailsAsync(int id)
+        {
+            return await _context.PhieuSuaChuas
+                .Include(p => p.ThietBi).ThenInclude(t => t!.LoaiThietBi)
+                .Include(p => p.KhachHang)
+                .Include(p => p.KyThuatVienTiepNhan)
+                .Include(p => p.ChiTietSuaChuas).ThenInclude(c => c.LinhKien)
+                .Include(p => p.ChiTietSuaChuas).ThenInclude(c => c.KyThuatVien)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.MaPhieu == id);
+        }
+
+        public async Task<PhieuSuaChua?> GetByIdForUpdateAsync(int id, bool includeChiTiet = false)
+        {
+            var query = _context.PhieuSuaChuas
+                .Include(p => p.ThietBi)
+                .Include(p => p.KhachHang)
+                .AsQueryable();  
+
+            if (includeChiTiet)
+            {
+                query = query.Include(p => p.ChiTietSuaChuas).ThenInclude(c => c.LinhKien);
+            }
+
+            return await query.FirstOrDefaultAsync(p => p.MaPhieu == id);
+        }
+
+        public async Task<LinhKien?> GetLinhKienForUpdateAsync(int maLinhKien)
+        { 
+            return await _context.LinhKiens.FirstOrDefaultAsync(l => l.MaLinhKien == maLinhKien);
+        }
+
+        public async Task<List<LoaiThietBi>> GetLoaiThietBisAsync()
+        {
+            return await _context.LoaiThietBis.AsNoTracking().ToListAsync();
+        } 
+        public async Task<List<LinhKien>> GetAllLinhKiensAsync()
+        {
+            return await _context.LinhKiens.AsNoTracking().ToListAsync();
         }
     }
 }

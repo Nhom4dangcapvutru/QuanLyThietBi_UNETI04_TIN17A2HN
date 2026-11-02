@@ -2,9 +2,10 @@
 // Mã sinh viên: [23103100110]
 // Nội dung thực hiện: Module 4 - ViewModel Cập nhật trạng thái và chi phí cuối cùng
 
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 using System.ComponentModel.DataAnnotations;
 
 namespace QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels
@@ -56,12 +57,15 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels
         [BindNever, ValidateNever]
         public string SerialNumber { get; set; } = string.Empty;
         [BindNever, ValidateNever]
-        public string TrangThaiHienTai { get; set; } = string.Empty;
+        public string? TrangThaiHienTai { get; set; } = string.Empty;
         [BindNever, ValidateNever]
         public bool ConBaoHanh { get; set; }
         [BindNever, ValidateNever]
         public decimal TongTienLinhKien { get; set; }
         [BindNever, ValidateNever]
-        public List<SelectListItem> DanhSachTrangThaiChoPhep { get; set; } = new();
+        public List<ChiTietSuaChua> DanhSachChiTiet { get; set; } = new List<ChiTietSuaChua>();
+        public decimal? ChiPhiDuKien { get; set; }
+        public List<SelectListItem> DanhSachTrangThaiChoPhep { get; set; } = new List<SelectListItem>();
+
     }
 }
