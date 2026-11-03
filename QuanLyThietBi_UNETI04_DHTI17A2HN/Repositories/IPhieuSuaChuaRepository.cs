@@ -34,6 +34,10 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories
 
         Task<PhieuSuaChua?> GetByIdForUpdateAsync(int id, bool includeChiTiet = false);
         Task<LinhKien?> GetLinhKienForUpdateAsync(int maLinhKien);
+        Task<List<LinhKien>> GetLinhKienConHangAsync();
+        Task<ChiTietSuaChua?> GetChiTietForUpdateAsync(int maChiTiet, int maPhieu);
+        Task AddChiTietAsync(ChiTietSuaChua chiTiet);
+        void DeleteChiTiet(ChiTietSuaChua chiTiet);
 
         Task<List<LoaiThietBi>> GetLoaiThietBisAsync();
     }

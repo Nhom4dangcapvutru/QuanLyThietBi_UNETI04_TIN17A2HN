@@ -54,7 +54,9 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories
             // Đếm tổng số bản ghi trước khi phân trang
             int totalCount = await query.CountAsync();
 
-            // Phân trang
+            // Chuẩn hóa trang trước Skip/Take để dữ liệu khớp số trang hiển thị.
+            int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            page = Math.Clamp(page, 1, Math.Max(1, totalPages));
             var data = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)

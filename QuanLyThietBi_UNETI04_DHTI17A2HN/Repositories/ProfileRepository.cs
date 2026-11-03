@@ -2,7 +2,6 @@
 // Mã sinh viên: 23103100092
 // Nội dung thực hiện: Quản lý khách hàng - CRUD, tìm kiếm, lọc, sắp xếp, phân trang
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 

@@ -235,5 +235,21 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories
         {
             return await _context.LinhKiens.AsNoTracking().ToListAsync();
         }
+
+        public Task<List<LinhKien>> GetLinhKienConHangAsync()
+            => _context.LinhKiens.AsNoTracking()
+                .Where(l => l.SoLuongTon > 0 && l.TrangThai != TrangThaiLinhKien.NgungSuDung)
+                .OrderBy(l => l.TenLinhKien).ToListAsync();
+
+        public Task<ChiTietSuaChua?> GetChiTietForUpdateAsync(int maChiTiet, int maPhieu)
+            => _context.ChiTietSuaChuas.Include(c => c.LinhKien)
+                .FirstOrDefaultAsync(c => c.MaChiTiet == maChiTiet && c.MaPhieu == maPhieu);
+
+        // Các thay đổi chi tiết, kho và phiếu được lưu chung bằng SaveAsync.
+        public async Task AddChiTietAsync(ChiTietSuaChua chiTiet)
+            => await _context.ChiTietSuaChuas.AddAsync(chiTiet);
+
+        public void DeleteChiTiet(ChiTietSuaChua chiTiet)
+            => _context.ChiTietSuaChuas.Remove(chiTiet);
     }
 }

@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Interfaces;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories;
 
-public class ChiTietSuaChuasController : Controller
+public class ChiTietSuaChuasController : BaseController
 {
     private readonly IChiTietSuaChuaRepository _repository;
 
@@ -56,13 +58,17 @@ public class ChiTietSuaChuasController : Controller
 
         if (phieu == null)
             ModelState.AddModelError("MaPhieu", "Phiếu sửa chữa không tồn tại.");
+        else if (phieu.TrangThai != TrangThaiPhieu.DangXuLy)
+            ModelState.AddModelError("MaPhieu", "Chỉ thay đổi linh kiện khi phiếu đang xử lý.");
 
         if (linhKien == null)
             ModelState.AddModelError("MaLinhKien", "Linh kiện không tồn tại.");
+        else if (linhKien.TrangThai == TrangThaiLinhKien.NgungSuDung)
+            ModelState.AddModelError("MaLinhKien", "Linh kiện này đã ngừng sử dụng.");
 
         if (kyThuatVien == null ||
-            (kyThuatVien.VaiTro != "NhanVien" &&
-             kyThuatVien.VaiTro != "KyThuatVien"))
+            (kyThuatVien.VaiTro != VaiTroConstant.Admin &&
+             kyThuatVien.VaiTro != VaiTroConstant.KyThuatVien))
         {
             ModelState.AddModelError(
                 "MaKyThuatVien", "Kỹ thuật viên không hợp lệ.");
@@ -83,10 +89,9 @@ public class ChiTietSuaChuasController : Controller
             chiTiet.DonGia = linhKien.DonGia;
             chiTiet.ThanhTien = chiTiet.SoLuong * chiTiet.DonGia;
 
-            // Cập nhật kho và tổng chi phí cùng một lần SaveChanges.
+            // Cập nhật kho và chi tiết cùng một lần lưu. Chi phí chỉ chốt khi hoàn thành.
             linhKien.SoLuongTon -= chiTiet.SoLuong;
-            phieu.TongChiPhi =
-                (phieu.TongChiPhi ?? 0m) + chiTiet.ThanhTien;
+            linhKien.TrangThai = TrangThaiLinhKien.TheoTonKho(linhKien.SoLuongTon, false);
             phieu.NgayCapNhat = DateTime.Now;
 
             await _repository.AddAsync(chiTiet);
@@ -115,6 +120,13 @@ public class ChiTietSuaChuasController : Controller
         if (chiTiet == null)
             return NotFound();
 
+        var phieu = await _repository.GetPhieuByIdAsync(chiTiet.MaPhieu);
+        if (phieu?.TrangThai != TrangThaiPhieu.DangXuLy)
+        {
+            TempData["Error"] = "Phiếu không ở trạng thái cho phép thay đổi linh kiện.";
+            return RedirectToAction(nameof(Index));
+        }
+
         await LoadDropdown(
             chiTiet.MaPhieu,
             chiTiet.MaKyThuatVien,
@@ -139,7 +151,13 @@ public class ChiTietSuaChuasController : Controller
         if (oldData == null)
             return NotFound();
 
+        var phieuCu = await _repository.GetPhieuByIdAsync(oldData.MaPhieu);
         var phieuMoi = await _repository.GetPhieuByIdAsync(model.MaPhieu);
+        if (phieuCu?.TrangThai != TrangThaiPhieu.DangXuLy || phieuMoi?.TrangThai != TrangThaiPhieu.DangXuLy)
+        {
+            TempData["Error"] = "Chỉ thay đổi linh kiện giữa các phiếu đang xử lý. Phiếu đã nghiệm thu được giữ nguyên chi phí.";
+            return RedirectToAction(nameof(Index));
+        }
         var kyThuatVien = await _repository.GetTaiKhoanByIdAsync(
             model.MaKyThuatVien);
         var linhKienMoi = await _repository.GetLinhKienByIdAsync(
@@ -151,8 +169,8 @@ public class ChiTietSuaChuasController : Controller
             ModelState.AddModelError("MaPhieu", "Phiếu sửa chữa không tồn tại.");
 
         if (kyThuatVien == null ||
-            (kyThuatVien.VaiTro != "NhanVien" &&
-             kyThuatVien.VaiTro != "KyThuatVien"))
+            (kyThuatVien.VaiTro != VaiTroConstant.Admin &&
+             kyThuatVien.VaiTro != VaiTroConstant.KyThuatVien))
         {
             ModelState.AddModelError(
                 "MaKyThuatVien", "Kỹ thuật viên không hợp lệ.");
@@ -160,6 +178,11 @@ public class ChiTietSuaChuasController : Controller
 
         if (linhKienMoi == null)
             ModelState.AddModelError("MaLinhKien", "Linh kiện không tồn tại.");
+        else if (linhKienMoi.TrangThai == TrangThaiLinhKien.NgungSuDung)
+            ModelState.AddModelError("MaLinhKien", "Linh kiện này đã ngừng sử dụng.");
+
+        if (linhKienCu == null)
+            ModelState.AddModelError("MaLinhKien", "Không tìm thấy linh kiện cũ để hoàn kho.");
 
         if (model.SoLuong <= 0)
             ModelState.AddModelError("SoLuong", "Số lượng phải lớn hơn 0.");
@@ -168,7 +191,7 @@ public class ChiTietSuaChuasController : Controller
         // để tính số lượng thực tế có thể sử dụng.
         if (linhKienMoi != null)
         {
-            int tonKhoKhaDung = linhKienMoi.SoLuongTon;
+            long tonKhoKhaDung = linhKienMoi.SoLuongTon;
 
             if (linhKienCu != null &&
                 linhKienCu.MaLinhKien == linhKienMoi.MaLinhKien)
@@ -182,21 +205,33 @@ public class ChiTietSuaChuasController : Controller
                     "SoLuong",
                     $"Kho chỉ còn {tonKhoKhaDung} {linhKienMoi.DonViTinh}.");
             }
+            if (tonKhoKhaDung - model.SoLuong > int.MaxValue)
+                ModelState.AddModelError("SoLuong", "Điều chỉnh số lượng vượt giới hạn tồn kho.");
         }
+
+        if (linhKienCu != null && oldData.MaLinhKien != model.MaLinhKien
+            && oldData.SoLuong > int.MaxValue - linhKienCu.SoLuongTon)
+            ModelState.AddModelError("MaLinhKien", "Hoàn trả linh kiện cũ vượt giới hạn tồn kho.");
 
         if (ModelState.IsValid &&
             phieuMoi != null &&
             linhKienMoi != null &&
             linhKienCu != null)
         {
-            int maPhieuCu = oldData.MaPhieu;
-            int maLinhKienCu = oldData.MaLinhKien;
-
             // Hoàn kho cũ, sau đó trừ kho mới.
-            linhKienCu.SoLuongTon += oldData.SoLuong;
-            linhKienMoi.SoLuongTon -= model.SoLuong;
+            if (oldData.MaLinhKien == model.MaLinhKien)
+                linhKienMoi.SoLuongTon = (int)((long)linhKienMoi.SoLuongTon + oldData.SoLuong - model.SoLuong);
+            else
+            {
+                linhKienCu.SoLuongTon += oldData.SoLuong;
+                linhKienCu.TrangThai = TrangThaiLinhKien.TheoTonKho(linhKienCu.SoLuongTon,
+                    linhKienCu.TrangThai == TrangThaiLinhKien.NgungSuDung);
+                linhKienMoi.SoLuongTon -= model.SoLuong;
+            }
+            linhKienMoi.TrangThai = TrangThaiLinhKien.TheoTonKho(linhKienMoi.SoLuongTon, false);
 
-            model.DonGia = linhKienMoi.DonGia;
+            // Giữ đơn giá đã ghi nhận khi vẫn sử dụng cùng linh kiện.
+            model.DonGia = oldData.MaLinhKien == model.MaLinhKien ? oldData.DonGia : linhKienMoi.DonGia;
             model.ThanhTien = model.SoLuong * model.DonGia;
 
             oldData.MaPhieu = model.MaPhieu;
@@ -208,31 +243,8 @@ public class ChiTietSuaChuasController : Controller
             oldData.KetQuaChanDoan = model.KetQuaChanDoan;
             oldData.GhiChu = model.GhiChu;
 
-            // Tính lại tổng tiền phiếu cũ và phiếu mới.
-            decimal tongPhieuCu = await _repository.GetTongChiPhiAsync(
-                maPhieuCu, oldData.MaChiTiet);
-
-            if (maPhieuCu == model.MaPhieu)
-            {
-                phieuMoi.TongChiPhi = tongPhieuCu + model.ThanhTien;
-                phieuMoi.NgayCapNhat = DateTime.Now;
-            }
-            else
-            {
-                var phieuCu = await _repository.GetPhieuByIdAsync(maPhieuCu);
-
-                if (phieuCu != null)
-                {
-                    phieuCu.TongChiPhi = tongPhieuCu;
-                    phieuCu.NgayCapNhat = DateTime.Now;
-                }
-
-                decimal tongPhieuMoi = await _repository.GetTongChiPhiAsync(
-                    model.MaPhieu, oldData.MaChiTiet);
-
-                phieuMoi.TongChiPhi = tongPhieuMoi + model.ThanhTien;
-                phieuMoi.NgayCapNhat = DateTime.Now;
-            }
+            phieuCu.NgayCapNhat = DateTime.Now;
+            phieuMoi.NgayCapNhat = DateTime.Now;
 
             await _repository.SaveChangesAsync();
 
@@ -259,6 +271,12 @@ public class ChiTietSuaChuasController : Controller
         if (chiTiet == null)
             return NotFound();
 
+        if (chiTiet.PhieuSuaChua?.TrangThai != TrangThaiPhieu.DangXuLy)
+        {
+            TempData["Error"] = "Phiếu không ở trạng thái cho phép thay đổi linh kiện.";
+            return RedirectToAction(nameof(Index));
+        }
+
         return View(chiTiet);
     }
 
@@ -272,22 +290,29 @@ public class ChiTietSuaChuasController : Controller
         if (chiTiet == null)
             return NotFound();
 
+        var phieu = await _repository.GetPhieuByIdAsync(chiTiet.MaPhieu);
+        if (phieu?.TrangThai != TrangThaiPhieu.DangXuLy)
+        {
+            TempData["Error"] = "Không thể xóa linh kiện của phiếu ngoài trạng thái đang xử lý.";
+            return RedirectToAction(nameof(Index));
+        }
+
         var linhKien = await _repository.GetLinhKienByIdAsync(
             chiTiet.MaLinhKien);
-        var phieu = await _repository.GetPhieuByIdAsync(
-            chiTiet.MaPhieu);
 
         if (linhKien != null)
-            linhKien.SoLuongTon += chiTiet.SoLuong;
-
-        if (phieu != null)
         {
-            decimal tongConLai = await _repository.GetTongChiPhiAsync(
-                chiTiet.MaPhieu, chiTiet.MaChiTiet);
-
-            phieu.TongChiPhi = tongConLai;
-            phieu.NgayCapNhat = DateTime.Now;
+            if (chiTiet.SoLuong > int.MaxValue - linhKien.SoLuongTon)
+            {
+                TempData["Error"] = "Hoàn trả linh kiện vượt giới hạn tồn kho.";
+                return RedirectToAction(nameof(Index));
+            }
+            linhKien.SoLuongTon += chiTiet.SoLuong;
+            linhKien.TrangThai = TrangThaiLinhKien.TheoTonKho(linhKien.SoLuongTon,
+                linhKien.TrangThai == TrangThaiLinhKien.NgungSuDung);
         }
+
+        phieu.NgayCapNhat = DateTime.Now;
 
         _repository.Delete(chiTiet);
         await _repository.SaveChangesAsync();

@@ -1,22 +1,20 @@
 // Họ và tên: Đinh Thị Thùy Linh
 // Mã sinh viên: 23103100110
-// Nội dung thực hiện: Tiếp nhận - Chẩn đoán - Sửa chữa - Cập nhật trạng thái và chi phí
+// Nội dung thực hiện: - Tiếp nhận, Chẩn đoán, Sửa chữa,
+// Cập nhật trạng thái và chi phí phiếu sửa chữa
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Helpers;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels;
-using QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Services;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 {
-    public class XuLySuaChuaController : Controller
+    public class XuLySuaChuaController : BaseController
     {
         private const int PageSize = 8;
         private readonly IPhieuSuaChuaRepository _phieuRepo;
@@ -33,7 +31,9 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             _logger = logger;
         }
 
-        // 1. DANH SÁCH
+        // ============================================================
+        // 1. DANH SÁCH CẦN XỬ LÝ (Tìm kiếm + Lọc + Sắp xếp + Phân trang)
+        // ============================================================
         public async Task<IActionResult> Index(
             string? searchString, string? trangThai, string? mucDo,
             int? maLoaiThietBi, DateTime? tuNgay, DateTime? denNgay,
@@ -83,27 +83,36 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return View(vm);
         }
 
-        // 2. CHI TIẾT
+        // ============================================================
+        // 2. XEM CHI TIẾT PHIẾU
+        // ============================================================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
+
             var phieu = await _phieuRepo.GetByIdWithDetailsAsync(id.Value);
+
             if (phieu == null) return NotFound();
+
             return View(phieu);
         }
 
-        // 3. TIẾP NHẬN (GET)
+        // ============================================================
+        // 3. TIẾP NHẬN (Chờ tiếp nhận -> Đang xử lý)
+        // ============================================================
         [HttpGet]
         public async Task<IActionResult> TiepNhan(int? id)
         {
             if (id == null) return NotFound();
+
             var phieu = await _phieuRepo.GetByIdForUpdateAsync(id.Value);
 
             if (phieu == null) return NotFound();
 
             if (!_quyTrinh.CoTheTiepNhan(phieu.TrangThai))
             {
-                TempData["ErrorMessage"] = $"Chỉ tiếp nhận phiếu ở trạng thái '{TrangThaiPhieu.ChoTiepNhan}'.";
+                TempData["ErrorMessage"] =
+                    $"Chỉ tiếp nhận phiếu ở trạng thái '{TrangThaiPhieu.ChoTiepNhan}'.";
                 return RedirectToAction(nameof(Details), new { id });
             }
 
@@ -122,6 +131,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             {
                 MaPhieu = phieu.MaPhieu,
                 MucDo = phieu.MucDo,
+                GhiChu = phieu.GhiChuTiepNhan,
                 DanhSachMucDo = new List<SelectListItem>
                 {
                     new(MucDoUuTien.Thap, MucDoUuTien.Thap),
@@ -133,12 +143,12 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return View(vm);
         }
 
-        // 3. TIẾP NHẬN (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> TiepNhan(TiepNhanViewModel vm)
         {
             var phieu = await _phieuRepo.GetByIdForUpdateAsync(vm.MaPhieu);
+
             if (phieu == null) return NotFound();
 
             if (!_quyTrinh.CoTheTiepNhan(phieu.TrangThai))
@@ -147,16 +157,39 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(Details), new { id = vm.MaPhieu });
             }
 
-            var maTaiKhoan = HttpContext.Session.GetInt32("MaTaiKhoan");
+            if (phieu.ThietBi == null || phieu.ThietBi.MaKhachHang != phieu.MaKhachHang)
+            {
+                TempData["ErrorMessage"] = "Thiết bị không thuộc khách hàng đã tạo phiếu.";
+                return RedirectToAction(nameof(Details), new { id = vm.MaPhieu });
+            }
+
+            var maTaiKhoan = SessionHelper.GetMaTaiKhoan(HttpContext.Session);
             if (maTaiKhoan == null)
             {
-                TempData["ErrorMessage"] = "Vui lòng đăng nhập để tiếp nhận phiếu.";
-                return RedirectToAction("Login", "TaiKhoan");
+                TempData["ErrorMessage"] = "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.TenKhachHang = phieu.KhachHang?.HoTen;
+                ViewBag.TenThietBi = phieu.ThietBi?.TenThietBi;
+                ViewBag.SerialNumber = phieu.ThietBi?.SerialNumber;
+                ViewBag.NoiDungLoi = phieu.NoiDungLoi;
+                vm.DanhSachMucDo = new List<SelectListItem>
+                {
+                    new(MucDoUuTien.Thap, MucDoUuTien.Thap),
+                    new(MucDoUuTien.TrungBinh, MucDoUuTien.TrungBinh),
+                    new(MucDoUuTien.Cao, MucDoUuTien.Cao),
+                    new(MucDoUuTien.KhanCap, MucDoUuTien.KhanCap)
+                };
+                return View(vm);
             }
 
             phieu.TrangThai = TrangThaiPhieu.DangXuLy;
             phieu.MaKyThuatVienTiepNhan = maTaiKhoan.Value;
             phieu.MucDo = vm.MucDo;
+            phieu.GhiChuTiepNhan = string.IsNullOrWhiteSpace(vm.GhiChu) ? null : vm.GhiChu.Trim();
             phieu.NgayCapNhat = DateTime.Now;
 
             if (phieu.ThietBi != null)
@@ -164,15 +197,19 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 
             await _phieuRepo.SaveAsync();
 
-            TempData["SuccessMessage"] = $"Đã tiếp nhận phiếu #{vm.MaPhieu}. Chuyển sang 'Đang xử lý'.";
+            TempData["SuccessMessage"] =
+                $"Đã tiếp nhận phiếu #{vm.MaPhieu}. Chuyển sang 'Đang xử lý'.";
             return RedirectToAction(nameof(Details), new { id = vm.MaPhieu });
         }
 
-        // 4. CHẨN ĐOÁN (GET)
+        // ============================================================
+        // 4. CHẨN ĐOÁN - BÁO CHI PHÍ DỰ KIẾN (Đang xử lý)
+        // ============================================================
         [HttpGet]
         public async Task<IActionResult> ChanDoan(int? id)
         {
             if (id == null) return NotFound();
+
             var phieu = await _phieuRepo.GetByIdForUpdateAsync(id.Value);
 
             if (phieu == null) return NotFound();
@@ -194,24 +231,26 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 SerialNumber = phieu.ThietBi?.SerialNumber ?? "",
                 NoiDungLoi = phieu.NoiDungLoi,
                 TrangThaiHienTai = phieu.TrangThai,
-                ConBaoHanh = phieu.ThietBi != null && DateTime.Now.Date <= phieu.ThietBi.HanBaoHanh.Date
+                ConBaoHanh = phieu.ThietBi != null
+                    && DateTime.Now.Date <= phieu.ThietBi.HanBaoHanh.Date
             };
             return View(vm);
         }
 
-        // 4. CHẨN ĐOÁN (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChanDoan(ChanDoanViewModel vm)
         {
             var phieu = await _phieuRepo.GetByIdForUpdateAsync(vm.MaPhieu);
+
             if (phieu == null) return NotFound();
 
             if (!_quyTrinh.CoTheChanDoan(phieu.TrangThai))
                 ModelState.AddModelError("", "Phiếu không ở trạng thái cho phép chẩn đoán.");
 
             if (vm.HanDuKien.HasValue && vm.HanDuKien.Value.Date < DateTime.Now.Date)
-                ModelState.AddModelError(nameof(vm.HanDuKien), "Hạn dự kiến không được trước ngày hiện tại.");
+                ModelState.AddModelError(nameof(vm.HanDuKien),
+                    "Hạn dự kiến không được trước ngày hiện tại.");
 
             if (!ModelState.IsValid)
             {
@@ -220,7 +259,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 vm.SerialNumber = phieu.ThietBi?.SerialNumber ?? "";
                 vm.NoiDungLoi = phieu.NoiDungLoi;
                 vm.TrangThaiHienTai = phieu.TrangThai;
-                vm.ConBaoHanh = phieu.ThietBi != null && DateTime.Now.Date <= phieu.ThietBi.HanBaoHanh.Date;
+                vm.ConBaoHanh = phieu.ThietBi != null
+                    && DateTime.Now.Date <= phieu.ThietBi.HanBaoHanh.Date;
                 return View(vm);
             }
 
@@ -235,11 +275,14 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return RedirectToAction(nameof(Details), new { id = vm.MaPhieu });
         }
 
-        // 5. SỬA CHỮA (GET)
+        // ============================================================
+        // 5. SỬA CHỮA - THÊM/XÓA LINH KIỆN (Đang xử lý)
+        // ============================================================
         [HttpGet]
         public async Task<IActionResult> SuaChua(int? id)
         {
             if (id == null) return NotFound();
+
             var phieu = await _phieuRepo.GetByIdForUpdateAsync(id.Value, includeChiTiet: true);
 
             if (phieu == null) return NotFound();
@@ -259,22 +302,24 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 DanhSachChiTiet = phieu.ChiTietSuaChuas.ToList(),
                 TongTienLinhKien = phieu.ChiTietSuaChuas.Sum(c => c.ThanhTien),
                 ChiPhiDuKien = phieu.ChiPhiDuKien,
-
-                // ĐÃ SỬA: Gọi hàm lấy tất cả linh kiện từ Repo
                 LinhKienList = new SelectList(
-                    await _phieuRepo.GetAllLinhKiensAsync(),
+                    await _phieuRepo.GetLinhKienConHangAsync(),
                     "MaLinhKien", "TenLinhKien")
             };
-
             return View(vm);
         }
 
-        // 5. THÊM LINH KIỆN (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ThemLinhKien(SuaChuaViewModel vm)
         {
+            if (!ModelState.IsValid || vm.SoLuong <= 0)
+            {
+                TempData["ErrorMessage"] = "Thông tin linh kiện không hợp lệ. Số lượng phải lớn hơn 0.";
+                return RedirectToAction(nameof(SuaChua), new { id = vm.MaPhieu });
+            }
             var phieu = await _phieuRepo.GetByIdForUpdateAsync(vm.MaPhieu);
+
             if (phieu == null) return NotFound();
 
             if (!_quyTrinh.CoTheSuaChua(phieu.TrangThai))
@@ -284,23 +329,31 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             }
 
             var linhKien = await _phieuRepo.GetLinhKienForUpdateAsync(vm.MaLinhKien);
+
             if (linhKien == null)
             {
                 TempData["ErrorMessage"] = "Linh kiện không tồn tại.";
                 return RedirectToAction(nameof(SuaChua), new { id = vm.MaPhieu });
             }
 
-            if (linhKien.SoLuongTon < vm.SoLuong)
+            if (linhKien.TrangThai == TrangThaiLinhKien.NgungSuDung)
             {
-                TempData["ErrorMessage"] = $"Linh kiện '{linhKien.TenLinhKien}' chỉ còn {linhKien.SoLuongTon} trong kho.";
+                TempData["ErrorMessage"] = "Linh kiện này đã ngừng sử dụng, vui lòng chọn linh kiện khác.";
                 return RedirectToAction(nameof(SuaChua), new { id = vm.MaPhieu });
             }
 
-            var maTaiKhoan = HttpContext.Session.GetInt32("MaTaiKhoan");
+            if (linhKien.SoLuongTon < vm.SoLuong)
+            {
+                TempData["ErrorMessage"] =
+                    $"Linh kiện '{linhKien.TenLinhKien}' chỉ còn {linhKien.SoLuongTon} trong kho.";
+                return RedirectToAction(nameof(SuaChua), new { id = vm.MaPhieu });
+            }
+
+            var maTaiKhoan = SessionHelper.GetMaTaiKhoan(HttpContext.Session);
             if (maTaiKhoan == null)
             {
-                TempData["ErrorMessage"] = "Vui lòng đăng nhập.";
-                return RedirectToAction("Login", "TaiKhoan");
+                TempData["ErrorMessage"] = "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.";
+                return RedirectToAction("Login", "Account");
             }
 
             var chiTiet = new ChiTietSuaChua
@@ -316,7 +369,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             };
 
             linhKien.SoLuongTon -= vm.SoLuong;
-            phieu.ChiTietSuaChuas.Add(chiTiet);
+            linhKien.TrangThai = TrangThaiLinhKien.TheoTonKho(linhKien.SoLuongTon, false);
+            await _phieuRepo.AddChiTietAsync(chiTiet);
             phieu.NgayCapNhat = DateTime.Now;
 
             await _phieuRepo.SaveAsync();
@@ -325,12 +379,16 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return RedirectToAction(nameof(SuaChua), new { id = vm.MaPhieu });
         }
 
-        // 5. XÓA LINH KIỆN (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> XoaLinhKien(int maChiTiet, int maPhieu)
         {
-            var phieu = await _phieuRepo.GetByIdForUpdateAsync(maPhieu, includeChiTiet: true);
+            var chiTiet = await _phieuRepo.GetChiTietForUpdateAsync(maChiTiet, maPhieu);
+
+            if (chiTiet == null) return NotFound();
+
+            var phieu = await _phieuRepo.GetByIdForUpdateAsync(maPhieu);
+
             if (phieu == null) return NotFound();
 
             if (!_quyTrinh.CoTheSuaChua(phieu.TrangThai))
@@ -339,13 +397,20 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 return RedirectToAction(nameof(SuaChua), new { id = maPhieu });
             }
 
-            var chiTiet = phieu.ChiTietSuaChuas.FirstOrDefault(c => c.MaChiTiet == maChiTiet);
-            if (chiTiet == null) return NotFound();
-
+            // Hoàn trả tồn kho
             if (chiTiet.LinhKien != null)
+            {
+                if (chiTiet.SoLuong > int.MaxValue - chiTiet.LinhKien.SoLuongTon)
+                {
+                    TempData["ErrorMessage"] = "Hoàn trả linh kiện vượt giới hạn tồn kho.";
+                    return RedirectToAction(nameof(SuaChua), new { id = maPhieu });
+                }
                 chiTiet.LinhKien.SoLuongTon += chiTiet.SoLuong;
+                chiTiet.LinhKien.TrangThai = TrangThaiLinhKien.TheoTonKho(chiTiet.LinhKien.SoLuongTon,
+                    chiTiet.LinhKien.TrangThai == TrangThaiLinhKien.NgungSuDung);
+            }
 
-            phieu.ChiTietSuaChuas.Remove(chiTiet);
+            _phieuRepo.DeleteChiTiet(chiTiet);
             phieu.NgayCapNhat = DateTime.Now;
 
             await _phieuRepo.SaveAsync();
@@ -354,28 +419,188 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             return RedirectToAction(nameof(SuaChua), new { id = maPhieu });
         }
 
-        // 6. CẬP NHẬT TRẠNG THÁI (GET)
+        // ============================================================
+        // 6. CẬP NHẬT TRẠNG THÁI VÀ CHI PHÍ CUỐI CÙNG
+        // ============================================================
         [HttpGet]
         public async Task<IActionResult> CapNhatTrangThai(int? id)
         {
             if (id == null) return NotFound();
+
             var phieu = await _phieuRepo.GetByIdForUpdateAsync(id.Value, includeChiTiet: true);
+
             if (phieu == null) return NotFound();
 
-            // ĐÃ SỬA: Hoàn thiện phần ViewModel bị cắt cụt
-            // Bạn cần điều chỉnh lại các thuộc tính (properties) cho khớp với file CapNhatTrangThaiViewModel.cs thực tế của bạn.
             var vm = new CapNhatTrangThaiViewModel
             {
                 MaPhieu = phieu.MaPhieu,
                 TenKhachHang = phieu.KhachHang?.HoTen ?? "",
                 TenThietBi = phieu.ThietBi?.TenThietBi ?? "",
+                SerialNumber = phieu.ThietBi?.SerialNumber ?? "",
                 TrangThaiHienTai = phieu.TrangThai,
-                DanhSachChiTiet = phieu.ChiTietSuaChuas.ToList(),
-                ChiPhiDuKien = phieu.ChiPhiDuKien
-            }; 
+                TrangThaiMoi = "",
+                ChiPhiDuKienHienThi = phieu.ChiPhiDuKien,
+                TienCong = phieu.TienCong ?? 0,
+                ChiPhiKhac = phieu.ChiPhiKhac ?? 0,
+                NoiDungChiPhiKhac = phieu.NoiDungChiPhiKhac,
+                GiamTru = phieu.GiamTru ?? 0,
+                LyDoGiamTru = phieu.LyDoGiamTru,
+                NgayHenTra = phieu.NgayHenTra,
+                LyDoHuy = phieu.LyDoHuy,
+                ConBaoHanh = phieu.ThietBi != null
+                    && DateTime.Now.Date <= phieu.ThietBi.HanBaoHanh.Date,
+                TongTienLinhKien = phieu.ChiTietSuaChuas.Sum(c => c.ThanhTien),
+                DanhSachTrangThaiChoPhep = _quyTrinh.LayTrangThaiChoPhep(phieu.TrangThai)
+                    .Where(tt => !(phieu.TrangThai == TrangThaiPhieu.ChoTiepNhan && tt == TrangThaiPhieu.DangXuLy))
+                    .Select(tt => new SelectListItem { Value = tt, Text = tt })
+                    .ToList()
+            };
 
             return View(vm);
         }
 
-    }  
-}  
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CapNhatTrangThai(CapNhatTrangThaiViewModel vm)
+        {
+            var phieu = await _phieuRepo.GetByIdForUpdateAsync(vm.MaPhieu, includeChiTiet: true);
+
+            if (phieu == null) return NotFound();
+
+            // ===== KIỂM TRA LUỒNG TRẠNG THÁI =====
+            if (!_quyTrinh.KiemTraChuyenTrangThai(phieu.TrangThai, vm.TrangThaiMoi))
+            {
+                ModelState.AddModelError(nameof(vm.TrangThaiMoi),
+                    $"Không thể chuyển từ '{phieu.TrangThai}' sang '{vm.TrangThaiMoi}'.");
+            }
+
+            if (phieu.TrangThai == TrangThaiPhieu.ChoTiepNhan && vm.TrangThaiMoi == TrangThaiPhieu.DangXuLy)
+                ModelState.AddModelError(nameof(vm.TrangThaiMoi), "Vui lòng dùng chức năng Tiếp nhận để ghi nhận người tiếp nhận và thông tin thiết bị.");
+
+            decimal? tongChiPhi = null;
+            var tienLinhKien = phieu.ChiTietSuaChuas.Sum(c => c.ThanhTien);
+            if (vm.TrangThaiMoi == TrangThaiPhieu.HoanThanh)
+            {
+                if (phieu.ChiTietSuaChuas.Any(c => c.SoLuong <= 0 || c.DonGia < 0
+                    || c.ThanhTien != c.DonGia * c.SoLuong))
+                    ModelState.AddModelError("", "Có hạng mục linh kiện không hợp lệ. Vui lòng kiểm tra số lượng, đơn giá và thành tiền trước khi nghiệm thu.");
+                try
+                {
+                    tongChiPhi = ChiPhiSuaChuaService.TinhTong(tienLinhKien, vm.TienCong,
+                        vm.ChiPhiKhac, vm.NoiDungChiPhiKhac, vm.GiamTru, vm.LyDoGiamTru);
+                }
+                catch (System.ComponentModel.DataAnnotations.ValidationException ex)
+                {
+                    ModelState.AddModelError("", ex.Message);
+                }
+            }
+
+            // Nếu hủy/từ chối phải có lý do
+            if ((vm.TrangThaiMoi == TrangThaiPhieu.DaHuy ||
+                 vm.TrangThaiMoi == TrangThaiPhieu.TuChoi) &&
+                string.IsNullOrWhiteSpace(vm.LyDoHuy))
+            {
+                ModelState.AddModelError(nameof(vm.LyDoHuy),
+                    "Vui lòng nhập lý do hủy / từ chối.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                vm.TenKhachHang = phieu.KhachHang?.HoTen ?? "";
+                vm.TenThietBi = phieu.ThietBi?.TenThietBi ?? "";
+                vm.SerialNumber = phieu.ThietBi?.SerialNumber ?? "";
+                vm.TrangThaiHienTai = phieu.TrangThai;
+                vm.ConBaoHanh = phieu.ThietBi != null
+                    && DateTime.Now.Date <= phieu.ThietBi.HanBaoHanh.Date;
+                vm.TongTienLinhKien = tienLinhKien;
+                vm.ChiPhiDuKienHienThi = phieu.ChiPhiDuKien;
+                vm.DanhSachTrangThaiChoPhep = _quyTrinh
+                    .LayTrangThaiChoPhep(phieu.TrangThai)
+                    .Where(tt => !(phieu.TrangThai == TrangThaiPhieu.ChoTiepNhan && tt == TrangThaiPhieu.DangXuLy))
+                    .Select(tt => new SelectListItem { Value = tt, Text = tt })
+                    .ToList();
+                return View(vm);
+            }
+
+            // ===== CẬP NHẬT =====
+            phieu.TrangThai = vm.TrangThaiMoi;
+            phieu.NgayHenTra = vm.NgayHenTra;
+            phieu.LyDoHuy = vm.LyDoHuy;
+            phieu.NgayCapNhat = DateTime.Now;
+
+            // Khi HOÀN THÀNH: set ngày hoàn thành + cập nhật thiết bị
+            if (vm.TrangThaiMoi == TrangThaiPhieu.HoanThanh)
+            {
+                // Chỉ chốt khi hoàn thành; không tin tổng tiền hoặc tiền linh kiện gửi từ form.
+                phieu.TienLinhKienChot = tienLinhKien;
+                phieu.TienCong = vm.TienCong;
+                phieu.ChiPhiKhac = vm.ChiPhiKhac;
+                phieu.NoiDungChiPhiKhac = vm.ChiPhiKhac > 0 ? vm.NoiDungChiPhiKhac?.Trim() : null;
+                phieu.GiamTru = vm.GiamTru;
+                phieu.LyDoGiamTru = vm.GiamTru > 0 ? vm.LyDoGiamTru?.Trim() : null;
+                phieu.TongChiPhi = tongChiPhi;
+                phieu.NgayHoanThanh = DateTime.Now;
+
+                if (phieu.ThietBi != null)
+                    phieu.ThietBi.TrangThai = TrangThaiThietBi.HoatDong;
+            }
+
+            // Khi HỦY / TỪ CHỐI: cập nhật lại trạng thái thiết bị nếu cần
+            if (vm.TrangThaiMoi == TrangThaiPhieu.DaHuy ||
+                vm.TrangThaiMoi == TrangThaiPhieu.TuChoi)
+            {
+                if (phieu.ThietBi != null &&
+                    phieu.ThietBi.TrangThai == TrangThaiThietBi.DangSuaChua)
+                {
+                    phieu.ThietBi.TrangThai = TrangThaiThietBi.HoatDong;
+                }
+            }
+
+            await _phieuRepo.SaveAsync();
+
+            TempData["SuccessMessage"] =
+                $"Đã cập nhật trạng thái phiếu thành '{vm.TrangThaiMoi}'.";
+            return RedirectToAction(nameof(Details), new { id = vm.MaPhieu });
+        }
+
+        // ============================================================
+        // 7. HỦY PHIẾU NHANH (chỉ khi ở trạng thái cho phép)
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> HuyPhieu(int id, string lyDo)
+        {
+            var phieu = await _phieuRepo.GetByIdForUpdateAsync(id);
+
+            if (phieu == null) return NotFound();
+
+            if (!_quyTrinh.CoTheHuy(phieu.TrangThai))
+            {
+                TempData["ErrorMessage"] =
+                    $"Không thể hủy phiếu ở trạng thái '{phieu.TrangThai}'.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            if (string.IsNullOrWhiteSpace(lyDo))
+            {
+                TempData["ErrorMessage"] = "Vui lòng nhập lý do hủy phiếu.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            phieu.TrangThai = TrangThaiPhieu.DaHuy;
+            phieu.LyDoHuy = lyDo;
+            phieu.NgayCapNhat = DateTime.Now;
+
+            if (phieu.ThietBi != null &&
+                phieu.ThietBi.TrangThai == TrangThaiThietBi.DangSuaChua)
+            {
+                phieu.ThietBi.TrangThai = TrangThaiThietBi.HoatDong;
+            }
+
+            await _phieuRepo.SaveAsync();
+
+            TempData["SuccessMessage"] = $"Đã hủy phiếu #{id}.";
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}

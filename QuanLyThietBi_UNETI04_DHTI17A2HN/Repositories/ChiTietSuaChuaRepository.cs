@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Interfaces;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 
 namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories
@@ -66,6 +67,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories
         {
             return await _context.PhieuSuaChuas
                 .AsNoTracking()
+                .Where(p => p.TrangThai == TrangThaiPhieu.DangXuLy)
                 .OrderByDescending(p => p.MaPhieu)
                 .ToListAsync();
         }
@@ -75,8 +77,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories
         {
             return await _context.TaiKhoans
                 .AsNoTracking()
-                .Where(t => t.VaiTro == "NhanVien" ||
-                            t.VaiTro == "KyThuatVien")
+                .Where(t => t.VaiTro == VaiTroConstant.Admin ||
+                            t.VaiTro == VaiTroConstant.KyThuatVien)
                 .OrderBy(t => t.HoTen)
                 .ToListAsync();
         }
@@ -85,7 +87,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories
         {
             return await _context.LinhKiens
                 .AsNoTracking()
-                .Where(l => l.SoLuongTon > 0)
+                .Where(l => l.SoLuongTon > 0 && l.TrangThai != TrangThaiLinhKien.NgungSuDung)
                 .OrderBy(l => l.TenLinhKien)
                 .ToListAsync();
         }

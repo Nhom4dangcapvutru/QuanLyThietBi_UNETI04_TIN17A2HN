@@ -38,6 +38,8 @@ builder.Services.AddScoped<ILoaiThietBiRepository, LoaiThietBiRepository>();
 builder.Services.AddScoped<IThongKeRepository, ThongKeRepository>();
 builder.Services.AddScoped<IChiTietSuaChuaRepository, ChiTietSuaChuaRepository>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
+builder.Services.AddScoped<IHomeRepository, HomeRepository>();
+builder.Services.AddScoped<ILinhKienRepository, LinhKienRepository>();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
