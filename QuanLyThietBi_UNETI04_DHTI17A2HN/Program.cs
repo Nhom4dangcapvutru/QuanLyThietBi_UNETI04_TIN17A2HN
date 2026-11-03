@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
-using QuanLyThietBi_UNETI04_DHTI17A2HN.Services;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Interfaces;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories.Interfaces;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +35,9 @@ builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<ITaiKhoanRepository, TaiKhoanRepository>();
 builder.Services.AddScoped<ILoaiThietBiRepository, LoaiThietBiRepository>();
-
+builder.Services.AddScoped<IThongKeRepository, ThongKeRepository>();
+builder.Services.AddScoped<IChiTietSuaChuaRepository, ChiTietSuaChuaRepository>();
+builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
