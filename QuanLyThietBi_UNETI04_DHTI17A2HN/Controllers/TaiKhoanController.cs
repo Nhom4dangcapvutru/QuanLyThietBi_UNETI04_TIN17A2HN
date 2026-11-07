@@ -1,10 +1,12 @@
-﻿// Họ và tên: Bùi Thị Thu Trang
+// Họ và tên: Bùi Thị Thu Trang
 // Mã sinh viên: 23103100103
 // Nội dung thực hiện: Quản lý tài khoản - CRUD, khóa/mở khóa, kiểm tra trùng tên đăng nhập.
 // Áp dụng Repository Pattern (ITaiKhoanRepository) để tách biệt logic truy vấn CSDL khỏi Controller.
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Helpers;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories;
@@ -90,24 +92,29 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         {
             var taiKhoan = await _repository.GetByIdAsync(id);
             if (taiKhoan == null) return NotFound();
-            return View(taiKhoan);
+            return View(new TaiKhoanEditViewModel
+            {
+                MaTaiKhoan = taiKhoan.MaTaiKhoan, TenDangNhap = taiKhoan.TenDangNhap,
+                HoTen = taiKhoan.HoTen, Email = taiKhoan.Email,
+                VaiTro = taiKhoan.VaiTro, TrangThai = taiKhoan.TrangThai
+            });
         }
 
         // POST: /TaiKhoan/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, TaiKhoan taiKhoan)
+        public async Task<IActionResult> Edit(int id, TaiKhoanEditViewModel model)
         {
-            if (id != taiKhoan.MaTaiKhoan) return NotFound();
+            if (id != model.MaTaiKhoan) return NotFound();
 
             // Kiểm tra trùng tên đăng nhập (trừ chính nó)
-            if (await _repository.CheckTenDangNhapExistsAsync(taiKhoan.TenDangNhap, id))
+            if (await _repository.CheckTenDangNhapExistsAsync(model.TenDangNhap, id))
             {
                 ModelState.AddModelError("TenDangNhap", "Tên đăng nhập đã tồn tại.");
             }
 
             // Kiểm tra trùng email (trừ chính nó)
-            if (await _repository.CheckEmailExistsAsync(taiKhoan.Email, id))
+            if (await _repository.CheckEmailExistsAsync(model.Email, id))
             {
                 ModelState.AddModelError("Email", "Email đã được sử dụng.");
             }
@@ -116,6 +123,15 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             {
                 try
                 {
+                    var taiKhoan = await _repository.GetByIdAsync(id);
+                    if (taiKhoan == null) return NotFound();
+                    taiKhoan.TenDangNhap = model.TenDangNhap;
+                    taiKhoan.HoTen = model.HoTen;
+                    taiKhoan.Email = model.Email;
+                    taiKhoan.VaiTro = model.VaiTro;
+                    taiKhoan.TrangThai = model.TrangThai;
+                    if (!string.IsNullOrEmpty(model.MatKhau))
+                        taiKhoan.MatKhau = PasswordSecurity.Hash(taiKhoan, model.MatKhau);
                     _repository.Update(taiKhoan);
                     await _repository.SaveChangesAsync();
                     TempData["Success"] = "Cập nhật tài khoản thành công!";
@@ -127,7 +143,7 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(taiKhoan);
+            return View(model);
         }
 
         // GET: /TaiKhoan/Delete/5

@@ -1,4 +1,4 @@
-﻿// Họ và tên: Bùi Thị Thu Trang
+// Họ và tên: Bùi Thị Thu Trang
 // Mã sinh viên: 23103100103
 // Nội dung thực hiện: Xử lý Đăng nhập, Đăng xuất, Đăng ký, lưu Session và điều hướng phân quyền.
 // Áp dụng mô hình Repository (IAccountRepository) để tách biệt logic truy vấn CSDL, giúp code dễ bảo trì.
@@ -8,7 +8,7 @@ using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModels;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories;
-using QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels; // Giữ nguyên như file cũ của mày
+using QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels;
 
 namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
 {
@@ -96,6 +96,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            if (HttpContext.Session.GetInt32("MaTaiKhoan") != null)
+                return RedirectToAction("Index", "Home");
             if (!ModelState.IsValid) return View(model);
 
             // Đóng gói dữ liệu từ ViewModel sang Entity Tài khoản
@@ -123,13 +125,14 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
             // Gọi Repository để thực thi lưu (có sử dụng Transaction)
             var result = await _accountRepository.RegisterAsync(taiKhoan, khachHang);
 
-            if (result)
+            if (result.Succeeded)
             {
                 TempData["Success"] = "Đăng ký tài khoản thành công! Vui lòng đăng nhập.";
                 return RedirectToAction("Login", "Account");
             }
 
-            ModelState.AddModelError("", "Có lỗi xảy ra trong quá trình đăng ký. Vui lòng thử lại.");
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(error.Key, error.Value);
             return View(model);
         }
 

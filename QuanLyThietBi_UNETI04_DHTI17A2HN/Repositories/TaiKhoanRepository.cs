@@ -1,8 +1,9 @@
-﻿// Họ và tên: Bùi Thị Thu Trang
+// Họ và tên: Bùi Thị Thu Trang
 // Mã sinh viên: 23103100103
 // Nội dung thực hiện: Cài đặt Repository cho phân hệ Quản lý Tài khoản
 // Thực thi các truy vấn LINQ (Tìm kiếm, Lọc, Include bảng liên quan) để phục vụ Controller.
 using Microsoft.EntityFrameworkCore;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Helpers;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Data;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 
@@ -51,18 +52,24 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories
 
         public async Task<bool> CheckTenDangNhapExistsAsync(string tenDangNhap, int? excludeId = null)
         {
+            var name = AccountInput.NormalizeName(tenDangNhap).ToUpperInvariant();
             return await _context.TaiKhoans
-                .AnyAsync(t => t.TenDangNhap == tenDangNhap && t.MaTaiKhoan != excludeId);
+                .AnyAsync(t => t.TenDangNhap.Trim().ToUpper() == name && t.MaTaiKhoan != excludeId);
         }
 
         public async Task<bool> CheckEmailExistsAsync(string email, int? excludeId = null)
         {
+            var normalizedEmail = AccountInput.NormalizeEmail(email).ToUpperInvariant();
             return await _context.TaiKhoans
-                .AnyAsync(t => t.Email == email && t.MaTaiKhoan != excludeId);
+                .AnyAsync(t => t.Email.Trim().ToUpper() == normalizedEmail && t.MaTaiKhoan != excludeId);
         }
 
         public async Task AddAsync(TaiKhoan taiKhoan)
         {
+            taiKhoan.TenDangNhap = AccountInput.NormalizeName(taiKhoan.TenDangNhap);
+            taiKhoan.HoTen = AccountInput.NormalizeName(taiKhoan.HoTen);
+            taiKhoan.Email = AccountInput.NormalizeEmail(taiKhoan.Email);
+            taiKhoan.MatKhau = PasswordSecurity.Hash(taiKhoan, taiKhoan.MatKhau);
             await _context.TaiKhoans.AddAsync(taiKhoan);
         }
 

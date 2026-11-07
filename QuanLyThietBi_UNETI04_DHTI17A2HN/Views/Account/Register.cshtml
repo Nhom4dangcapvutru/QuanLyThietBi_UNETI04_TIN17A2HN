@@ -1,4 +1,4 @@
-﻿@* 
+@*
     Họ và tên: Bùi Thị Thu Trang
     Mã sinh viên: 23103100103
     Nội dung thực hiện: Giao diện Đăng ký tài khoản khách hàng.
@@ -13,6 +13,7 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Đăng ký - UNETI Repair Hub</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <style>
@@ -41,8 +42,14 @@
 
             <div class="mb-3">
                 <label asp-for="MatKhau" class="form-label small fw-bold"></label>
-                <input asp-for="MatKhau" type="password" class="form-control" placeholder="Tối thiểu 6 ký tự" />
+                <input asp-for="MatKhau" type="password" class="form-control" placeholder="8–100 ký tự, có chữ và số" autocomplete="new-password" />
                 <span asp-validation-for="MatKhau" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="XacNhanMatKhau" class="form-label small fw-bold"></label>
+                <input asp-for="XacNhanMatKhau" type="password" class="form-control" autocomplete="new-password" placeholder="Nhập lại mật khẩu" />
+                <span asp-validation-for="XacNhanMatKhau" class="text-danger small"></span>
             </div>
 
             <div class="mb-3">
@@ -71,5 +78,7 @@
             <a asp-action="Login" class="text-decoration-none fw-bold">Đăng nhập ngay</a>
         </div>
     </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
 </body>
 </html>

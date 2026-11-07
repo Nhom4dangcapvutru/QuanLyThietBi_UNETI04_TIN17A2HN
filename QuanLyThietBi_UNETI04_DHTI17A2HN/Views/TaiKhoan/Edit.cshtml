@@ -1,4 +1,4 @@
-@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.TaiKhoan
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels.TaiKhoanEditViewModel
 @{
     ViewData["Title"] = "Sửa tài khoản";
 }
@@ -41,8 +41,8 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="MatKhau" class="form-label fw-semibold">Mật khẩu <span class="text-danger">*</span></label>
-                            <input asp-for="MatKhau" class="form-control" />
+                            <label asp-for="MatKhau" class="form-label fw-semibold">Mật khẩu mới</label>
+                            <input asp-for="MatKhau" type="password" class="form-control" autocomplete="new-password" placeholder="Để trống nếu giữ mật khẩu hiện tại" />
                             <span asp-validation-for="MatKhau" class="text-danger small"></span>
                         </div>
 

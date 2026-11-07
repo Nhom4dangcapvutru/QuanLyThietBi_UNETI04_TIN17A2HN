@@ -3,6 +3,7 @@
 // Nội dung thực hiện: Tạo dữ liệu mẫu (Seed Data) chuẩn số lượng yêu cầu để kiểm thử 5 Module
 
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants;
+using QuanLyThietBi_UNETI04_DHTI17A2HN.Helpers;
 using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities;
 
 namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Data
@@ -30,6 +31,8 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Data
                 new() { TenDangNhap = "user_kh04", MatKhau = "123456", HoTen = "Phạm Hồng Dung", Email = "dung.ph@gmail.com", VaiTro = VaiTroConstant.KhachHang, TrangThai = TrangThaiTaiKhoan.HoatDong },
                 new() { TenDangNhap = "user_locked", MatKhau = "123456", HoTen = "Khách Hàng Khóa", Email = "locked@gmail.com", VaiTro = VaiTroConstant.KhachHang, TrangThai = TrangThaiTaiKhoan.BiKhoa }
             };
+            foreach (var account in taiKhoans)
+                account.MatKhau = PasswordSecurity.Hash(account, account.MatKhau);
             context.TaiKhoans.AddRange(taiKhoans);
             context.SaveChanges();
 
