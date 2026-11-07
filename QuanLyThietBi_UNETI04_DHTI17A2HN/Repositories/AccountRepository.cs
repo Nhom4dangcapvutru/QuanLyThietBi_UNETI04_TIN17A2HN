@@ -18,5 +18,30 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories
             return await _context.TaiKhoans
                 .FirstOrDefaultAsync(t => t.TenDangNhap == tenDangNhap && t.MatKhau == matKhau);
         }
+        public async Task<bool> RegisterAsync(TaiKhoan taiKhoan, KhachHang khachHang)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Lưu Tài khoản trước để lấy MaTaiKhoan (tự tăng)
+                await _context.TaiKhoans.AddAsync(taiKhoan);
+                await _context.SaveChangesAsync();
+
+                // 2. Gán MaTaiKhoan vừa tạo cho Khách hàng
+                khachHang.MaTaiKhoan = taiKhoan.MaTaiKhoan;
+
+                // 3. Lưu Khách hàng
+                await _context.KhachHangs.AddAsync(khachHang);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
+        }
     }
 }

@@ -1,0 +1,75 @@
+﻿@* 
+    Họ và tên: Bùi Thị Thu Trang
+    Mã sinh viên: 23103100103
+    Nội dung thực hiện: Giao diện Đăng ký tài khoản khách hàng.
+    Sử dụng Razor View, Bootstrap 5 và Tag Helper để hiển thị form và thông báo lỗi.
+*@
+@model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký tài khoản";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>Đăng ký - UNETI Repair Hub</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+            body { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: sans-serif;}
+            .register-card { background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 500px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+        <h3 class="text-center fw-bold mb-3">Tạo tài khoản mới</h3>
+        <p class="text-muted text-center mb-4">Đăng ký để theo dõi tiến độ sửa chữa thiết bị</p>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger py-2 small">@TempData["Error"]</div>
+        }
+
+        <form asp-action="Register" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
+            <div class="mb-3">
+                <label asp-for="TenDangNhap" class="form-label small fw-bold"></label>
+                <input asp-for="TenDangNhap" class="form-control" placeholder="VD: user_moi123" />
+                <span asp-validation-for="TenDangNhap" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MatKhau" class="form-label small fw-bold"></label>
+                <input asp-for="MatKhau" type="password" class="form-control" placeholder="Tối thiểu 6 ký tự" />
+                <span asp-validation-for="MatKhau" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="HoTen" class="form-label small fw-bold"></label>
+                <input asp-for="HoTen" class="form-control" placeholder="Họ và tên đầy đủ" />
+                <span asp-validation-for="HoTen" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label small fw-bold"></label>
+                <input asp-for="Email" type="email" class="form-control" placeholder="email@gmail.com" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="SoDienThoai" class="form-label small fw-bold"></label>
+                <input asp-for="SoDienThoai" class="form-control" placeholder="VD: 0901234567" />
+                <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Đăng ký</button>
+        </form>
+
+        <div class="text-center mt-3">
+            <span class="text-muted small">Đã có tài khoản? </span>
+            <a asp-action="Login" class="text-decoration-none fw-bold">Đăng nhập ngay</a>
+        </div>
+    </div>
+</body>
+</html>

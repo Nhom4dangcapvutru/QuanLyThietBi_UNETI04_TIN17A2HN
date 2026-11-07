@@ -9,5 +9,6 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Repositories
     public interface IAccountRepository
     {
         Task<TaiKhoan?> LoginAsync(string tenDangNhap, string matKhau);
+        Task<bool> RegisterAsync(TaiKhoan taiKhoan, KhachHang khachHang);
     }
 }
