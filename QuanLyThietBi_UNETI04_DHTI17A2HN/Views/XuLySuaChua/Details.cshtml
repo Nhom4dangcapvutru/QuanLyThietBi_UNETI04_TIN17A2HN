@@ -3,6 +3,7 @@
    Nội dung thực hiện: Chi tiết phiếu sửa chữa *@
 
 @model QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Entities.PhieuSuaChua
+@using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants
 @{
     ViewData["Title"] = "Chi tiết phiếu #" + Model.MaPhieu;
     var conBaoHanh = Model.ThietBi != null && DateTime.Now.Date <= Model.ThietBi.HanBaoHanh.Date;
@@ -33,6 +34,12 @@
             <i class="bi bi-arrow-left me-1"></i> Danh sách phiếu
         </a>
 
+        @if (Model.TrangThai == TrangThaiPhieu.HoanThanh)
+        {
+            <a asp-controller="PhieuSuaChua" asp-action="ExportExcel" asp-route-id="@Model.MaPhieu" class="btn btn-outline-success">
+                <i class="bi bi-file-earmark-excel me-1"></i> Xuất Excel
+            </a>
+        }
         @if (Model.TrangThai == "Chờ tiếp nhận")
         {
             <a asp-action="TiepNhan" asp-route-id="@Model.MaPhieu" class="btn btn-success">

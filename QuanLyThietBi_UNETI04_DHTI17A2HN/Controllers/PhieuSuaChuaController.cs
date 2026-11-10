@@ -148,6 +148,33 @@ namespace QuanLyThietBi_UNETI04_DHTI17A2HN.Controllers
         }
 
         // ====================================================================
+        // Xuất kết quả sửa chữa đã hoàn thành.
+        // ====================================================================
+        [HttpGet]
+        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+        public async Task<IActionResult> ExportExcel(int id)
+        {
+            if (!SessionHelper.IsLoggedIn(HttpContext.Session))
+                return RedirectToAction("Login", "Account");
+
+            var isStaff = SessionHelper.IsAdminOrKyThuatVien(HttpContext.Session);
+            var maKhachHang = isStaff ? null : await GetCurrentMaKhachHangAsync();
+            if (!isStaff && maKhachHang == null)
+                return NotFound();
+
+            var phieu = await _repository.GetPhieuDetailsAsync(id);
+            if (phieu == null || (!isStaff && phieu.MaKhachHang != maKhachHang))
+                return NotFound();
+
+            if (phieu.TrangThai != TrangThaiPhieu.HoanThanh)
+                return Conflict("Chỉ xuất Excel cho phiếu đã hoàn thành.");
+
+            return File(PhieuSuaChuaExcel.Create(phieu),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"PhieuSuaChua-{phieu.MaPhieu}.xlsx");
+        }
+
+        // ====================================================================
         // 3. CREATE - GET
         // ====================================================================
         [HttpGet]

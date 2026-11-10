@@ -5,6 +5,7 @@
     (Thông tin phiếu + thiết bị + kết quả chẩn đoán + chi tiết sửa chữa + tổng tiền)
 *@
 @model QuanLyThietBi_UNETI04_DHTI17A2HN.ViewModels.PhieuSuaChuaDetailsViewModel
+@using QuanLyThietBi_UNETI04_DHTI17A2HN.Models.Constants
 
 @{
     ViewData["Title"] = "Chi tiết phiếu #" + Model.PhieuSuaChua.MaPhieu;
@@ -49,6 +50,12 @@
         {
             <a asp-action="Huy" asp-route-id="@p.MaPhieu" class="btn btn-outline-danger">
                 <i class="bi bi-x-circle me-1"></i> Hủy phiếu
+            </a>
+        }
+        @if (p.TrangThai == TrangThaiPhieu.HoanThanh)
+        {
+            <a asp-action="ExportExcel" asp-route-id="@p.MaPhieu" class="btn btn-outline-success">
+                <i class="bi bi-file-earmark-excel me-1"></i> Xuất Excel
             </a>
         }
     </div>
